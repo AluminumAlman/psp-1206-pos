@@ -25,582 +25,1337 @@ externalDocs:
 servers:
   - url: https://petstore3.swagger.io/api/v3
 tags:
-  - name: pet
-    description: Everything about your Pets
-    externalDocs:
-      description: Find out more
-      url: http://swagger.io
-  - name: store
-    description: Access to Petstore orders
-    externalDocs:
-      description: Find out more about our store
-      url: http://swagger.io
-  - name: user
-    description: Operations about user
+  - name: appointments
+    description: CRUD for appointments
+  - name: employees
+    description: Accessing information about employees for services
+  - name: categories
+    description: Access and change product/service categories
+  - name: services
+    description: CRUD for services
+  - name: products
+    description: CRUD for products
+  - name: product variations
+    description: CRUD for product variations
 paths:
-  /pet:
-    put:
-      tags:
-        - pet
-      summary: Update an existing pet
-      description: Update an existing pet by Id
-      operationId: updatePet
-      requestBody:
-        description: Update an existent pet in the store
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Pet'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/Pet'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Pet'
-        required: true
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Pet'          
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Pet'
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Pet not found
-        '422':
-          description: Validation exception
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
+
+# Appointments
+
+  /{business_id}/appointments:
     post:
       tags:
-        - pet
-      summary: Add a new pet to the store
-      description: Add a new pet to the store
-      operationId: addPet
-      requestBody:
-        description: Create a new pet in the store
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Pet'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/Pet'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Pet'
-        required: true
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Pet'          
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Pet'
-        '400':
-          description: Invalid input
-        '422':
-          description: Validation exception
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
-  /pet/findByStatus:
-    get:
-      tags:
-        - pet
-      summary: Finds Pets by status
-      description: Multiple status values can be provided with comma separated strings
-      operationId: findPetsByStatus
+        - appointments
+      summary: Create a new appointment
+      description: Create a new appointment with customer details, selected service, employee, and time.
       parameters:
-        - name: status
-          in: query
-          description: Status values that need to be considered for filter
-          required: false
-          explode: true
-          schema:
-            type: string
-            default: available
-            enum:
-              - available
-              - pending
-              - sold
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Pet'          
-            application/xml:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Pet'
-        '400':
-          description: Invalid status value
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
-  /pet/findByTags:
-    get:
-      tags:
-        - pet
-      summary: Finds Pets by tags
-      description: Multiple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.
-      operationId: findPetsByTags
-      parameters:
-        - name: tags
-          in: query
-          description: Tags to filter by
-          required: false
-          explode: true
-          schema:
-            type: array
-            items:
-              type: string
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Pet'          
-            application/xml:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Pet'
-        '400':
-          description: Invalid tag value
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
-  /pet/{petId}:
-    get:
-      tags:
-        - pet
-      summary: Find pet by ID
-      description: Returns a single pet
-      operationId: getPetById
-      parameters:
-        - name: petId
-          in: path
-          description: ID of pet to return
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Pet'          
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Pet'
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Pet not found
-      security:
-        - api_key: []
-        - petstore_auth:
-            - write:pets
-            - read:pets
-    post:
-      tags:
-        - pet
-      summary: Updates a pet in the store with form data
-      description: ''
-      operationId: updatePetWithForm
-      parameters:
-        - name: petId
-          in: path
-          description: ID of pet that needs to be updated
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: name
-          in: query
-          description: Name of pet that needs to be updated
-          schema:
-            type: string
-        - name: status
-          in: query
-          description: Status of pet that needs to be updated
-          schema:
-            type: string
-      responses:
-        '400':
-          description: Invalid input
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
-    delete:
-      tags:
-        - pet
-      summary: Deletes a pet
-      description: delete a pet
-      operationId: deletePet
-      parameters:
-        - name: api_key
+        - name: API-Version
           in: header
-          description: ''
-          required: false
+          required: true
           schema:
             type: string
-        - name: petId
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
           in: path
-          description: Pet id to delete
           required: true
           schema:
             type: integer
-            format: int64
-      responses:
-        '400':
-          description: Invalid pet value
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
-  /pet/{petId}/uploadImage:
-    post:
-      tags:
-        - pet
-      summary: uploads an image
-      description: ''
-      operationId: uploadFile
-      parameters:
-        - name: petId
-          in: path
-          description: ID of pet to update
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: additionalMetadata
-          in: query
-          description: Additional Metadata
-          required: false
-          schema:
-            type: string
+          description: ID of the business
       requestBody:
+        required: true
         content:
-          application/octet-stream:
+          application/json:
             schema:
-              type: string
-              format: binary
+              type: object
+              properties:
+                employee_id:
+                  type: integer
+                service_id:
+                  type: integer
+                customer_name:
+                  type: string
+                customer_email:
+                  type: string
+                customer_phone:
+                  type: string
+                start_time:
+                  type: string
+                  format: date-time
       responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiResponse'
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
-  /store/inventory:
+        201:
+          description: Appointment created successfully
+        400:
+          description: Invalid input data
+
+  /{business_id}/appointments/{appointment_id}:
     get:
       tags:
-        - store
-      summary: Returns pet inventories by status
-      description: Returns a map of status codes to quantities
-      operationId: getInventory
+        - appointments
+      summary: Fetch appointment details by ID
+      description: Fetch the details of an appointment by its ID.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
+        - name: appointment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the appointment
       responses:
-        '200':
-          description: successful operation
+        200:
+          description: Appointment details fetched successfully
           content:
             application/json:
               schema:
                 type: object
-                additionalProperties:
-                  type: integer
-                  format: int32
-      security:
-        - api_key: []
-  /store/order:
-    post:
-      tags:
-        - store
-      summary: Place an order for a pet
-      description: Place a new order in the store
-      operationId: placeOrder
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Order'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/Order'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Order'
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Order'
-        '400':
-          description: Invalid input
-        '422':
-          description: Validation exception
-  /store/order/{orderId}:
-    get:
-      tags:
-        - store
-      summary: Find purchase order by ID
-      description: For valid response try integer IDs with value <= 5 or > 10. Other values will generate exceptions.
-      operationId: getOrderById
-      parameters:
-        - name: orderId
-          in: path
-          description: ID of order that needs to be fetched
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Order'          
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Order'
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Order not found
-    delete:
-      tags:
-        - store
-      summary: Delete purchase order by ID
-      description: For valid response try integer IDs with value < 1000. Anything above 1000 or nonintegers will generate API errors
-      operationId: deleteOrder
-      parameters:
-        - name: orderId
-          in: path
-          description: ID of the order that needs to be deleted
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Order not found
-  /user:
-    post:
-      tags:
-        - user
-      summary: Create user
-      description: This can only be done by the logged in user.
-      operationId: createUser
-      requestBody:
-        description: Created user object
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/User'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/User'
-      responses:
-        default:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/User'
-  /user/createWithList:
-    post:
-      tags:
-        - user
-      summary: Creates list of users with given input array
-      description: Creates list of users with given input array
-      operationId: createUsersWithListInput
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/User'
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'          
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/User'
-        default:
-          description: successful operation
-  /user/login:
-    get:
-      tags:
-        - user
-      summary: Logs user into the system
-      description: ''
-      operationId: loginUser
-      parameters:
-        - name: username
-          in: query
-          description: The user name for login
-          required: false
-          schema:
-            type: string
-        - name: password
-          in: query
-          description: The password for login in clear text
-          required: false
-          schema:
-            type: string
-      responses:
-        '200':
-          description: successful operation
-          headers:
-            X-Rate-Limit:
-              description: calls per hour allowed by the user
-              schema:
-                type: integer
-                format: int32
-            X-Expires-After:
-              description: date in UTC when token expires
-              schema:
-                type: string
-                format: date-time
-          content:
-            application/xml:
-              schema:
-                type: string
-            application/json:
-              schema:
-                type: string
-        '400':
-          description: Invalid username/password supplied
-  /user/logout:
-    get:
-      tags:
-        - user
-      summary: Logs out current logged in user session
-      description: ''
-      operationId: logoutUser
-      parameters: []
-      responses:
-        default:
-          description: successful operation
-  /user/{username}:
-    get:
-      tags:
-        - user
-      summary: Get user by user name
-      description: ''
-      operationId: getUserByName
-      parameters:
-        - name: username
-          in: path
-          description: 'The name that needs to be fetched. Use user1 for testing. '
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'          
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/User'
-        '400':
-          description: Invalid username supplied
-        '404':
-          description: User not found
+                properties:
+                  appointment_id:
+                    type: integer
+                    description: ID of the appointment
+                  customer_name:
+                    type: string
+                    description: Name of the customer
+                  customer_email:
+                    type: string
+                    description: Email of the customer
+                  customer_phone:
+                    type: string
+                    description: Phone number of the customer
+                  start_time:
+                    type: string
+                    format: date-time
+                    description: Start time of the appointment
+                  end_time:
+                    type: string
+                    format: date-time
+                    description: End time of the appointment
+                  employee_id:
+                    type: integer
+                    description: ID of the employee
+                  service_id:
+                    type: integer
+                    description: ID of the service
+        400:
+          description: Invalid input data
+        404:
+          description: Appointment not found
+    
     put:
       tags:
-        - user
-      summary: Update user
-      description: This can only be done by the logged in user.
-      operationId: updateUser
+        - appointments
+      summary: Modify an existing appointment
+      description: Modify the details of an existing appointment, such as time, employee, and service.
       parameters:
-        - name: username
-          in: path
-          description: name that need to be deleted
+        - name: API-Version
+          in: header
           required: true
           schema:
             type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
+        - name: appointment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the appointment
       requestBody:
-        description: Update an existent user in the store
+        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/User'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/User'
+              type: object
+              properties:
+                employee_id:
+                  type: integer
+                  description: ID of the employee
+                service_id:
+                  type: integer
+                  description: ID of the service
+                start_time:
+                  type: string
+                  format: date-time
+                  description: The new start time of the appointment
+                end_time:
+                  type: string
+                  format: date-time
+                  description: The new end time of the appointment
+                customer_name:
+                  type: string
+                  description: Name of the customer
+                customer_email:
+                  type: string
+                  format: email
+                  description: Email of the customer
+                customer_phone:
+                  type: string
+                  description: Phone number of the customer
+              required:
+                - employee_id
+                - service_id
+                - start_time
+                - end_time
+                - customer_name
+                - customer_email
+                - customer_phone
       responses:
-        default:
-          description: successful operation
+        200:
+          description: Appointment updated successfully
+        400:
+          description: Invalid input data
+        404:
+          description: Appointment not found
+        
     delete:
       tags:
-        - user
-      summary: Delete user
-      description: This can only be done by the logged in user.
-      operationId: deleteUser
+        - appointments
+      summary: Cancel an existing appointment
+      description: Cancel an existing appointment by its ID.
       parameters:
-        - name: username
-          in: path
-          description: The name that needs to be deleted
+        - name: API-Version
+          in: header
           required: true
           schema:
             type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
+        - name: appointment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the appointment
       responses:
-        '400':
-          description: Invalid username supplied
-        '404':
-          description: User not found
+        204:
+          description: Appointment canceled successfully (No Content)
+        400:
+          description: Invalid input data
+        404:
+          description: Appointment not found
+          
+  # Employees for services
+          
+  /{business_id}/employees/available:
+    get:
+      tags:
+        - employees
+      summary: Get available employees for a specific time and service
+      description: Get a list of all employees who are free at a specific time and can provide a particular service.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
+        - name: time
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+            example: "2024-10-15T10:00:00Z"
+          description: The date and time when the service is requested
+        - name: service_id
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: ID of the service to be provided
+      responses:
+        200:
+          description: List of available employees
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    employee_id:
+                      type: integer
+                      description: ID of the employee
+                    employee_name:
+                      type: string
+                      description: Name of the employee
+                    
+        400:
+          description: Invalid input data
+        404:
+          description: No available employees found for the specified time and service
+  
+  /{business_id}/employees/{employee_id}/slots:
+    get:
+      tags:
+        - employees
+      summary: Get available time slots for a specific employee on a given day
+      description: Retrieve a list of available time slots for a specific employee on a specific day, based on the duration of a particular service.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
+        - name: employee_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the employee
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2024-10-15"
+          description: Date for which to retrieve available time slots
+        - name: service_id
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: ID of the service (used to calculate the duration of each time slot)
+      responses:
+        200:
+          description: List of available time slots for the employee on the specified date
+          content:
+            application/json:
+              schema:
+                type: array
+                description: List of available time slots for the employee
+                items:
+                  type: string
+                  format: date-time
+                  example: "2024-10-15T14:00:00Z"
+                  description: Available time slot
+        400:
+          description: Invalid input data
+        404:
+          description: Employee or service not found
+
+
+  /{business_id}/employees/{employee_id}/appointments:
+    get:
+      tags:
+        - employees
+      summary: Get all appointments for a specific employee on a specific day or week
+      description: Retrieve a list of all appointments for a particular employee on a specific day or the entire week if no day is specified.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
+        - name: employee_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the employee
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2024-10-15"
+          description: Date for which to retrieve the appointments. If you want the appointments for a whole week, pass the start date of the week.
+        - name: include_week
+          in: query
+          required: false
+          schema:
+            type: boolean
+            example: true
+          description: Set to `true` if you want to retrieve appointments for the entire week, starting from the provided date.
+      responses:
+        200:
+          description: List of appointments for the employee on the specified day or week
+          content:
+            application/json:
+              schema:
+                type: array
+                description: List of appointments for the employee
+                items:
+                  type: object
+                  properties:
+                    appointment_id:
+                      type: integer
+                      description: ID of the appointment
+                    customer_name:
+                      type: string
+                      description: Name of the customer
+                    service_id:
+                      type: integer
+                      description: ID of the service
+                    service_name:
+                      type: string
+                      description: Name of the service (e.g., "Haircut", "Massage")
+                    start_time:
+                      type: string
+                      format: date-time
+                      description: Start time of the appointment
+                    end_time:
+                      type: string
+                      format: date-time
+                      description: End time of the appointment
+        400:
+          description: Invalid input data
+        404:
+          description: Employee not found or no appointments available
+
+  # Category CRUD + access by category
+  /{business_id}/categories:
+    post:
+      tags:
+        - categories
+      summary: Create a new category
+      description: Add a new category for the business.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Name of the category
+      responses:
+        201:
+          description: Category created successfully
+        400:
+          description: Invalid input data
+          
+  /{business_id}/categories/{category_id}:
+    get:
+      tags:
+        - categories
+      summary: Get a specific category by ID
+      description: Retrieve details of a specific category by its ID.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
+        - name: category_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the category
+      responses:
+        200:
+          description: Category details retrieved successfully
+        400:
+          description: Invalid input
+        404:
+          description: Category not found
+      
+    put:
+      tags:
+        - categories
+      summary: Update an existing category
+      description: Modify the name or details of a category.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
+        - name: category_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: New name of the category
+      responses:
+        200:
+          description: Category updated successfully
+        400:
+          description: Invalid input data
+        404:
+          description: Category not found
+
+    delete:
+      tags:
+        - categories
+      summary: Delete a category
+      description: Remove a category by its ID.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
+        - name: category_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the category
+      responses:
+        204:
+          description: Category deleted successfully
+        400:
+          description: Invalid input data
+        404:
+          description: Category not found
+
+  /{business_id}/categories/all:
+    get:
+      tags:
+        - categories
+      summary: List all categories for a business
+      description: Retrieve a list of all categories for a business.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
+      responses:
+        200:
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                description: List of categories
+                items:
+                  type: object
+                  properties:
+                    category_id:
+                      type: integer
+                      description: ID of the category
+                    name:
+                      type: string
+                      description: Name of the category
+        400:
+          description: Invalid input
+        404:
+          description: No categories found
+  
+  /{business_id}/categories/{category_id}/services:
+    get:
+      tags:
+        - categories
+      summary: List all services for a category
+      description: Retrieve a list of all services offered by the business in a specific category.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
+        - name: category_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the category
+      responses:
+        200:
+          description: List of services for the category
+          content:
+            application/json:
+              schema:
+                type: array
+                description: List of services
+                items:
+                  type: object
+                  properties:
+                    service_id:
+                      type: integer
+                      description: ID of the service
+                    name:
+                      type: string
+                      description: Name of the service
+                    description:
+                      type: string
+                      description: Description of the service
+                    base_price:
+                      type: number
+                      format: integer
+                    service_charge:
+                      type: number
+                      format: integer
+                      description: Service charge
+                    duration_minutes:
+                      type: integer
+                      description: Duration of the service in minutes
+                    is_active:
+                      type: boolean
+                      description: Whether the service is currently active or available
+        400:
+          description: Invalid input
+        404:
+          description: No services found for the category
+
+  # TO-DO get all products by category?
+
+  # CRUD for services
+  /{business_id}/services:
+    post:
+      tags:
+        - services
+      summary: Create a new service
+      description: Add a new service for the business.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category_id:
+                  type: integer
+                  description: ID of the category the service belongs to
+                name:
+                  type: string
+                  description: Name of the service
+                description:
+                  type: string
+                  description: Detailed description of the service
+                base_price:
+                  type: number
+                  format: decimal
+                  description: Base price of the service
+                duration_minutes:
+                  type: integer
+                  description: Duration of the service in minutes
+                service_charge:
+                  type: number
+                  format: decimal
+                  description: Additional service charge
+                is_active:
+                  type: boolean
+                  description: Indicates whether the service is currently active
+      responses:
+        201:
+          description: Service created successfully
+        400:
+          description: Invalid input data
+
+  /{business_id}/services/{service_id}:
+    get:
+      tags:
+        - services
+      summary: Get a specific service by ID
+      description: Retrieve details of a specific service by its ID.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
+        - name: service_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the service
+      responses:
+        200:
+          description: Service details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  service_id:
+                    type: integer
+                    description: ID of the service
+                  category_id:
+                    type: integer
+                    description: ID of the category
+                  name:
+                    type: string
+                    description: Name of the service
+                  description:
+                    type: string
+                    description: Detailed description of the service
+                  base_price:
+                    type: number
+                    format: decimal
+                    description: Base price of the service
+                  duration_minutes:
+                    type: integer
+                    description: Duration of the service in minutes
+                  service_charge:
+                    type: number
+                    format: decimal
+                    description: Additional service charge
+                  is_active:
+                    type: boolean
+                    description: Indicates if the service is active
+                  created_at:
+                    type: string
+                    format: date-time
+                  updated_at:
+                    type: string
+                    format: date-time
+        400:
+          description: Invalid input
+        404:
+          description: Service not found
+
+    put:
+      tags:
+        - services
+      summary: Update an existing service
+      description: Modify the details of an existing service.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
+        - name: service_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the service
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category_id:
+                  type: integer
+                  description: ID of the category the service belongs to
+                name:
+                  type: string
+                  description: Name of the service
+                description:
+                  type: string
+                  description: Detailed description of the service
+                base_price:
+                  type: number
+                  format: decimal
+                  description: Base price of the service
+                duration_minutes:
+                  type: integer
+                  description: Duration of the service in minutes
+                service_charge:
+                  type: number
+                  format: decimal
+                  description: Additional service charge
+                is_active:
+                  type: boolean
+                  description: Indicates whether the service is currently active
+      responses:
+        200:
+          description: Service updated successfully
+        400:
+          description: Invalid input data
+        404:
+          description: Service not found
+          
+    delete:
+      tags:
+        - services
+      summary: Delete a service
+      description: Remove a service by its ID.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
+        - name: service_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the service
+      responses:
+        204:
+          description: Service deleted successfully (No Content)
+        400:
+          description: Invalid input data
+        404:
+          description: Service not found
+
+
+  # CRUD for product and product_variation
+  
+  /{business_id}/products:
+    post:
+      tags:
+        - products
+      summary: Create a new product
+      description: Add a new product for the business.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category_id:
+                  type: integer
+                  description: ID of the category the product belongs to
+                name:
+                  type: string
+                  description: Name of the product
+                description:
+                  type: string
+                  description: Detailed description of the product
+                base_price:
+                  type: number
+                  format: decimal
+                  description: Base price of the product
+                product_state:
+                  type: string
+                  enum: ['available', 'unavailable']
+                  description: Availability state of the product
+      responses:
+        201:
+          description: Product created successfully
+        400:
+          description: Invalid input data
+          
+  /{business_id}/products/{product_id}:
+    get:
+      tags:
+        - products
+      summary: Get a specific product by ID
+      description: Retrieve details of a specific product by its ID.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the product
+      responses:
+        200:
+          description: Product details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  product_id:
+                    type: integer
+                    description: ID of the product
+                  category_id:
+                    type: integer
+                    description: ID of the category
+                  name:
+                    type: string
+                    description: Name of the product
+                  description:
+                    type: string
+                    description: Detailed description of the product
+                  base_price:
+                    type: number
+                    format: decimal
+                    description: Base price of the product
+                  product_state:
+                    type: string
+                    enum: ['available', 'unavailable']
+                    description: Availability state of the product
+                  created_at:
+                    type: string
+                    format: date-time
+                  updated_at:
+                    type: string
+                    format: date-time
+        400:
+          description: Invalid input
+        404:
+          description: Product not found
+          
+          
+    put:
+      tags:
+        - products
+      summary: Update an existing product
+      description: Modify the details of an existing product.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category_id:
+                  type: integer
+                  description: ID of the category the product belongs to
+                name:
+                  type: string
+                  description: Name of the product
+                description:
+                  type: string
+                  description: Detailed description of the product
+                base_price:
+                  type: number
+                  format: decimal
+                  description: Base price of the product
+                product_state:
+                  type: string
+                  enum: ['available', 'unavailable']
+                  description: Availability state of the product
+      responses:
+        200:
+          description: Product updated successfully
+        400:
+          description: Invalid input data
+        404:
+          description: Product not found
+
+    delete:
+      tags:
+        - products
+      summary: Delete a product
+      description: Remove a product by its ID.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the product
+      responses:
+        204:
+          description: Product deleted successfully (No Content)
+        400:
+          description: Invalid input data
+        404:
+          description: Product not found
+
+
+  /{business_id}/products/{product_id}/variations:
+    post:
+      tags:
+        - products
+      summary: Create a new product variation
+      description: Add a new variation to a product.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Name of the variation
+                price_modifier:
+                  type: number
+                  format: decimal
+                  description: Price modifier for the variation
+                product_state:
+                  type: string
+                  enum: ['available', 'unavailable']
+                  description: Availability state of the product variation
+      responses:
+        201:
+          description: Product variation created successfully
+        400:
+          description: Invalid input data
+          
+  /{business_id}/products/{product_id}/variations/{variation_id}:
+    get:
+      tags:
+        - products
+      summary: Get a specific product variation by ID
+      description: Retrieve details of a specific product variation by its ID.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the product
+        - name: variation_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the product variation
+      responses:
+        200:
+          description: Product variation details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  variation_id:
+                    type: integer
+                    description: ID of the variation
+                  product_id:
+                    type: integer
+                    description: ID of the product
+                  name:
+                    type: string
+                    description: Name of the variation
+                  price_modifier:
+                    type: number
+                    format: decimal
+                    description: Price modifier for the variation
+                  product_state:
+                    type: string
+                    enum: ['available', 'unavailable']
+                    description: Availability state of the variation
+                  created_at:
+                    type: string
+                    format: date-time
+                  updated_at:
+                    type: string
+                    format: date-time
+        400:
+          description: Invalid input
+        404:
+          description: Product variation not found
+
+
+    put:
+      tags:
+        - products
+      summary: Update an existing product variation
+      description: Modify the details of an existing product variation.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the product
+        - name: variation_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the variation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Name of the variation
+                price_modifier:
+                  type: number
+                  format: decimal
+                  description: Price modifier for the variation
+                product_state:
+                  type: string
+                  enum: ['available', 'unavailable']
+                  description: Availability state of the variation
+      responses:
+        200:
+          description: Product variation updated successfully
+        400:
+          description: Invalid input data
+        404:
+          description: Product variation not found
+          
+          
+    delete:
+      tags:
+        - products
+      summary: Delete a product variation
+      description: Remove a product variation by its ID.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the product
+        - name: variation_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the product variation
+      responses:
+        204:
+          description: Product variation deleted successfully (No Content)
+        400:
+          description: Invalid input data
+        404:
+          description: Product variation not found
+
 components:
   schemas:
     Order:
