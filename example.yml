@@ -153,6 +153,13 @@ paths:
       tags:
         - Employee Management
       parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
         - name: business_id
           in: path
           required: true
@@ -183,6 +190,13 @@ paths:
       tags:
         - Employee Management
       parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
         - name: business_id
           in: path
           required: true
@@ -218,6 +232,13 @@ paths:
       tags:
         - Employee Management
       parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
         - name: business_id
           in: path
           required: true
@@ -252,6 +273,13 @@ paths:
       tags:
         - Employee Management
       parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
         - name: business_id
           in: path
           required: true
@@ -292,6 +320,13 @@ paths:
       tags:
         - Employee Management
       parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
         - name: business_id
           in: path
           required: true
@@ -322,6 +357,14 @@ paths:
       description: "Retrieve a list of all business owners. Accessible only by `SuperAdmin`."
       tags:
         - Business Owner Management
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
       responses:
         '200':
           description: List of business owners retrieved successfully.
@@ -345,6 +388,14 @@ paths:
       description: "Create a new business owner. Accessible only by `SuperAdmin`."
       tags:
         - Business Owner Management
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
       requestBody:
         required: true
         content:
@@ -374,6 +425,13 @@ paths:
       tags:
         - Business Owner Management
       parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
         - name: owner_id
           in: path
           required: true
@@ -402,6 +460,13 @@ paths:
       tags:
         - Business Owner Management
       parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
         - name: owner_id
           in: path
           required: true
@@ -436,6 +501,13 @@ paths:
       tags:
         - Business Owner Management
       parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
         - name: owner_id
           in: path
           required: true
