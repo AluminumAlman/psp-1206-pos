@@ -1,29 +1,251 @@
-openapi: 3.0.3
+openapi: 3.0.1
 info:
-  title: Swagger Petstore - OpenAPI 3.0
-  description: |-
-    This is a sample Pet Store Server based on the OpenAPI 3.0 specification.  You can find out more about
-    Swagger at [https://swagger.io](https://swagger.io). In the third iteration of the pet store, we've switched to the design first approach!
-    You can now help us improve the API whether it's by making changes to the definition itself or to the code.
-    That way, with time, we can improve the API in general, and expose some of the new features in OAS3.
+  title: SaaS Application - User Management API
+  description: API specification for the Shopipy system.
+  version: 1.0.0
 
-    _If you're looking for the Swagger 2.0/OAS 2.0 version of Petstore, then click [here](https://editor.swagger.io/?url=https://petstore.swagger.io/v2/swagger.yaml). Alternatively, you can load via the `Edit > Load Petstore OAS 2.0` menu option!_
-    
-    Some useful links:
-    - [The Pet Store repository](https://github.com/swagger-api/swagger-petstore)
-    - [The source API definition for the Pet Store](https://github.com/swagger-api/swagger-petstore/blob/master/src/main/resources/openapi.yaml)
-  termsOfService: http://swagger.io/terms/
-  contact:
-    email: apiteam@swagger.io
-  license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
-  version: 1.0.11
-externalDocs:
-  description: Find out more about Swagger
-  url: http://swagger.io
 servers:
-  - url: https://petstore3.swagger.io/api/v3
+  - url: https://api.example.com/v1
+    description: placeholder
+
+components:
+  schemas:
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        petId:
+          type: integer
+          format: int64
+          example: 198772
+        quantity:
+          type: integer
+          format: int32
+          example: 7
+        shipDate:
+          type: string
+          format: date-time
+        status:
+          type: string
+          description: Order Status
+          example: approved
+          enum:
+            - placed
+            - approved
+            - delivered
+        complete:
+          type: boolean
+      xml:
+        name: order
+    Customer:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 100000
+        username:
+          type: string
+          example: fehguy
+        address:
+          type: array
+          xml:
+            name: addresses
+            wrapped: true
+          items:
+            $ref: '#/components/schemas/Address'
+      xml:
+        name: customer
+    Address:
+      type: object
+      properties:
+        street:
+          type: string
+          example: 437 Lytton
+        city:
+          type: string
+          example: Palo Alto
+        state:
+          type: string
+          example: CA
+        zip:
+          type: string
+          example: '94301'
+      xml:
+        name: address
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: Dogs
+      xml:
+        name: category
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        username:
+          type: string
+          example: theUser
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: James
+        email:
+          type: string
+          example: john@email.com
+        password:
+          type: string
+          example: '12345'
+        phone:
+          type: string
+          example: '12345'
+        userStatus:
+          type: integer
+          description: User Status
+          format: int32
+          example: 1
+      xml:
+        name: user
+    Employee:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          description: ID of the employee.
+        business_id:
+          type: integer
+          description: ID of the business the employee belongs to.
+        email:
+          type: string
+          format: email
+          example: "jane.doe@example.com"
+        role:
+          type: string
+          enum: [Employee]
+          description: Role of the user in the business.
+          example: "Employee"
+        name:
+          type: string
+          description: Name of the employee.
+          example: "Jane Doe"
+        phone:
+          type: string
+          description: Phone number of the employee.
+          example: "+1234567890"
+        user_state:
+          type: string
+          enum: [Active, Inactive]
+          description: Current state of the employee.
+          example: "Active"
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the employee was created.
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp when the employee was last updated.
+
+    BusinessOwner:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          description: ID of the business owner.
+        business_id:
+          type: integer
+          description: ID of the business they own.
+        email:
+          type: string
+          format: email
+          example: "owner@example.com"
+        role:
+          type: string
+          enum: [Owner]
+          description: Role of the user in the business.
+          example: "Owner"
+        name:
+          type: string
+          description: Name of the business owner.
+          example: "John Smith"
+        phone:
+          type: string
+          description: Phone number of the business owner.
+          example: "+9876543210"
+        user_state:
+          type: string
+          enum: [Active, Inactive]
+          description: Current state of the business owner.
+          example: "Active"
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the business owner was created.
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp when the business owner was last updated.
+
+    CreateUserRequest:
+      type: object
+      required:
+        - email
+        - password
+        - name
+      properties:
+        email:
+          type: string
+          format: email
+          example: "john.doe@example.com"
+        password:
+          type: string
+          example: "Password123!"
+        name:
+          type: string
+          example: "John Doe"
+        phone:
+          type: string
+          example: "+1234567890"
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: "john.doe@example.com"
+        name:
+          type: string
+          example: "John Doe"
+        phone:
+          type: string
+          example: "+1234567890"
+        user_state:
+          type: string
+          enum: [Active, Inactive]
+          example: "Active"
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Unauthorized"
+
 tags:
   - name: appointments
     description: CRUD for appointments
@@ -37,10 +259,9 @@ tags:
     description: CRUD for products
   - name: product variations
     description: CRUD for product variations
+
 paths:
-
-# Appointments
-
+  # Appointments
   /{business_id}/appointments:
     post:
       tags:
@@ -1356,206 +1577,410 @@ paths:
         404:
           description: Product variation not found
 
-components:
-  schemas:
-    Order:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          example: 10
-        petId:
-          type: integer
-          format: int64
-          example: 198772
-        quantity:
-          type: integer
-          format: int32
-          example: 7
-        shipDate:
-          type: string
-          format: date-time
-        status:
-          type: string
-          description: Order Status
-          example: approved
-          enum:
-            - placed
-            - approved
-            - delivered
-        complete:
-          type: boolean
-      xml:
-        name: order
-    Customer:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          example: 100000
-        username:
-          type: string
-          example: fehguy
-        address:
-          type: array
-          xml:
-            name: addresses
-            wrapped: true
-          items:
-            $ref: '#/components/schemas/Address'
-      xml:
-        name: customer
-    Address:
-      type: object
-      properties:
-        street:
-          type: string
-          example: 437 Lytton
-        city:
-          type: string
-          example: Palo Alto
-        state:
-          type: string
-          example: CA
-        zip:
-          type: string
-          example: '94301'
-      xml:
-        name: address
-    Category:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          example: 1
-        name:
-          type: string
-          example: Dogs
-      xml:
-        name: category
-    User:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          example: 10
-        username:
-          type: string
-          example: theUser
-        firstName:
-          type: string
-          example: John
-        lastName:
-          type: string
-          example: James
-        email:
-          type: string
-          example: john@email.com
-        password:
-          type: string
-          example: '12345'
-        phone:
-          type: string
-          example: '12345'
-        userStatus:
-          type: integer
-          description: User Status
-          format: int32
-          example: 1
-      xml:
-        name: user
-    Tag:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-      xml:
-        name: tag
-    Pet:
-      required:
-        - name
-        - photoUrls
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          example: 10
-        name:
-          type: string
-          example: doggie
-        category:
-          $ref: '#/components/schemas/Category'
-        photoUrls:
-          type: array
-          xml:
-            wrapped: true
-          items:
+  /{business_id}/employees:
+    get:
+      summary: Get a list of all employees in a business.
+      description: "Retrieve a list of all employees for a given business. Accessible by `Business Owner` and `SuperAdmin`."
+      tags:
+        - Employee Management
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
             type: string
-            xml:
-              name: photoUrl
-        tags:
-          type: array
-          xml:
-            wrapped: true
-          items:
-            $ref: '#/components/schemas/Tag'
-        status:
-          type: string
-          description: pet status in the store
-          enum:
-            - available
-            - pending
-            - sold
-      xml:
-        name: pet
-    ApiResponse:
-      type: object
-      properties:
-        code:
-          type: integer
-          format: int32
-        type:
-          type: string
-        message:
-          type: string
-      xml:
-        name: '##default'
-  requestBodies:
-    Pet:
-      description: Pet object that needs to be added to the store
-      content:
-        application/json:
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
           schema:
-            $ref: '#/components/schemas/Pet'
-        application/xml:
+            type: integer
+          description: ID of the business.
+      responses:
+        '200':
+          description: List of employees retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Employee'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No employees found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Create a new employee for a business.
+      description: "Create a new employee under a specified business. Accessible by `Business Owner` and `SuperAdmin`."
+      tags:
+        - Employee Management
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
           schema:
-            $ref: '#/components/schemas/Pet'
-    UserArray:
-      description: List of user object
-      content:
-        application/json:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
           schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/User'
-  securitySchemes:
-    petstore_auth:
-      type: oauth2
-      flows:
-        implicit:
-          authorizationUrl: https://petstore3.swagger.io/oauth/authorize
-          scopes:
-            write:pets: modify pets in your account
-            read:pets: read your pets
-    api_key:
-      type: apiKey
-      name: api_key
-      in: header
+            type: integer
+          description: ID of the business.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: Employee created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /{business_id}/employees/{employee_id}:
+    get:
+      summary: Get employee details by ID.
+      description: "Retrieve detailed information of an employee by ID. Accessible by `Business Owner` and `SuperAdmin`."
+      tags:
+        - Employee Management
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business.
+        - name: employee_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the employee.
+      responses:
+        '200':
+          description: Employee details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Employee not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update employee details.
+      description: "Update details of an employee by ID. Accessible by `Business Owner` and `SuperAdmin`."
+      tags:
+        - Employee Management
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business.
+        - name: employee_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the employee.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: Employee updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Employee not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Delete an employee.
+      description: "Delete an employee from a business. Accessible by `Business Owner` and `SuperAdmin`."
+      tags:
+        - Employee Management
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business.
+        - name: employee_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the employee to be deleted.
+      responses:
+        '204':
+          description: Employee deleted successfully.
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Employee not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /business_owners:
+    get:
+      summary: Get a list of all business owners.
+      description: "Retrieve a list of all business owners. Accessible only by `SuperAdmin`."
+      tags:
+        - Business Owner Management
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+      responses:
+        '200':
+          description: List of business owners retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BusinessOwner'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: No business owners found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Create a new business owner.
+      description: "Create a new business owner. Accessible only by `SuperAdmin`."
+      tags:
+        - Business Owner Management
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: Business owner created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessOwner'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /business_owners/{owner_id}:
+    get:
+      summary: Get business owner details by ID.
+      description: "Retrieve detailed information of a business owner by ID. Accessible only by `SuperAdmin`."
+      tags:
+        - Business Owner Management
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: owner_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business owner.
+      responses:
+        '200':
+          description: Business owner details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessOwner'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Business owner not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Update business owner details.
+      description: "Update details of a business owner by ID. Accessible only by `SuperAdmin`."
+      tags:
+        - Business Owner Management
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: owner_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business owner.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: Business owner updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessOwner'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Business owner not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Delete a business owner.
+      description: "Delete a business owner. Accessible only by `SuperAdmin`."
+      tags:
+        - Business Owner Management
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: owner_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business owner to be deleted.
+      responses:
+        '204':
+          description: Business owner deleted successfully.
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Business owner not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
