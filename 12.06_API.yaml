@@ -2052,12 +2052,19 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
                 
   
-  /taxes:
+  /{business_id}/taxes:
     post:
       tags:
         - taxes
       summary: Create a new tax
-      description: Add a new tax entry to the system.
+      description: Add a new tax entry to the system for a specific business.
+      parameters:
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
       requestBody:
         required: true
         content:
@@ -2078,13 +2085,19 @@ paths:
         400:
           description: Invalid input data
 
-  /taxes/{tax_id}:
+  /{business_id}/taxes/{tax_id}:
     get:
       tags:
         - taxes
       summary: Get a specific tax by ID
-      description: Retrieve details of a specific tax entry by its ID.
+      description: Retrieve details of a specific tax entry by its ID for a specific business.
       parameters:
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
         - name: tax_id
           in: path
           required: true
@@ -2119,13 +2132,19 @@ paths:
           description: Invalid input
         404:
           description: Tax not found
-    
+
     put:
       tags:
         - taxes
       summary: Update an existing tax
-      description: Modify the details of an existing tax entry.
+      description: Modify the details of an existing tax entry for a business.
       parameters:
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
         - name: tax_id
           in: path
           required: true
@@ -2158,8 +2177,14 @@ paths:
       tags:
         - taxes
       summary: Delete a tax entry
-      description: Remove a tax entry by its ID.
+      description: Remove a tax entry by its ID for a specific business.
       parameters:
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
         - name: tax_id
           in: path
           required: true
@@ -2175,12 +2200,19 @@ paths:
           description: Tax not found
           
           
-  /discounts:
+  /{business_id}/discounts:
     post:
       tags:
         - discounts
       summary: Create a new discount
-      description: Add a new discount to the system.
+      description: Add a new discount to the system for a specific business.
+      parameters:
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
       requestBody:
         required: true
         content:
@@ -2216,13 +2248,19 @@ paths:
         400:
           description: Invalid input data
 
-  /discounts/{discount_id}:
+  /{business_id}/discounts/{discount_id}:
     get:
       tags:
         - discounts
       summary: Get a specific discount by ID
-      description: Retrieve details of a specific discount entry by its ID.
+      description: Retrieve details of a specific discount entry by its ID for a specific business.
       parameters:
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
         - name: discount_id
           in: path
           required: true
@@ -2270,14 +2308,20 @@ paths:
           description: Invalid input
         404:
           description: Discount not found
-          
+
           
     put:
       tags:
         - discounts
       summary: Update an existing discount
-      description: Modify the details of an existing discount entry.
+      description: Modify the details of an existing discount entry for a business.
       parameters:
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
         - name: discount_id
           in: path
           required: true
@@ -2325,8 +2369,14 @@ paths:
       tags:
         - discounts
       summary: Delete a discount entry
-      description: Remove a discount entry by its ID.
+      description: Remove a discount entry by its ID for a specific business.
       parameters:
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
         - name: discount_id
           in: path
           required: true
