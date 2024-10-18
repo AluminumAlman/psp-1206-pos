@@ -257,8 +257,10 @@ tags:
     description: CRUD for services
   - name: products
     description: CRUD for products
-  - name: product variations
-    description: CRUD for product variations
+  - name: taxes
+    description: CRUD for tax rates
+  - name: discounts
+    description: CRUD for discounts
 
 paths:
   # Appointments
@@ -925,7 +927,71 @@ paths:
         404:
           description: No services found for the category
 
-  # TO-DO get all products by category?
+  /{business_id}/categories/{category_id}/products:
+    get:
+      tags:
+        - categories
+      summary: List all products for a category
+      description: Retrieve a list of all products offered by the business in a specific category.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
+        - name: category_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the category
+      responses:
+        200:
+          description: List of products for the category
+          content:
+            application/json:
+              schema:
+                type: array
+                description: List of products
+                items:
+                  type: object
+                  properties:
+                    product_id:
+                      type: integer
+                      description: ID of the product
+                    name:
+                      type: string
+                      description: Name of the product
+                    description:
+                      type: string
+                      description: Detailed description of the product
+                    base_price:
+                      type: number
+                      format: decimal
+                      description: Base price of the product
+                    product_state:
+                      type: string
+                      enum: ['available', 'unavailable']
+                      description: Availability state of the product
+                    created_at:
+                      type: string
+                      format: date-time
+                    updated_at:
+                      type: string
+                      format: date-time
+        400:
+          description: Invalid input data
+        404:
+          description: No products found for the specified category
+
 
   # CRUD for services
   /{business_id}/services:
@@ -1984,3 +2050,293 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+                
+  
+  /taxes:
+    post:
+      tags:
+        - taxes
+      summary: Create a new tax
+      description: Add a new tax entry to the system.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Name of the tax (e.g., VAT, Sales Tax)
+                rate:
+                  type: number
+                  format: decimal
+                  description: Tax rate (e.g., 0.05 for 5%)
+      responses:
+        201:
+          description: Tax created successfully
+        400:
+          description: Invalid input data
+
+  /taxes/{tax_id}:
+    get:
+      tags:
+        - taxes
+      summary: Get a specific tax by ID
+      description: Retrieve details of a specific tax entry by its ID.
+      parameters:
+        - name: tax_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the tax entry
+      responses:
+        200:
+          description: Tax details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tax_id:
+                    type: integer
+                    description: ID of the tax
+                  name:
+                    type: string
+                    description: Name of the tax
+                  rate:
+                    type: number
+                    format: decimal
+                    description: Tax rate (e.g., 0.05 for 5%)
+                  created_at:
+                    type: string
+                    format: date-time
+                  updated_at:
+                    type: string
+                    format: date-time
+        400:
+          description: Invalid input
+        404:
+          description: Tax not found
+    
+    put:
+      tags:
+        - taxes
+      summary: Update an existing tax
+      description: Modify the details of an existing tax entry.
+      parameters:
+        - name: tax_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the tax entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: New name for the tax
+                rate:
+                  type: number
+                  format: decimal
+                  description: New tax rate (e.g., 0.05 for 5%)
+      responses:
+        200:
+          description: Tax updated successfully
+        400:
+          description: Invalid input data
+        404:
+          description: Tax not found
+          
+    delete:
+      tags:
+        - taxes
+      summary: Delete a tax entry
+      description: Remove a tax entry by its ID.
+      parameters:
+        - name: tax_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the tax entry
+      responses:
+        204:
+          description: Tax deleted successfully (No Content)
+        400:
+          description: Invalid input data
+        404:
+          description: Tax not found
+          
+          
+  /discounts:
+    post:
+      tags:
+        - discounts
+      summary: Create a new discount
+      description: Add a new discount to the system.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Name of the discount (e.g., "Holiday Sale")
+                description:
+                  type: string
+                  description: A detailed description of the discount
+                discount_value:
+                  type: number
+                  format: decimal
+                  description: Value of the discount (e.g., 10 or 0.10)
+                discount_type:
+                  type: string
+                  enum: ['fixed', 'percentage']
+                  description: Type of discount (fixed amount or percentage)
+                valid_from:
+                  type: string
+                  format: date
+                  description: The start date when the discount becomes active
+                valid_to:
+                  type: string
+                  format: date
+                  description: The end date when the discount is no longer valid
+      responses:
+        201:
+          description: Discount created successfully
+        400:
+          description: Invalid input data
+
+  /discounts/{discount_id}:
+    get:
+      tags:
+        - discounts
+      summary: Get a specific discount by ID
+      description: Retrieve details of a specific discount entry by its ID.
+      parameters:
+        - name: discount_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the discount
+      responses:
+        200:
+          description: Discount details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  discount_id:
+                    type: integer
+                    description: ID of the discount
+                  name:
+                    type: string
+                    description: Name of the discount
+                  description:
+                    type: string
+                    description: Detailed description of the discount
+                  discount_value:
+                    type: number
+                    format: decimal
+                    description: Discount amount or percentage
+                  discount_type:
+                    type: string
+                    enum: ['fixed', 'percentage']
+                    description: Type of the discount
+                  valid_from:
+                    type: string
+                    format: date
+                  valid_to:
+                    type: string
+                    format: date
+                  created_at:
+                    type: string
+                    format: date-time
+                  updated_at:
+                    type: string
+                    format: date-time
+        400:
+          description: Invalid input
+        404:
+          description: Discount not found
+          
+          
+    put:
+      tags:
+        - discounts
+      summary: Update an existing discount
+      description: Modify the details of an existing discount entry.
+      parameters:
+        - name: discount_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the discount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Name of the discount
+                description:
+                  type: string
+                  description: A detailed description of the discount
+                discount_value:
+                  type: number
+                  format: decimal
+                  description: Value of the discount (e.g., 10 or 0.10)
+                discount_type:
+                  type: string
+                  enum: ['fixed', 'percentage']
+                  description: Type of discount (fixed amount or percentage)
+                valid_from:
+                  type: string
+                  format: date
+                  description: The start date when the discount becomes active
+                valid_to:
+                  type: string
+                  format: date
+                  description: The end date when the discount is no longer valid
+      responses:
+        200:
+          description: Discount updated successfully
+        400:
+          description: Invalid input data
+        404:
+          description: Discount not found
+          
+    delete:
+      tags:
+        - discounts
+      summary: Delete a discount entry
+      description: Remove a discount entry by its ID.
+      parameters:
+        - name: discount_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the discount
+      responses:
+        204:
+          description: Discount deleted successfully (No Content)
+        400:
+          description: Invalid input data
+        404:
+          description: Discount not found
