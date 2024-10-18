@@ -1157,6 +1157,101 @@ paths:
           description: Invalid input data or order cannot be paid (already closed or canceled).
         404:
           description: Order not found.
+  /{business_id}/orders/{order_id}/receipt:
+    get:
+      tags:
+        - orders
+      summary: Get the receipt for an order
+      description: Retrieve the receipt for a closed order, including all costs, taxes, discounts, and service charges calculated and presented.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business.
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the order.
+      responses:
+        '200':
+          description: Receipt retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Receipt'
+        '400':
+          description: Invalid input data.
+        '404':
+          description: Order not found.
+        '409':
+          description: Order is not closed yet.
+  /{business_id}/orders/{order_id}/refund:
+    post:
+      tags:
+        - orders
+      summary: Refund a closed order
+      description: Allows a business to refund a closed order and mark it as refunded.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business.
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the order to refund.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refund_reason:
+                  type: string
+                  description: Reason for the refund.
+      responses:
+        200:
+          description: Order refunded successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  order_id:
+                    type: integer
+                  order_status:
+                    type: string
+                    enum: [open, closed, canceled, refunded]
+                  refunded_at:
+                    type: string
+                    format: date-time
+        400:
+          description: Invalid input data or order cannot be refunded (e.g., already refunded).
+        404:
+          description: Order not found.
 
   # Category CRUD + access by category
   /{business_id}/categories:
