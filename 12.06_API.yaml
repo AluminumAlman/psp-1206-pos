@@ -2810,19 +2810,29 @@ paths:
                 discount_value:
                   type: number
                   format: decimal
-                  description: Value of the discount (e.g., 10 or 0.10)
+                  description: Value of the discount (e.g., 10 for a flat discount or 0.10 for 10%)
                 discount_type:
                   type: string
                   enum: ['fixed', 'percentage']
                   description: Type of discount (fixed amount or percentage)
                 valid_from:
                   type: string
-                  format: date
-                  description: The start date when the discount becomes active
+                  format: date-time
+                  description: The start date and time when the discount becomes active
                 valid_to:
                   type: string
-                  format: date
-                  description: The end date when the discount is no longer valid
+                  format: date-time
+                  description: The end date and time when the discount is no longer valid
+                is_active:
+                  type: boolean
+                  description: Specifies whether the discount is currently active
+                target_type:
+                  type: string
+                  enum: ['product', 'product_variation', 'service', 'order']
+                  description: Type of entity the discount applies to (e.g., product, service, or order)
+                target_id:
+                  type: integer
+                  description: ID of the product, service, or product variation this discount applies to. If target_type is 'order', set this to null.
       responses:
         201:
           description: Discount created successfully
@@ -2872,19 +2882,33 @@ paths:
                   discount_type:
                     type: string
                     enum: ['fixed', 'percentage']
-                    description: Type of the discount
+                    description: Type of the discount (fixed or percentage)
                   valid_from:
                     type: string
-                    format: date
+                    format: date-time
+                    description: The start date and time when the discount is valid
                   valid_to:
                     type: string
-                    format: date
+                    format: date-time
+                    description: The end date and time when the discount is valid
+                  is_active:
+                    type: boolean
+                    description: Whether the discount is currently active
+                  target_type:
+                    type: string
+                    enum: ['product', 'product_variation', 'service', 'order']
+                    description: The type of entity this discount applies to (e.g., product, service, or order)
+                  target_id:
+                    type: integer
+                    description: ID of the target entity (e.g., product, service, or product variation). If the discount applies to the entire order, this value will be `null`.
                   created_at:
                     type: string
                     format: date-time
+                    description: Timestamp when the discount was created
                   updated_at:
                     type: string
                     format: date-time
+                    description: Timestamp when the discount was last updated
         400:
           description: Invalid input
         404:
@@ -2932,12 +2956,22 @@ paths:
                   description: Type of discount (fixed amount or percentage)
                 valid_from:
                   type: string
-                  format: date
-                  description: The start date when the discount becomes active
+                  format: date-time
+                  description: The start date and time when the discount becomes active
                 valid_to:
                   type: string
-                  format: date
-                  description: The end date when the discount is no longer valid
+                  format: date-time
+                  description: The end date and time when the discount is no longer valid
+                is_active:
+                  type: boolean
+                  description: Specifies whether the discount is currently active
+                target_type:
+                  type: string
+                  enum: ['product', 'product_variation', 'service', 'order']
+                  description: Type of entity the discount applies to (e.g., product, service, or order)
+                target_id:
+                  type: integer
+                  description: ID of the product, service, or product variation this discount applies to. If `target_type` is 'order', this value is `null`.
       responses:
         200:
           description: Discount updated successfully
