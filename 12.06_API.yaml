@@ -294,6 +294,196 @@ components:
           format: date-time
           description: Timestamp when the business owner was last updated.
 
+    Tax:
+      type: object
+      properties:
+        tax_id:
+          type: integer
+          description: ID of the tax
+        name:
+          type: string
+          description: Name of the tax
+        rate:
+          type: number
+          format: decimal
+          description: Tax rate (e.g., 0.05 for 5%)
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Discount:
+      type: object
+      properties:
+        discount_id:
+          type: integer
+          description: ID of the discount
+        name:
+          type: string
+          description: Name of the discount
+        description:
+          type: string
+          description: Detailed description of the discount
+        discount_value:
+          type: number
+          format: decimal
+          description: Discount amount or percentage
+        discount_type:
+          type: string
+          enum: ['fixed', 'percentage']
+          description: Type of the discount (fixed or percentage)
+        valid_from:
+          type: string
+          format: date-time
+          description: The start date and time when the discount is valid
+        valid_to:
+          type: string
+          format: date-time
+          description: The end date and time when the discount is valid
+        is_active:
+          type: boolean
+          description: Whether the discount is currently active
+        target_type:
+          type: string
+          enum: ['product', 'product_variation', 'service', 'order']
+          description: The type of entity this discount applies to (e.g., product, service, or order)
+        target_id:
+          type: integer
+          description: ID of the target entity (e.g., product, service, or product variation). If the discount applies to the entire order, this value will be `null`.
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the discount was created
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp when the discount was last updated
+
+    Product:
+      type: object
+      properties:
+        product_id:
+          type: integer
+          description: ID of the product
+        category_id:
+          type: integer
+          description: ID of the category
+        name:
+          type: string
+          description: Name of the product
+        description:
+          type: string
+          description: Detailed description of the product
+        base_price:
+          type: number
+          format: decimal
+          description: Base price of the product
+        product_state:
+          type: string
+          enum: ['available', 'unavailable']
+          description: Availability state of the product
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Product_Variation:
+      type: object
+      properties:
+        variation_id:
+          type: integer
+          description: ID of the variation
+        product_id:
+          type: integer
+          description: ID of the product
+        name:
+          type: string
+          description: Name of the variation
+        price_modifier:
+          type: number
+          format: decimal
+          description: Price modifier for the variation
+        product_state:
+          type: string
+          enum: ['available', 'unavailable']
+          description: Availability state of the variation
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Service:
+      type: object
+      properties:
+        service_id:
+          type: integer
+          description: ID of the service
+        category_id:
+          type: integer
+          description: ID of the category
+        name:
+          type: string
+          description: Name of the service
+        description:
+          type: string
+          description: Detailed description of the service
+        base_price:
+          type: number
+          format: decimal
+          description: Base price of the service
+        duration_minutes:
+          type: integer
+          description: Duration of the service in minutes
+        service_charge:
+          type: number
+          format: decimal
+          description: Additional service charge
+        is_active:
+          type: boolean
+          description: Indicates if the service is active
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Appointment:
+      type: object
+      properties:
+        appointment_id:
+          type: integer
+          description: ID of the appointment
+        customer_name:
+          type: string
+          description: Name of the customer
+        customer_email:
+          type: string
+          description: Email of the customer
+        customer_phone:
+          type: string
+          description: Phone number of the customer
+        start_time:
+          type: string
+          format: date-time
+          description: Start time of the appointment
+        end_time:
+          type: string
+          format: date-time
+          description: End time of the appointment
+        employee_id:
+          type: integer
+          description: ID of the employee
+        service_id:
+          type: integer
+          description: ID of the service
+
     CreateUserRequest:
       type: object
       required:
@@ -436,34 +626,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  appointment_id:
-                    type: integer
-                    description: ID of the appointment
-                  customer_name:
-                    type: string
-                    description: Name of the customer
-                  customer_email:
-                    type: string
-                    description: Email of the customer
-                  customer_phone:
-                    type: string
-                    description: Phone number of the customer
-                  start_time:
-                    type: string
-                    format: date-time
-                    description: Start time of the appointment
-                  end_time:
-                    type: string
-                    format: date-time
-                    description: End time of the appointment
-                  employee_id:
-                    type: integer
-                    description: ID of the employee
-                  service_id:
-                    type: integer
-                    description: ID of the service
+                $ref: '#/components/schemas/Appointment'
         400:
           description: Invalid input data
         404:
@@ -1835,40 +1998,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  service_id:
-                    type: integer
-                    description: ID of the service
-                  category_id:
-                    type: integer
-                    description: ID of the category
-                  name:
-                    type: string
-                    description: Name of the service
-                  description:
-                    type: string
-                    description: Detailed description of the service
-                  base_price:
-                    type: number
-                    format: decimal
-                    description: Base price of the service
-                  duration_minutes:
-                    type: integer
-                    description: Duration of the service in minutes
-                  service_charge:
-                    type: number
-                    format: decimal
-                    description: Additional service charge
-                  is_active:
-                    type: boolean
-                    description: Indicates if the service is active
-                  created_at:
-                    type: string
-                    format: date-time
-                  updated_at:
-                    type: string
-                    format: date-time
+                $ref: '#/components/schemas/Service'
         400:
           description: Invalid input
         404:
@@ -2055,34 +2185,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  product_id:
-                    type: integer
-                    description: ID of the product
-                  category_id:
-                    type: integer
-                    description: ID of the category
-                  name:
-                    type: string
-                    description: Name of the product
-                  description:
-                    type: string
-                    description: Detailed description of the product
-                  base_price:
-                    type: number
-                    format: decimal
-                    description: Base price of the product
-                  product_state:
-                    type: string
-                    enum: ['available', 'unavailable']
-                    description: Availability state of the product
-                  created_at:
-                    type: string
-                    format: date-time
-                  updated_at:
-                    type: string
-                    format: date-time
+                 $ref: '#/components/schemas/Product'
         400:
           description: Invalid input
         404:
@@ -2268,31 +2371,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  variation_id:
-                    type: integer
-                    description: ID of the variation
-                  product_id:
-                    type: integer
-                    description: ID of the product
-                  name:
-                    type: string
-                    description: Name of the variation
-                  price_modifier:
-                    type: number
-                    format: decimal
-                    description: Price modifier for the variation
-                  product_state:
-                    type: string
-                    enum: ['available', 'unavailable']
-                    description: Availability state of the variation
-                  created_at:
-                    type: string
-                    format: date-time
-                  updated_at:
-                    type: string
-                    format: date-time
+                $ref: '#/components/schemas/Product_Variation'
         400:
           description: Invalid input
         404:
@@ -2877,24 +2956,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  tax_id:
-                    type: integer
-                    description: ID of the tax
-                  name:
-                    type: string
-                    description: Name of the tax
-                  rate:
-                    type: number
-                    format: decimal
-                    description: Tax rate (e.g., 0.05 for 5%)
-                  created_at:
-                    type: string
-                    format: date-time
-                  updated_at:
-                    type: string
-                    format: date-time
+                $ref: '#/components/schemas/Tax'
         400:
           description: Invalid input
         404:
@@ -3078,51 +3140,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  discount_id:
-                    type: integer
-                    description: ID of the discount
-                  name:
-                    type: string
-                    description: Name of the discount
-                  description:
-                    type: string
-                    description: Detailed description of the discount
-                  discount_value:
-                    type: number
-                    format: decimal
-                    description: Discount amount or percentage
-                  discount_type:
-                    type: string
-                    enum: ['fixed', 'percentage']
-                    description: Type of the discount (fixed or percentage)
-                  valid_from:
-                    type: string
-                    format: date-time
-                    description: The start date and time when the discount is valid
-                  valid_to:
-                    type: string
-                    format: date-time
-                    description: The end date and time when the discount is valid
-                  is_active:
-                    type: boolean
-                    description: Whether the discount is currently active
-                  target_type:
-                    type: string
-                    enum: ['product', 'product_variation', 'service', 'order']
-                    description: The type of entity this discount applies to (e.g., product, service, or order)
-                  target_id:
-                    type: integer
-                    description: ID of the target entity (e.g., product, service, or product variation). If the discount applies to the entire order, this value will be `null`.
-                  created_at:
-                    type: string
-                    format: date-time
-                    description: Timestamp when the discount was created
-                  updated_at:
-                    type: string
-                    format: date-time
-                    description: Timestamp when the discount was last updated
+                $ref: '#/components/schemas/Discount'
         400:
           description: Invalid input
         404:
