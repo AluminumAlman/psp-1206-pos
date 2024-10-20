@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: SaaS Application - User Management API
-  description: API specification for the Shopipy system.
+  description: API specification for the Shopipy system. Unless explicitly specified all endpoints are accessible by all user roles (`Employee`, `Business Owner`, `SuperAdmin`)
   version: 1.0.0
 
 servers:
@@ -1434,7 +1434,7 @@ paths:
       tags:
         - categories
       summary: Create a new category
-      description: Add a new category for the business.
+      description: Add a new category for the business. Accessible by `Business Owner` and `SuperAdmin`.
       parameters:
         - name: API-Version
           in: header
@@ -1544,7 +1544,7 @@ paths:
       tags:
         - categories
       summary: Update an existing category
-      description: Modify the name or details of a category.
+      description: Modify the name or details of a category. Accessible by `Business Owner` and `SuperAdmin`.
       parameters:
         - name: API-Version
           in: header
@@ -1587,7 +1587,7 @@ paths:
       tags:
         - categories
       summary: Delete a category
-      description: Remove a category by its ID.
+      description: Remove a category by its ID. Accessible by `Business Owner` and `SuperAdmin`.
       parameters:
         - name: API-Version
           in: header
@@ -1752,7 +1752,7 @@ paths:
       tags:
         - services
       summary: Create a new service
-      description: Add a new service for the business.
+      description: Add a new service for the business. Accessible by `Business Owner` and `SuperAdmin`.
       parameters:
         - name: API-Version
           in: header
@@ -1878,7 +1878,7 @@ paths:
       tags:
         - services
       summary: Update an existing service
-      description: Modify the details of an existing service.
+      description: Modify the details of an existing service. Accessible by `Business Owner` and `SuperAdmin`.
       parameters:
         - name: API-Version
           in: header
@@ -1941,7 +1941,7 @@ paths:
       tags:
         - services
       summary: Delete a service
-      description: Remove a service by its ID.
+      description: Remove a service by its ID. Accessible by `Business Owner` and `SuperAdmin`.
       parameters:
         - name: API-Version
           in: header
@@ -1978,7 +1978,7 @@ paths:
       tags:
         - products
       summary: Create a new product
-      description: Add a new product for the business.
+      description: Add a new product for the business. Accessible by `Business Owner` and `SuperAdmin`.
       parameters:
         - name: API-Version
           in: header
@@ -2093,7 +2093,7 @@ paths:
       tags:
         - products
       summary: Update an existing product
-      description: Modify the details of an existing product.
+      description: Modify the details of an existing product. Accessible by `Business Owner` and `SuperAdmin`.
       parameters:
         - name: API-Version
           in: header
@@ -2150,7 +2150,7 @@ paths:
       tags:
         - products
       summary: Delete a product
-      description: Remove a product by its ID.
+      description: Remove a product by its ID. Accessible by `Business Owner` and `SuperAdmin`.
       parameters:
         - name: API-Version
           in: header
@@ -2185,7 +2185,7 @@ paths:
       tags:
         - products
       summary: Create a new product variation
-      description: Add a new variation to a product.
+      description: Add a new variation to a product. Accessible by `Business Owner` and `SuperAdmin`.
       parameters:
         - name: API-Version
           in: header
@@ -2303,7 +2303,7 @@ paths:
       tags:
         - products
       summary: Update an existing product variation
-      description: Modify the details of an existing product variation.
+      description: Modify the details of an existing product variation. Accessible by `Business Owner` and `SuperAdmin`.
       parameters:
         - name: API-Version
           in: header
@@ -2361,7 +2361,7 @@ paths:
       tags:
         - products
       summary: Delete a product variation
-      description: Remove a product variation by its ID.
+      description: Remove a product variation by its ID. Accessible by `Business Owner` and `SuperAdmin`.
       parameters:
         - name: API-Version
           in: header
@@ -2810,7 +2810,7 @@ paths:
       tags:
         - taxes
       summary: Create a new tax
-      description: Add a new tax entry to the system for a specific business.
+      description: Add a new tax entry to the system for a specific business. Accessible by `Business Owner` and `SuperAdmin`.
       parameters:
         - name: API-Version
           in: header
@@ -2904,7 +2904,7 @@ paths:
       tags:
         - taxes
       summary: Update an existing tax
-      description: Modify the details of an existing tax entry for a business.
+      description: Modify the details of an existing tax entry for a business. Accessible by `Business Owner` and `SuperAdmin`.
       parameters:
         - name: API-Version
           in: header
@@ -2951,7 +2951,7 @@ paths:
       tags:
         - taxes
       summary: Delete a tax entry
-      description: Remove a tax entry by its ID for a specific business.
+      description: Remove a tax entry by its ID for a specific business. Accessible by `Business Owner` and `SuperAdmin`.
       parameters:
         - name: API-Version
           in: header
