@@ -481,93 +481,6 @@ paths:
           description: Appointment not found
           
   # Employees for services
-  /{business_id}/employees/orders:
-    post:
-      tags:
-        - employees
-      summary: Create a new order by an employee
-      description: Allows an employee to create a new order.
-      parameters:
-        - name: API-Version
-          in: header
-          required: true
-          schema:
-            type: string
-            example: "1.0"
-          description: Version of the API to use.
-        - name: business_id
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: ID of the business.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                order_items:
-                  type: array
-                  description: List of items to be included in the order.
-                  items:
-                    type: object
-                    properties:
-                      product_id:
-                        type: integer
-                        description: ID of the product (if applicable).
-                      service_id:
-                        type: integer
-                        description: ID of the service (if applicable).
-                      variation_id:
-                        type: integer
-                        description: ID of the product variation (if applicable).
-                      quantity:
-                        type: integer
-                        description: Quantity of the item.
-                        example: 2
-                      unit_price:
-                        type: number
-                        format: float
-                        description: Price per unit.
-                        example: 19.99
-                      discount_id:
-                        type: integer
-                        description: ID of the discount applied (if any).
-                      tax_rate_id:
-                        type: integer
-                        description: ID of the tax rate applied.
-              required:
-                - order_items
-      responses:
-        201:
-          description: Order created successfully.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  order_id:
-                    type: integer
-                    description: ID of the created order.
-                  order_status:
-                    type: string
-                    enum: [open, closed, canceled]
-                    description: Status of the order.
-                  total_amount:
-                    type: number
-                    format: float
-                    description: Total amount of the order.
-                  created_at:
-                    type: string
-                    format: date-time
-                    description: Timestamp when the order was created.
-        400:
-          description: Invalid input data.
-        404:
-          description: Employee or Business not found.
-
   /{business_id}/employees/available:
     get:
       tags:
@@ -761,6 +674,184 @@ paths:
           description: Employee not found or no appointments available
 
   # Orders
+  /{business_id}/orders:
+    get:
+      tags:
+        - orders
+      summary: Get a list of orders
+      description: Gets a list of all currently open orders.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business.
+      responses:
+        200:
+          description: Orders successfully retrieved.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    order_id:
+                      type: integer
+                      description: ID of the order.
+                    business_id:
+                      type: integer
+                      description: ID of the business.
+                    employee_id:
+                      type: integer
+                      description: ID of the employee who created the order.
+                    order_status:
+                      type: string
+                      enum: [open, closed, canceled]
+                      description: Status of the order.
+                    total_discount:
+                      type: number
+                      format: float
+                      description: Total discount applied to the order.
+                    total_tip:
+                      type: number
+                      format: float
+                      description: Total tip added to the order.
+                    created_at:
+                      type: string
+                      format: date-time
+                      description: Timestamp when the order was created.
+                    closed_at:
+                      type: string
+                      format: date-time
+                      description: Timestamp when the order was closed (if applicable).
+                    order_items:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          order_item_id:
+                            type: integer
+                            description: ID of the order item.
+                          product_id:
+                            type: integer
+                            description: ID of the product (if applicable).
+                          service_id:
+                            type: integer
+                            description: ID of the service (if applicable).
+                          variation_id:
+                            type: integer
+                            description: ID of the product variation (if applicable).
+                          quantity:
+                            type: integer
+                            description: Quantity of the item.
+                          unit_price:
+                            type: number
+                            format: float
+                            description: Price per unit.
+                          tax_rate_id:
+                            type: integer
+                            description: ID of the tax rate applied.
+                          discount_id:
+                            type: integer
+                            description: ID of the discount applied (if any).
+        404:
+          description: Business not found.
+    post:
+      tags:
+        - orders
+      summary: Create a new order
+      description: Creates a new order.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                order_items:
+                  type: array
+                  description: List of items to be included in the order.
+                  items:
+                    type: object
+                    properties:
+                      product_id:
+                        type: integer
+                        description: ID of the product (if applicable).
+                      service_id:
+                        type: integer
+                        description: ID of the service (if applicable).
+                      variation_id:
+                        type: integer
+                        description: ID of the product variation (if applicable).
+                      quantity:
+                        type: integer
+                        description: Quantity of the item.
+                        example: 2
+                      unit_price:
+                        type: number
+                        format: float
+                        description: Price per unit.
+                        example: 19.99
+                      discount_id:
+                        type: integer
+                        description: ID of the discount applied (if any).
+                      tax_rate_id:
+                        type: integer
+                        description: ID of the tax rate applied.
+                employee_id:
+                  type: integer
+                  description: ID of the employee to fulfil the order
+      responses:
+        201:
+          description: Order created successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  order_id:
+                    type: integer
+                    description: ID of the created order.
+                  order_status:
+                    type: string
+                    enum: [open, closed, canceled]
+                    description: Status of the order.
+                  total_amount:
+                    type: number
+                    format: float
+                    description: Total amount of the order.
+                  created_at:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the order was created.
+        400:
+          description: Invalid input data.
+        404:
+          description: Employee or Business not found.
+
   /{business_id}/orders/{order_id}:
     get:
       tags:
