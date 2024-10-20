@@ -1465,6 +1465,47 @@ paths:
         400:
           description: Invalid input data
           
+    get:
+      tags:
+        - categories
+      summary: List all categories for a business
+      description: Retrieve a list of all categories for a business.
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business
+      responses:
+        200:
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                description: List of categories
+                items:
+                  type: object
+                  properties:
+                    category_id:
+                      type: integer
+                      description: ID of the category
+                    name:
+                      type: string
+                      description: Name of the category
+        400:
+          description: Invalid input
+        404:
+          description: No categories found
+          
   /{business_id}/categories/{category_id}:
     get:
       tags:
@@ -1574,48 +1615,6 @@ paths:
           description: Invalid input data
         404:
           description: Category not found
-
-  /{business_id}/categories/all:
-    get:
-      tags:
-        - categories
-      summary: List all categories for a business
-      description: Retrieve a list of all categories for a business.
-      parameters:
-        - name: API-Version
-          in: header
-          required: true
-          schema:
-            type: string
-            example: "1.0"
-          description: Version of the API to use.
-        - name: business_id
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: ID of the business
-      responses:
-        200:
-          description: List of categories
-          content:
-            application/json:
-              schema:
-                type: array
-                description: List of categories
-                items:
-                  type: object
-                  properties:
-                    category_id:
-                      type: integer
-                      description: ID of the category
-                    name:
-                      type: string
-                      description: Name of the category
-        400:
-          description: Invalid input
-        404:
-          description: No categories found
   
   /{business_id}/categories/{category_id}/services:
     get:
