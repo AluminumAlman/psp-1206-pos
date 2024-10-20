@@ -760,9 +760,6 @@ paths:
                           tax_rate_id:
                             type: integer
                             description: ID of the tax rate applied.
-                          discount_id:
-                            type: integer
-                            description: ID of the discount applied (if any).
         404:
           description: Business not found.
     post:
@@ -815,9 +812,6 @@ paths:
                         format: float
                         description: Price per unit.
                         example: 19.99
-                      discount_id:
-                        type: integer
-                        description: ID of the discount applied (if any).
                       tax_rate_id:
                         type: integer
                         description: ID of the tax rate applied.
@@ -942,9 +936,6 @@ paths:
                         tax_rate_id:
                           type: integer
                           description: ID of the tax rate applied.
-                        discount_id:
-                          type: integer
-                          description: ID of the discount applied (if any).
         404:
           description: Order not found.
     put:
@@ -1006,9 +997,6 @@ paths:
                         format: float
                         description: Price per unit.
                         example: 29.99
-                      discount_id:
-                        type: integer
-                        description: ID of the discount applied (if any).
                       tax_rate_id:
                         type: integer
                         description: ID of the tax rate applied.
