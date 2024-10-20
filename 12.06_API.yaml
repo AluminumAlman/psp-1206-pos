@@ -2640,6 +2640,13 @@ paths:
       summary: Create a new tax
       description: Add a new tax entry to the system for a specific business.
       parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
         - name: business_id
           in: path
           required: true
@@ -2673,6 +2680,13 @@ paths:
       summary: Get a specific tax by ID
       description: Retrieve details of a specific tax entry by its ID for a specific business.
       parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
         - name: business_id
           in: path
           required: true
@@ -2720,6 +2734,13 @@ paths:
       summary: Update an existing tax
       description: Modify the details of an existing tax entry for a business.
       parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
         - name: business_id
           in: path
           required: true
@@ -2760,6 +2781,13 @@ paths:
       summary: Delete a tax entry
       description: Remove a tax entry by its ID for a specific business.
       parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
         - name: business_id
           in: path
           required: true
@@ -2788,6 +2816,13 @@ paths:
       summary: Create a new discount
       description: Add a new discount to the system for a specific business.
       parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
         - name: business_id
           in: path
           required: true
@@ -2846,6 +2881,13 @@ paths:
       summary: Get a specific discount by ID
       description: Retrieve details of a specific discount entry by its ID for a specific business.
       parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
         - name: business_id
           in: path
           required: true
@@ -2921,6 +2963,13 @@ paths:
       summary: Update an existing discount
       description: Modify the details of an existing discount entry for a business.
       parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
         - name: business_id
           in: path
           required: true
@@ -2986,6 +3035,13 @@ paths:
       summary: Delete a discount entry
       description: Remove a discount entry by its ID for a specific business.
       parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
         - name: business_id
           in: path
           required: true
