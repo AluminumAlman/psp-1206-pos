@@ -3251,3 +3251,240 @@ paths:
           description: Invalid input data
         404:
           description: Discount not found
+
+  /{business_id}/orders/{order_id}/payments/split:
+    post:
+      summary: Split an order into multiple payments.
+      description: "Allows splitting an open order into multiple payments. Each payment can be completed with different payment methods (cash, card, gift card, etc.)."
+      tags:
+        - Order Management
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business.
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the order.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                payments:
+                  type: array
+                  description: "List of payments to split the order."
+                  items:
+                    type: object
+                    properties:
+                      amount:
+                        type: number
+                        format: float
+                        description: "The amount for this payment."
+                      payment_method:
+                        type: string
+                        description: "Method used for payment (e.g., cash, card, gift card)."
+      responses:
+        '200':
+          description: "Order split into multiple payments successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Order split successfully."
+        '400':
+          description: "Invalid input or order cannot be split."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: "Order not found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            
+  /{business_id}/appointments/sms:
+    post:
+      summary: Create a new appointment and send an SMS notification.
+      description: "Create a new appointment and optionally send an SMS notification to the customer using an external SMS service."
+      tags:
+        - Appointment Management
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                employee_id:
+                  type: integer
+                service_id:
+                  type: integer
+                customer_name:
+                  type: string
+                customer_email:
+                  type: string
+                customer_phone:
+                  type: string
+                start_time:
+                  type: string
+                  format: date-time
+                send_sms_notification:
+                  type: boolean
+                  description: "If true, an SMS will be sent to the customer's phone number using AWS SNS or another service."
+                  example: true
+      responses:
+        '201':
+          description: "Appointment created successfully, SMS notification sent if requested."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Appointment created. SMS notification sent."
+        '400':
+          description: "Invalid input data."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+                
+  /merchants:
+    post:
+      summary: Create a new merchant/business.
+      description: "Create a new merchant/business and assign an owner user to it."
+      tags:
+        - Merchant Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                owner_user_id:
+                  type: integer
+                  description: "ID of the user who will own this business."
+                business_name:
+                  type: string
+                  description: "Name of the business."
+                business_address:
+                  type: string
+                  description: "Address of the business."
+                business_phone:
+                  type: string
+                  description: "Contact phone number of the business."
+                business_email:
+                  type: string
+                  format: email
+                  description: "Contact email of the business."
+      responses:
+        '201':
+          description: "Merchant created successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Merchant created successfully."
+        '400':
+          description: "Invalid input data."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+                
+  /merchants/{business_id}:
+    get:
+      summary: Get business details.
+      description: "Get details of a specific merchant/business by its ID."
+      tags:
+        - Merchant Management
+      parameters:
+        - name: API-Version
+          in: header
+          required: true
+          schema:
+            type: string
+            example: "1.0"
+          description: Version of the API to use.
+        - name: business_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID of the business.
+      responses:
+        '200':
+          description: "Business details fetched successfully."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessOwner'
+        '404':
+          description: "Business not found."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: "Unauthorized access."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
