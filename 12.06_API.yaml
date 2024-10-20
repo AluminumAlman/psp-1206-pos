@@ -40,6 +40,100 @@ components:
           type: boolean
       xml:
         name: order
+    Receipt:
+      type: object
+      properties:
+        payment_id:
+          type: integer
+          format: int64
+          description: Unique identifier for the payment
+          example: 12345
+        order_id:
+          type: integer
+          format: int64
+          description: Associated order ID
+          example: 10
+        payment_method:
+          type: string
+          description: Payment method used for the transaction
+          enum:
+            - Card
+            - Cash
+          example: "Cash"
+        tip_amount:
+          type: number
+          format: double
+          description: Tip added to the total
+          example: 15.00
+        total_discount:
+          type: number
+          format: double
+          description: Total discount applied to the order
+          example: 10.00
+        tax_amount:
+          type: number
+          format: double
+          description: Total taxes applied to the order
+          example: 8.00
+        service_charge:
+          type: number
+          format: double
+          description: Service charge added to the order
+          example: 5.00
+        total_amount:
+          type: number
+          format: double
+          description: Final total amount after all discounts, tips, taxes, and service charges
+          example: 138.00
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              item_id:
+                type: integer
+                format: int64
+                example: 101
+              item_type:
+                type: string
+                enum:
+                  - Product
+                  - Service
+                example: "Product"
+              name:
+                type: string
+                example: "Burger"
+              quantity:
+                type: integer
+                example: 1
+              unit_price:
+                type: number
+                format: double
+                example: 50.00
+              discount_amount:
+                type: number
+                format: double
+                description: Discount applied to this item
+                example: 5.00
+              tax_amount:
+                type: number
+                format: double
+                example: 3.00
+              total_price:
+                type: number
+                format: double
+                description: Total price for this item after discount and taxes
+                example: 48.00
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-10-20T14:30:00Z"
+        closed_at:
+          type: string
+          format: date-time
+          example: "2024-10-20T14:30:00Z"
+      xml:
+        name: receipt
     Customer:
       type: object
       properties:
