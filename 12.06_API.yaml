@@ -1805,7 +1805,7 @@ paths:
                 properties:
                   name:
                    type: string
-                   description: New name of the category
+                   description: Name of the category
         400:
           description: Invalid input
         404:
