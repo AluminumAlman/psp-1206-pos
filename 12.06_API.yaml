@@ -1798,6 +1798,14 @@ paths:
       responses:
         200:
           description: Category details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                   type: string
+                   description: New name of the category
         400:
           description: Invalid input
         404:
@@ -1938,6 +1946,9 @@ paths:
                     is_active:
                       type: boolean
                       description: Whether the service is currently active or available
+                    service_amount:
+                      type: integer
+                      description: Amount of services in a category
         400:
           description: Invalid input
         404:
@@ -2003,6 +2014,9 @@ paths:
                     updated_at:
                       type: string
                       format: date-time
+                    product_amount:
+                      type: integer
+                      description: Amount of products in a category
         400:
           description: Invalid input data
         404:
