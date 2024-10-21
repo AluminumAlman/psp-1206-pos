@@ -10,36 +10,63 @@ servers:
 
 components:
   schemas:
-    Order:
+    CreateAppointmentRequest:
       type: object
       properties:
-        id:
+        employee_id:
           type: integer
-          format: int64
-          example: 10
-        petId:
+        service_id:
           type: integer
-          format: int64
-          example: 198772
-        quantity:
-          type: integer
-          format: int32
-          example: 7
-        shipDate:
+        customer_name:
+          type: string
+        customer_email:
+          type: string
+        customer_phone:
+          type: string
+        start_time:
           type: string
           format: date-time
-        status:
-          type: string
-          description: Order Status
-          example: approved
-          enum:
-            - placed
-            - approved
-            - delivered
-        complete:
+        send_sms_notification:
           type: boolean
-      xml:
-        name: order
+          description: "If true, an SMS will be sent to the customer's phone number using AWS SNS or another service."
+          example: true
+  
+    UpdateAppointmentRequest:
+      type: object
+      properties:
+        employee_id:
+          type: integer
+          description: ID of the employee
+        service_id:
+          type: integer
+          description: ID of the service
+        start_time:
+          type: string
+          format: date-time
+          description: The new start time of the appointment
+        end_time:
+          type: string
+          format: date-time
+          description: The new end time of the appointment
+        customer_name:
+          type: string
+          description: Name of the customer
+        customer_email:
+          type: string
+          format: email
+          description: Email of the customer
+        customer_phone:
+          type: string
+          description: Phone number of the customer
+          required:
+            - employee_id
+            - service_id
+            - start_time
+            - end_time
+            - customer_name
+            - customer_email
+            - customer_phone
+  
     Receipt:
       type: object
       properties:
@@ -134,86 +161,7 @@ components:
           example: "2024-10-20T14:30:00Z"
       xml:
         name: receipt
-    Customer:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          example: 100000
-        username:
-          type: string
-          example: fehguy
-        address:
-          type: array
-          xml:
-            name: addresses
-            wrapped: true
-          items:
-            $ref: '#/components/schemas/Address'
-      xml:
-        name: customer
-    Address:
-      type: object
-      properties:
-        street:
-          type: string
-          example: 437 Lytton
-        city:
-          type: string
-          example: Palo Alto
-        state:
-          type: string
-          example: CA
-        zip:
-          type: string
-          example: '94301'
-      xml:
-        name: address
-    Category:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          example: 1
-        name:
-          type: string
-          example: Dogs
-      xml:
-        name: category
-    User:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          example: 10
-        username:
-          type: string
-          example: theUser
-        firstName:
-          type: string
-          example: John
-        lastName:
-          type: string
-          example: James
-        email:
-          type: string
-          example: john@email.com
-        password:
-          type: string
-          example: '12345'
-        phone:
-          type: string
-          example: '12345'
-        userStatus:
-          type: integer
-          description: User Status
-          format: int32
-          example: 1
-      xml:
-        name: user
+
     Employee:
       type: object
       properties:
@@ -681,25 +629,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                employee_id:
-                  type: integer
-                service_id:
-                  type: integer
-                customer_name:
-                  type: string
-                customer_email:
-                  type: string
-                customer_phone:
-                  type: string
-                start_time:
-                  type: string
-                  format: date-time
-                send_sms_notification:
-                  type: boolean
-                  description: "If true, an SMS will be sent to the customer's phone number using AWS SNS or another service."
-                  example: true
+              $ref: '#/components/schemas/CreateAppointmentRequest'
       responses:
         '201':
           description: "Appointment created successfully, SMS notification sent if requested."
@@ -792,40 +722,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                employee_id:
-                  type: integer
-                  description: ID of the employee
-                service_id:
-                  type: integer
-                  description: ID of the service
-                start_time:
-                  type: string
-                  format: date-time
-                  description: The new start time of the appointment
-                end_time:
-                  type: string
-                  format: date-time
-                  description: The new end time of the appointment
-                customer_name:
-                  type: string
-                  description: Name of the customer
-                customer_email:
-                  type: string
-                  format: email
-                  description: Email of the customer
-                customer_phone:
-                  type: string
-                  description: Phone number of the customer
-              required:
-                - employee_id
-                - service_id
-                - start_time
-                - end_time
-                - customer_name
-                - customer_email
-                - customer_phone
+              $ref: '#/components/schemas/UpdateAppointmentRequest'
       responses:
         200:
           description: Appointment updated successfully
