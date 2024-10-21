@@ -254,63 +254,6 @@ components:
           format: date-time
           description: Timestamp when the employee was last updated.
 
-    BusinessAndOwner:
-      type: object
-      properties:
-        user_id:
-          type: integer
-          description: ID of the business owner.
-        business_id:
-          type: integer
-          description: ID of the business they own.
-        business_type:
-          type: string
-          enum: [Store]
-          description: Business type.
-          example: "Store"
-        business_name:
-          type: string
-          description: Name of the business.
-          example: "Microsoft"
-        business_address:
-          type: string
-          description: Address of the business.
-          example: "Didlaukio g. 47, Vilnius, Lithuania"
-        business_vat_number:
-          type: string
-          description: VAT number of the business.
-          example: "LT100000000000"
-        email:
-          type: string
-          format: email
-          example: "owner@example.com"
-        role:
-          type: string
-          enum: [Owner]
-          description: Role of the user in the business.
-          example: "Owner"
-        name:
-          type: string
-          description: Name of the business owner.
-          example: "John Smith"
-        phone:
-          type: string
-          description: Phone number of the business owner.
-          example: "+9876543210"
-        user_state:
-          type: string
-          enum: [Active, Inactive]
-          description: Current state of the business owner.
-          example: "Active"
-        created_at:
-          type: string
-          format: date-time
-          description: Timestamp when the business owner was created.
-        updated_at:
-          type: string
-          format: date-time
-          description: Timestamp when the business owner was last updated.
-
     Tax:
       type: object
       properties:
@@ -522,58 +465,6 @@ components:
           type: string
           example: "+1234567890"
 
-    CreateBusinessAndOwnerRequest:
-      type: object
-      required:
-        - email
-        - name
-        - business_name
-        - business_address
-        - business_vat_number
-      properties:
-        email:
-          type: string
-          format: email
-          example: "owner@example.com"
-        name:
-          type: string
-          description: Name of the business owner.
-          example: "John Smith"
-        phone:
-          type: string
-          description: Phone number of the business owner.
-          example: "+9876543210"
-        business_name:
-          type: string
-          description: Name of the business.
-          example: "Microsoft"
-        business_address:
-          type: string
-          description: Address of the business.
-          example: "Didlaukio g. 47, Vilnius, Lithuania"
-        business_vat_number:
-          type: string
-          description: VAT number of the business.
-          example: "LT100000000000"
-
-    UpdateUserRequest:
-      type: object
-      properties:
-        email:
-          type: string
-          format: email
-          example: "john.doe@example.com"
-        name:
-          type: string
-          example: "John Doe"
-        phone:
-          type: string
-          example: "+1234567890"
-        user_state:
-          type: string
-          enum: [Active, Inactive]
-          example: "Active"
-
     UpdateBusinessAndOwnerRequest:
       type: object
       properties:
@@ -601,6 +492,144 @@ components:
           type: string
           description: VAT number of the business.
           example: "LT100000000000"
+        business_email:
+          type: string
+          format: email
+          description: Business email address.
+          example: "contact@microsoft.com"
+        business_phone:
+          type: string
+          description: Business phone number.
+          example: "+1234567890"
+    
+    CreateBusinessAndOwnerRequest:
+      type: object
+      required:
+        - email
+        - name
+        - business_name
+        - business_address
+        - business_vat_number
+        - business_email
+        - business_phone
+      properties:
+        email:
+          type: string
+          format: email
+          example: "owner@example.com"
+        name:
+          type: string
+          description: Name of the business owner.
+          example: "John Smith"
+        phone:
+          type: string
+          description: Phone number of the business owner.
+          example: "+9876543210"
+        business_name:
+          type: string
+          description: Name of the business.
+          example: "Microsoft"
+        business_address:
+          type: string
+          description: Address of the business.
+          example: "Didlaukio g. 47, Vilnius, Lithuania"
+        business_vat_number:
+          type: string
+          description: VAT number of the business.
+          example: "LT100000000000"
+        business_email:
+          type: string
+          format: email
+          description: Business email address.
+          example: "contact@microsoft.com"
+        business_phone:
+          type: string
+          description: Business phone number.
+          example: "+1234567890"
+    
+    BusinessAndOwner:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          description: ID of the business owner.
+        business_id:
+          type: integer
+          description: ID of the business they own.
+        business_type:
+          type: string
+          enum: [Store]
+          description: Business type.
+          example: "Store"
+        business_name:
+          type: string
+          description: Name of the business.
+          example: "Microsoft"
+        business_address:
+          type: string
+          description: Address of the business.
+          example: "Didlaukio g. 47, Vilnius, Lithuania"
+        business_vat_number:
+          type: string
+          description: VAT number of the business.
+          example: "LT100000000000"
+        business_email:
+          type: string
+          format: email
+          description: Business email address.
+          example: "contact@microsoft.com"
+        business_phone:
+          type: string
+          description: Business phone number.
+          example: "+1234567890"
+        email:
+          type: string
+          format: email
+          example: "owner@example.com"
+        role:
+          type: string
+          enum: [Owner]
+          description: Role of the user in the business.
+          example: "Owner"
+        name:
+          type: string
+          description: Name of the business owner.
+          example: "John Smith"
+        phone:
+          type: string
+          description: Phone number of the business owner.
+          example: "+9876543210"
+        user_state:
+          type: string
+          enum: [Active, Inactive]
+          description: Current state of the business owner.
+          example: "Active"
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the business owner was created.
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp when the business owner was last updated.
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: "john.doe@example.com"
+        name:
+          type: string
+          example: "John Doe"
+        phone:
+          type: string
+          example: "+1234567890"
+        user_state:
+          type: string
+          enum: [Active, Inactive]
+          example: "Active"
 
     ErrorResponse:
       type: object
