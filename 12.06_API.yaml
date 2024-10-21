@@ -254,7 +254,7 @@ components:
           format: date-time
           description: Timestamp when the employee was last updated.
 
-    BusinessOwner:
+    BusinessAndOwner:
       type: object
       properties:
         user_id:
@@ -263,6 +263,23 @@ components:
         business_id:
           type: integer
           description: ID of the business they own.
+        business_type:
+          type: string
+          enum: [Store]
+          description: Business type.
+          example: "Store"
+        business_name:
+          type: string
+          description: Name of the business.
+          example: "Microsoft"
+        business_address:
+          type: string
+          description: Address of the business.
+          example: "Didlaukio g. 47, Vilnius, Lithuania"
+        business_vat_number:
+          type: string
+          description: VAT number of the business.
+          example: "LT100000000000"
         email:
           type: string
           format: email
@@ -505,6 +522,40 @@ components:
           type: string
           example: "+1234567890"
 
+    CreateBusinessAndOwnerRequest:
+      type: object
+      required:
+        - email
+        - name
+        - business_name
+        - business_address
+        - business_vat_number
+      properties:
+        email:
+          type: string
+          format: email
+          example: "owner@example.com"
+        name:
+          type: string
+          description: Name of the business owner.
+          example: "John Smith"
+        phone:
+          type: string
+          description: Phone number of the business owner.
+          example: "+9876543210"
+        business_name:
+          type: string
+          description: Name of the business.
+          example: "Microsoft"
+        business_address:
+          type: string
+          description: Address of the business.
+          example: "Didlaukio g. 47, Vilnius, Lithuania"
+        business_vat_number:
+          type: string
+          description: VAT number of the business.
+          example: "LT100000000000"
+
     UpdateUserRequest:
       type: object
       properties:
@@ -522,6 +573,34 @@ components:
           type: string
           enum: [Active, Inactive]
           example: "Active"
+
+    UpdateBusinessAndOwnerRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: "owner@example.com"
+        name:
+          type: string
+          description: Name of the business owner.
+          example: "John Smith"
+        phone:
+          type: string
+          description: Phone number of the business owner.
+          example: "+9876543210"
+        business_name:
+          type: string
+          description: Name of the business.
+          example: "Microsoft"
+        business_address:
+          type: string
+          description: Address of the business.
+          example: "Didlaukio g. 47, Vilnius, Lithuania"
+        business_vat_number:
+          type: string
+          description: VAT number of the business.
+          example: "LT100000000000"
 
     ErrorResponse:
       type: object
@@ -2810,10 +2889,10 @@ paths:
 
   /business_owners:
     get:
-      summary: Get a list of all business owners.
-      description: "Retrieve a list of all business owners. Accessible only by `SuperAdmin`."
+      summary: Get a list of all businesses and owners.
+      description: "Retrieve a list of all businesses and owners. Accessible only by `SuperAdmin`."
       tags:
-        - Business Owner Management
+        - Business And Owner Management
       parameters:
         - name: API-Version
           in: header
@@ -2830,7 +2909,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/BusinessOwner'
+                  $ref: '#/components/schemas/BusinessAndOwner'
         '401':
           description: Unauthorized
           content:
@@ -2845,10 +2924,10 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
     post:
-      summary: Create a new business owner.
-      description: "Create a new business owner. Accessible only by `SuperAdmin`."
+      summary: Create a new business and owner.
+      description: "Create a new business and owner. Accessible only by `SuperAdmin`."
       tags:
-        - Business Owner Management
+        - Business And Owner Management
       parameters:
         - name: API-Version
           in: header
@@ -2862,14 +2941,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateUserRequest'
+              $ref: '#/components/schemas/CreateBusinessAndOwnerRequest'
       responses:
         '201':
           description: Business owner created successfully.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BusinessOwner'
+                $ref: '#/components/schemas/BusinessAndOwner'
         '401':
           description: Unauthorized
           content:
@@ -2879,10 +2958,10 @@ paths:
 
   /business_owners/{owner_id}:
     get:
-      summary: Get business owner details by ID.
-      description: "Retrieve detailed information of a business owner by ID. Accessible only by `SuperAdmin`."
+      summary: Get business and owner details by ID.
+      description: "Retrieve detailed information of a business and owner by ID. Accessible only by `SuperAdmin`."
       tags:
-        - Business Owner Management
+        - Business And Owner Management
       parameters:
         - name: API-Version
           in: header
@@ -2903,7 +2982,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BusinessOwner'
+                $ref: '#/components/schemas/BusinessAndOwner'
         '401':
           description: Unauthorized
           content:
@@ -2918,10 +2997,10 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
     put:
-      summary: Update business owner details.
-      description: "Update details of a business owner by ID. Accessible only by `SuperAdmin`."
+      summary: Update business and owner details.
+      description: "Update details of a business and owner by ID. Accessible only by `SuperAdmin`."
       tags:
-        - Business Owner Management
+        - Business And Owner Management
       parameters:
         - name: API-Version
           in: header
@@ -2941,14 +3020,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateUserRequest'
+              $ref: '#/components/schemas/UpdateBusinessAndOwnerRequest'
       responses:
         '200':
           description: Business owner updated successfully.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BusinessOwner'
+                $ref: '#/components/schemas/BusinessAndOwner'
         '401':
           description: Unauthorized
           content:
@@ -2963,10 +3042,10 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
     delete:
-      summary: Delete a business owner.
-      description: "Delete a business owner. Accessible only by `SuperAdmin`."
+      summary: Delete a business and owner.
+      description: "Delete a business and owner. Accessible only by `SuperAdmin`."
       tags:
-        - Business Owner Management
+        - Business And Owner Management
       parameters:
         - name: API-Version
           in: header
