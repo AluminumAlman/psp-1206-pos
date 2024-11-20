@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.List;
 
 @Getter
 @Setter
@@ -41,6 +43,17 @@ public class Merchant {
     @Column(name = "postcode", length = 20)
     private String postcode;
 
+    @OneToMany(mappedBy = "merchant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Discount> discounts;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private java.time.LocalDateTime createdAt = java.time.LocalDateTime.now();
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PreUpdate
+    public void setUpdatedAt() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }
