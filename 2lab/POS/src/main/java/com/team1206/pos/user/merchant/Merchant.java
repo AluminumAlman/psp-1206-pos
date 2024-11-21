@@ -1,6 +1,7 @@
 package com.team1206.pos.user.merchant;
 
 import com.team1206.pos.payments.discount.Discount;
+import com.team1206.pos.user.user.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -47,8 +48,11 @@ public class Merchant {
     @OneToMany(mappedBy = "merchant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Discount> discounts;
 
+    @OneToMany(mappedBy = "merchant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<User> users;
+
     @Column(name = "created_at", nullable = false, updatable = false)
-    private java.time.LocalDateTime createdAt = java.time.LocalDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
