@@ -1,10 +1,12 @@
 package com.team1206.pos.user.user;
 
+import com.team1206.pos.service.service.Service;
 import com.team1206.pos.user.merchant.Merchant;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -41,6 +43,10 @@ public class User {
     @Column(name = "role", nullable = false, length = 40)
     @Enumerated(EnumType.STRING)
     private List<Role> roles;
+
+    @ManyToMany
+    @JoinTable(name = "services_users", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "service_id"))
+    private List<Service> services;
 
     @ManyToOne
     @JoinColumn(name = "merchant_id")

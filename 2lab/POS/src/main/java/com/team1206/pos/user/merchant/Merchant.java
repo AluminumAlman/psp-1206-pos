@@ -1,6 +1,7 @@
 package com.team1206.pos.user.merchant;
 
 import com.team1206.pos.payments.discount.Discount;
+import com.team1206.pos.service.service.Service;
 import com.team1206.pos.user.user.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -51,6 +52,9 @@ public class Merchant {
     @OneToMany(mappedBy = "merchant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<User> users;
 
+    @OneToMany(mappedBy = "merchant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Service> services;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -61,4 +65,5 @@ public class Merchant {
     public void setUpdatedAt() {
         this.updatedAt = LocalDateTime.now();
     }
+
 }
