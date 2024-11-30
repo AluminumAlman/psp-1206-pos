@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -28,7 +27,7 @@ public class Service {
     private Integer price;
 
     @Column(name = "duration", nullable = false)
-    private Duration duration;
+    private Long duration;
 
     @ManyToMany(mappedBy = "services")
     private List<User> users;
