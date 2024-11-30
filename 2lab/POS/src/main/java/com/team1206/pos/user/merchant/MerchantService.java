@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 //TODO issiaiskint ar verta daryt interface
+// Man atrodo turi buti klase (viskas yra gerai)
 @Service
 public class MerchantService {
     private final MerchantRepository merchantRepository;

@@ -1,5 +1,6 @@
 package com.team1206.pos.user.merchant;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -14,7 +15,7 @@ public class MerchantController {
     }
 
     @PostMapping
-    public ResponseEntity<MerchantResponseDTO> createMerchant(@RequestBody MerchantRequestDTO request) {
+    public ResponseEntity<MerchantResponseDTO> createMerchant(@Valid @RequestBody MerchantRequestDTO request) {
         MerchantResponseDTO createdMerchant = merchantService.createMerchant(request);
         return ResponseEntity.ok(createdMerchant);
     }
