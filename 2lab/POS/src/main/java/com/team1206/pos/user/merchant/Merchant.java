@@ -1,6 +1,7 @@
 package com.team1206.pos.user.merchant;
 
 import com.team1206.pos.inventory.productCategory.ProductCategory;
+import com.team1206.pos.payments.charge.Charge;
 import com.team1206.pos.payments.discount.Discount;
 import com.team1206.pos.service.service.Service;
 import com.team1206.pos.user.user.User;
@@ -55,6 +56,9 @@ public class Merchant {
 
     @OneToMany(mappedBy = "merchant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Service> services;
+
+    @OneToMany(mappedBy = "merchant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Charge> charges;
 
     @OneToMany(mappedBy = "merchant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductCategory> productCategories;
