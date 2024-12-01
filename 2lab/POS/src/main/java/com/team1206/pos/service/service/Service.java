@@ -29,7 +29,8 @@ public class Service {
     @Column(name = "duration", nullable = false)
     private Long duration;
 
-    @ManyToMany(mappedBy = "services")
+    @ManyToMany
+    @JoinTable(name = "services_users", joinColumns = @JoinColumn(name = "service_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
     private List<User> users;
 
     @ManyToOne

@@ -3,7 +3,7 @@ CREATE TABLE service
     id          UUID         NOT NULL,
     name        VARCHAR(255) NOT NULL,
     price       INTEGER      NOT NULL,
-    duration    NUMERIC      NOT NULL,
+    duration    BIGINT       NOT NULL,
     merchant_id UUID         NOT NULL,
     created_at  TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     CONSTRAINT pk_service PRIMARY KEY (id)

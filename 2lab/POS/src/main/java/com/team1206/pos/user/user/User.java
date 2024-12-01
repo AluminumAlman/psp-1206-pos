@@ -44,8 +44,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private List<Role> roles;
 
-    @ManyToMany
-    @JoinTable(name = "services_users", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "service_id"))
+    @ManyToMany(mappedBy = "users")
     private List<Service> services;
 
     @ManyToOne
