@@ -36,4 +36,11 @@ public class MerchantController {
         MerchantResponseDTO retrievedMerchant = merchantService.getMerchantById(merchantId);
         return ResponseEntity.ok(retrievedMerchant);
     }
+
+    @DeleteMapping("{merchantId}")
+    @Operation( summary = "Delete merchant by ID" )
+    public ResponseEntity<Void> deleteMerchant(@PathVariable UUID merchantId) {
+        merchantService.deleteMerchantById(merchantId);
+        return ResponseEntity.noContent().build();
+    }
 }

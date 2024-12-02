@@ -2,7 +2,9 @@ package com.team1206.pos.user.merchant;
 
 import com.team1206.pos.exceptions.MerchantNotFoundException;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -45,6 +47,20 @@ public class MerchantService {
         return merchantRepository.findById(id)
                 .map(this::mapToResponseDTO)
                 .orElseThrow(() -> new MerchantNotFoundException(id.toString()));
+    }
+
+    // Delete merchant by ID
+    public void deleteMerchantById(UUID id) {
+        Optional<Merchant> merchant = merchantRepository.findById(id);
+        if (merchant.isPresent()) {
+            try {
+                merchantRepository.deleteById(id);
+            } catch (Exception e) {
+                throw new RuntimeException("An error occurred while deleting the merchant.", e);
+            }
+        } else {
+            throw new MerchantNotFoundException(id.toString());
+        }
     }
 
     // Map Merchant entity to Response DTO
