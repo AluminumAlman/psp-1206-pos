@@ -1,38 +1,47 @@
-package com.team1206.pos.inventory.inventory;
+package com.team1206.pos.orderItem;
 
-import com.team1206.pos.inventory.inventoryLog.InventoryLog;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.inventory.productVariation.ProductVariation;
+import com.team1206.pos.order.Order;
+import com.team1206.pos.service.service.Service;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Getter
 @Setter
 @Entity
-public class Inventory {
+public class OrderItem {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID) // Auto-generate UUID
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
-    @OneToOne
-    @JoinColumn(name = "product", nullable = true)
-    private Product product;
-
-    @OneToOne
-    @JoinColumn(name = "product_variation", nullable = true)
-    private ProductVariation productVariation;
+    @ManyToOne
+    @JoinColumn(name = "order", nullable = false)
+    private Order order;
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
-    @OneToMany(mappedBy = "inventory")
-    private List<InventoryLog> inventoryLogs;
+    @ManyToOne
+    @JoinColumn(name = "product", nullable = true)
+    private Product product;
+
+    @ManyToOne
+    @JoinColumn(name = "product_variation", nullable = true)
+    private ProductVariation productVariation;
+
+    @ManyToOne
+    @JoinColumn(name = "service", nullable = true)
+    private Service service;
+
+    // TODO: uncomment when OrderCharge is added
+    // @ManyToMany(mappedBy = "order")
+    // private List<OrderCharge> charges;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
