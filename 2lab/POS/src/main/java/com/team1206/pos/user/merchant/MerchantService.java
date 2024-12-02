@@ -2,6 +2,7 @@ package com.team1206.pos.user.merchant;
 
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 //TODO issiaiskint ar verta daryt interface
@@ -38,15 +39,24 @@ public class MerchantService {
                 .collect(Collectors.toList());
     }
 
+    // Retrieve merchant by ID
+    public MerchantResponseDTO getMerchantById(UUID id) {
+        return mapToResponseDTO(merchantRepository.getReferenceById(id));
+    }
+
     // Map Merchant entity to Response DTO
     private MerchantResponseDTO mapToResponseDTO(Merchant merchant) {
         MerchantResponseDTO response = new MerchantResponseDTO();
         response.setId(merchant.getId());
         response.setName(merchant.getName());
+        response.setPhone(merchant.getPhone());
         response.setEmail(merchant.getEmail());
         response.setCurrency(merchant.getCurrency());
+        response.setAddress(merchant.getAddress());
         response.setCity(merchant.getCity());
         response.setCountry(merchant.getCountry());
+        response.setPostcode(merchant.getPostcode());
+        response.setCreatedAt(merchant.getCreatedAt());
         return response;
     }
 }
