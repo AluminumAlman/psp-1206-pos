@@ -34,6 +34,6 @@ GRANT ALL PRIVILEGES ON DATABASE pos TO datauser;
 Once the application is running, you can interact with the API through Swagger UI:
 
 - **API Endpoints**: [Swagger UI](http://localhost:8080/swagger-ui/index.html)
-- **Raw API Docs (OpenAPI)**: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)`
+- **Raw API Docs (OpenAPI)**: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
 
 * * * * *
