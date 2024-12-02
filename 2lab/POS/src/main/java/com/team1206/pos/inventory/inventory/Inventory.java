@@ -1,5 +1,6 @@
 package com.team1206.pos.inventory.inventory;
 
+import com.team1206.pos.inventory.inventoryLog.InventoryLog;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.inventory.productVariation.ProductVariation;
 import jakarta.persistence.*;
@@ -7,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -28,6 +30,9 @@ public class Inventory {
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
+
+    @OneToMany(mappedBy = "inventory")
+    private List<InventoryLog> inventoryLogs;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();

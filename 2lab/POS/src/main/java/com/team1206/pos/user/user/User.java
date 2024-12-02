@@ -53,9 +53,6 @@ public class User {
     @JoinColumn(name = "merchant_id")
     private Merchant merchant;
 
-    @OneToMany(mappedBy = "user")
-    private List<InventoryLog> inventoryLogs;
-
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 

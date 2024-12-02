@@ -1,9 +1,9 @@
 CREATE TABLE inventory
 (
-    id                UUID    NOT NULL,
+    id                UUID                        NOT NULL,
     product           UUID,
     product_variation UUID,
-    quantity          INTEGER NOT NULL,
+    quantity          INTEGER                     NOT NULL,
     created_at        TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     updated_at        TIMESTAMP WITHOUT TIME ZONE,
     CONSTRAINT pk_inventory PRIMARY KEY (id)
@@ -23,19 +23,12 @@ ALTER TABLE inventory
 
 CREATE TABLE inventory_log
 (
-    id         UUID    NOT NULL,
-    inventory  UUID    NOT NULL,
-    "user"     UUID,
-    adjustment INTEGER NOT NULL,
+    id         UUID                        NOT NULL,
+    inventory  UUID                        NOT NULL,
+    adjustment INTEGER                     NOT NULL,
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     CONSTRAINT pk_inventorylog PRIMARY KEY (id)
 );
 
 ALTER TABLE inventory_log
     ADD CONSTRAINT FK_INVENTORYLOG_ON_INVENTORY FOREIGN KEY (inventory) REFERENCES inventory (id);
-
-ALTER TABLE inventory_log
-    ADD CONSTRAINT uc_inventorylog_inventory UNIQUE (inventory);
-
-ALTER TABLE inventory_log
-    ADD CONSTRAINT FK_INVENTORYLOG_ON_USER FOREIGN KEY ("user") REFERENCES "user" (id);

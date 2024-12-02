@@ -18,7 +18,7 @@ public class InventoryLog {
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "inventory", nullable = false)
     private Inventory inventory;
 
@@ -26,10 +26,6 @@ public class InventoryLog {
     // @OneToOne
     // @JoinColumn(name = "order", nullable = true)
     // private Order order;
-
-    @ManyToOne
-    @JoinColumn(name = "user", nullable = true)
-    private User user;
 
     @Column(name = "adjustment", nullable = false)
     private Integer adjustment;
