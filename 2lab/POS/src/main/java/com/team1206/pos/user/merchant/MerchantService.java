@@ -1,5 +1,6 @@
 package com.team1206.pos.user.merchant;
 
+import com.team1206.pos.exceptions.MerchantNotFoundException;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
@@ -41,7 +42,9 @@ public class MerchantService {
 
     // Retrieve merchant by ID
     public MerchantResponseDTO getMerchantById(UUID id) {
-        return mapToResponseDTO(merchantRepository.getReferenceById(id));
+        return merchantRepository.findById(id)
+                .map(this::mapToResponseDTO)
+                .orElseThrow(() -> new MerchantNotFoundException(id.toString()));
     }
 
     // Map Merchant entity to Response DTO

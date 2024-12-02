@@ -30,7 +30,7 @@ public class MerchantController {
         return ResponseEntity.ok(merchants);
     }
 
-    @GetMapping("/{merchantId}")
+    @GetMapping("{merchantId}")
     @Operation( summary = "Retrieve merchant by ID" )
     public ResponseEntity<MerchantResponseDTO> getMerchant(@PathVariable UUID merchantId) {
         MerchantResponseDTO retrievedMerchant = merchantService.getMerchantById(merchantId);
