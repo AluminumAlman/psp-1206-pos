@@ -9,7 +9,7 @@ This project is a Spring Boot application that integrates PostgreSQL for databas
 Before setting up the application, ensure you have the following installed on your local machine:
 
 - **Java 23**
-- **Maven** (or Gradle for project build automation)
+- **Maven**
 - **PostgreSQL** (locally or via Docker)
 
 ## Setting Up the Database Locally
