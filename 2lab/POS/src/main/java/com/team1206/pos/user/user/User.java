@@ -1,5 +1,7 @@
 package com.team1206.pos.user.user;
 
+import com.team1206.pos.inventory.inventory.Inventory;
+import com.team1206.pos.inventory.inventoryLog.InventoryLog;
 import com.team1206.pos.service.service.Service;
 import com.team1206.pos.user.merchant.Merchant;
 import jakarta.persistence.*;
@@ -50,6 +52,9 @@ public class User {
     @ManyToOne
     @JoinColumn(name = "merchant_id")
     private Merchant merchant;
+
+    @OneToMany(mappedBy = "user")
+    private List<InventoryLog> inventoryLogs;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();

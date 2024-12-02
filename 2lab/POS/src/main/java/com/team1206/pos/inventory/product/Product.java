@@ -1,5 +1,6 @@
 package com.team1206.pos.inventory.product;
 
+import com.team1206.pos.inventory.inventory.Inventory;
 import com.team1206.pos.inventory.productCategory.ProductCategory;
 import com.team1206.pos.inventory.productVariation.ProductVariation;
 import com.team1206.pos.payments.charge.Charge;
@@ -39,6 +40,9 @@ public class Product {
 
     @ManyToMany(mappedBy = "products")
     private List<Charge> charges;
+
+    @OneToOne(mappedBy = "product")
+    private Inventory inventory;
 
     // TODO: nuspresti ar palikti, nes Merchant galima gauti is visada esamo ProductCategory.
     // @ManyToOne
