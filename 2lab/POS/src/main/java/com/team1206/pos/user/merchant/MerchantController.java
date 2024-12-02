@@ -21,6 +21,10 @@ public class MerchantController {
     public ResponseEntity<MerchantResponseDTO> createMerchant(@Valid @RequestBody MerchantRequestDTO request) {
         MerchantResponseDTO createdMerchant = merchantService.createMerchant(request);
         return ResponseEntity.ok(createdMerchant);
+        // bus 201 kodas kaip ir dokumentacijoj
+        // return ResponseEntity
+        //            .created(URI.create("/merchants/" + createdMerchant.getId())) // You might want to return the URI of the newly created resource
+        //            .body(createdMerchant);
     }
 
     @GetMapping
@@ -35,6 +39,13 @@ public class MerchantController {
     public ResponseEntity<MerchantResponseDTO> getMerchant(@PathVariable UUID merchantId) {
         MerchantResponseDTO retrievedMerchant = merchantService.getMerchantById(merchantId);
         return ResponseEntity.ok(retrievedMerchant);
+    }
+
+    @PutMapping("{merchantId}")
+    @Operation( summary = "Update merchant by ID" )
+    public ResponseEntity<MerchantResponseDTO> updateMerchant(@PathVariable UUID merchantId, @Valid @RequestBody MerchantRequestDTO request) {
+        MerchantResponseDTO updatedMerchant = merchantService.updateMerchantById(merchantId, request);
+        return ResponseEntity.ok(updatedMerchant);
     }
 
     @DeleteMapping("{merchantId}")

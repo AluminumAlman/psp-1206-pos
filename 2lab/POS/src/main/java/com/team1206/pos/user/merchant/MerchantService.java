@@ -1,6 +1,7 @@
 package com.team1206.pos.user.merchant;
 
 import com.team1206.pos.exceptions.MerchantNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,14 +22,7 @@ public class MerchantService {
     // Create a new merchant
     public MerchantResponseDTO createMerchant(MerchantRequestDTO request) {
         Merchant merchant = new Merchant();
-        merchant.setName(request.getName());
-        merchant.setPhone(request.getPhone());
-        merchant.setEmail(request.getEmail());
-        merchant.setCurrency(request.getCurrency());
-        merchant.setAddress(request.getAddress());
-        merchant.setCity(request.getCity());
-        merchant.setCountry(request.getCountry());
-        merchant.setPostcode(request.getPostcode());
+        setMerchantFieldsFromRequest(merchant, request);
 
         Merchant savedMerchant = merchantRepository.save(merchant);
         return mapToResponseDTO(savedMerchant);
@@ -43,23 +37,36 @@ public class MerchantService {
     }
 
     // Retrieve merchant by ID
-    public MerchantResponseDTO getMerchantById(UUID id) {
-        return merchantRepository.findById(id)
+    public MerchantResponseDTO getMerchantById(UUID merchantId) {
+        return merchantRepository.findById(merchantId)
                 .map(this::mapToResponseDTO)
-                .orElseThrow(() -> new MerchantNotFoundException(id.toString()));
+                .orElseThrow(() -> new MerchantNotFoundException(merchantId.toString()));
+    }
+
+    // Update merchant by ID
+    @Transactional
+    public MerchantResponseDTO updateMerchantById(UUID merchantId, MerchantRequestDTO request) {
+        Merchant retrievedMerchant = merchantRepository
+                .findById(merchantId)
+                .orElseThrow(() -> new MerchantNotFoundException(merchantId.toString()));
+
+        setMerchantFieldsFromRequest(retrievedMerchant, request);
+
+        Merchant updatedMerchant = merchantRepository.save(retrievedMerchant);
+        return mapToResponseDTO(updatedMerchant);
     }
 
     // Delete merchant by ID
-    public void deleteMerchantById(UUID id) {
-        Optional<Merchant> merchant = merchantRepository.findById(id);
+    public void deleteMerchantById(UUID merchantId) {
+        Optional<Merchant> merchant = merchantRepository.findById(merchantId);
         if (merchant.isPresent()) {
             try {
-                merchantRepository.deleteById(id);
+                merchantRepository.deleteById(merchantId);
             } catch (Exception e) {
                 throw new RuntimeException("An error occurred while deleting the merchant.", e);
             }
         } else {
-            throw new MerchantNotFoundException(id.toString());
+            throw new MerchantNotFoundException(merchantId.toString());
         }
     }
 
@@ -77,5 +84,17 @@ public class MerchantService {
         response.setPostcode(merchant.getPostcode());
         response.setCreatedAt(merchant.getCreatedAt());
         return response;
+    }
+
+    // Set merchant fields
+    private void setMerchantFieldsFromRequest(Merchant merchant, MerchantRequestDTO request) {
+        merchant.setName(request.getName());
+        merchant.setPhone(request.getPhone());
+        merchant.setEmail(request.getEmail());
+        merchant.setCurrency(request.getCurrency());
+        merchant.setAddress(request.getAddress());
+        merchant.setCity(request.getCity());
+        merchant.setCountry(request.getCountry());
+        merchant.setPostcode(request.getPostcode());
     }
 }
