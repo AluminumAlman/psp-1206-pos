@@ -1,14 +1,11 @@
 package com.team1206.pos.user.user;
 
-import com.team1206.pos.inventory.inventory.Inventory;
-import com.team1206.pos.inventory.inventoryLog.InventoryLog;
 import com.team1206.pos.service.service.Service;
 import com.team1206.pos.user.merchant.Merchant;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.io.Serial;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;

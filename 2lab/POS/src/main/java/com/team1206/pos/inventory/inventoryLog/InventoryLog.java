@@ -1,7 +1,6 @@
 package com.team1206.pos.inventory.inventoryLog;
 
 import com.team1206.pos.inventory.inventory.Inventory;
-import com.team1206.pos.user.user.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
