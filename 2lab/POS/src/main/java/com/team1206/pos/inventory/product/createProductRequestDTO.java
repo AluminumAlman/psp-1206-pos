@@ -19,7 +19,7 @@ public class createProductRequestDTO {
     @NotNull(message = "Category ID is required")
     private UUID categoryId;
 
-    // Empty array for no variations
+    // Empty array for no variations (for example when creating new product)
     @NotNull(message = "Variations must not be null. Use an empty array for no variations.")
     private List<UUID> variationIds;
 
