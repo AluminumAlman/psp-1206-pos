@@ -1,5 +1,7 @@
 package com.team1206.pos.exceptions;
 
+import io.micrometer.common.lang.NonNull;
+import io.micrometer.common.lang.Nullable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -33,10 +35,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
-            MethodArgumentNotValidException ex,
-            HttpHeaders headers,
-            HttpStatusCode status,
-            WebRequest request) {
+            @NonNull MethodArgumentNotValidException ex,
+            @Nullable HttpHeaders headers,
+            @Nullable HttpStatusCode status,
+            @NonNull WebRequest request) {
 
         // Collect detailed validation error messages
         Map<String, String> errors = new HashMap<>();
