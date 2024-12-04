@@ -1,6 +1,7 @@
 package com.team1206.pos.inventory.inventoryLog;
 
 import com.team1206.pos.inventory.inventory.Inventory;
+import com.team1206.pos.order.order.Order;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,10 +22,9 @@ public class InventoryLog {
     @JoinColumn(name = "inventory", nullable = false)
     private Inventory inventory;
 
-    // TODO: uncomment when Order entity is added
-    // @OneToOne
-    // @JoinColumn(name = "order", nullable = true)
-    // private Order order;
+    @OneToOne
+    @JoinColumn(name = "order", nullable = true)
+    private Order order;
 
     @Column(name = "adjustment", nullable = false)
     private Integer adjustment;

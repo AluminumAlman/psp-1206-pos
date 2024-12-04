@@ -36,3 +36,15 @@ CREATE TABLE transaction
 
 ALTER TABLE transaction
     ADD CONSTRAINT FK_TRANSACTION_ON_ORDER FOREIGN KEY ("order") REFERENCES "order" (id);
+
+CREATE TABLE order_items_order_charges
+(
+    order_charge_id UUID NOT NULL,
+    order_item_id   UUID NOT NULL
+);
+
+ALTER TABLE order_items_order_charges
+    ADD CONSTRAINT fk_orditeordcha_on_order_charge FOREIGN KEY (order_charge_id) REFERENCES order_charge (id);
+
+ALTER TABLE order_items_order_charges
+    ADD CONSTRAINT fk_orditeordcha_on_order_item FOREIGN KEY (order_item_id) REFERENCES order_item (id);

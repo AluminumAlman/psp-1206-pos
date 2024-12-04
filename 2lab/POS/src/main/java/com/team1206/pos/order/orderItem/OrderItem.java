@@ -3,12 +3,14 @@ package com.team1206.pos.order.orderItem;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.inventory.productVariation.ProductVariation;
 import com.team1206.pos.order.order.Order;
+import com.team1206.pos.order.orderCharge.OrderCharge;
 import com.team1206.pos.service.service.Service;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -39,9 +41,9 @@ public class OrderItem {
     @JoinColumn(name = "service", nullable = true)
     private Service service;
 
-    // TODO: uncomment when OrderCharge is added
-    // @ManyToMany(mappedBy = "order")
-    // private List<OrderCharge> charges;
+    @ManyToMany
+    @JoinTable(name = "order_items_order_charges", joinColumns = @JoinColumn(name = "order_item_id"), inverseJoinColumns = @JoinColumn(name = "order_charge_id"))
+    private List<OrderCharge> charges;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();

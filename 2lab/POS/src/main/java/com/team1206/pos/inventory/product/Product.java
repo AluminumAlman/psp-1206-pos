@@ -44,11 +44,6 @@ public class Product {
     @OneToOne(mappedBy = "product")
     private Inventory inventory;
 
-    // TODO: nuspresti ar palikti, nes Merchant galima gauti is visada esamo ProductCategory.
-    // @ManyToOne
-    // @JoinColumn(name = "merchant", nullable = false)
-    // private Merchant merchant;
-
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 }
