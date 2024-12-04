@@ -1,8 +1,8 @@
-package com.team1206.pos.orderItem;
+package com.team1206.pos.order.orderItem;
 
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.inventory.productVariation.ProductVariation;
-import com.team1206.pos.order.Order;
+import com.team1206.pos.order.order.Order;
 import com.team1206.pos.service.service.Service;
 import jakarta.persistence.*;
 import lombok.Getter;

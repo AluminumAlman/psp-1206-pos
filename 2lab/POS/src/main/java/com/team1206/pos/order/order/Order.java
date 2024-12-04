@@ -1,6 +1,8 @@
-package com.team1206.pos.order;
+package com.team1206.pos.order.order;
 
-import com.team1206.pos.orderItem.OrderItem;
+import com.team1206.pos.order.orderCharge.OrderCharge;
+import com.team1206.pos.order.orderItem.OrderItem;
+import com.team1206.pos.payments.transaction.Transaction;
 import com.team1206.pos.user.merchant.Merchant;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -14,7 +16,7 @@ import java.util.UUID;
 @Setter
 @Entity
 public class Order {
-    enum Status {
+    public enum Status {
         Open,
         Closed,
         Refunded,
@@ -30,16 +32,15 @@ public class Order {
     @Enumerated(EnumType.ORDINAL)
     private Status status;
 
-    // TODO: uncomment when OrderCharge is added
-    // @ManyToMany(mappedBy = "order")
-    // private List<OrderCharge> charges;
+    @ManyToMany
+    @JoinTable(name = "orders_order_charges", joinColumns = @JoinColumn(name = "order_id"), inverseJoinColumns = @JoinColumn(name = "order_charge_id"))
+    private List<OrderCharge> charges;
 
-    @OneToMany(mappedBy = "order")
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items;
 
-    // TODO: uncomment when Transaction is added
-    // @OneToMany(mappedBy = "order")
-    // private List<Transaction> transactions;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Transaction> transactions;
 
     @ManyToOne
     @JoinColumn(name = "merchant", nullable = false)

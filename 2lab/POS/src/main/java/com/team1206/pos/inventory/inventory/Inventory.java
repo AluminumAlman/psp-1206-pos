@@ -31,7 +31,7 @@ public class Inventory {
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
-    @OneToMany(mappedBy = "inventory")
+    @OneToMany(mappedBy = "inventory", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<InventoryLog> inventoryLogs;
 
     @Column(name = "created_at", nullable = false, updatable = false)
