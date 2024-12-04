@@ -19,10 +19,10 @@ import java.util.Map;
 @RequestMapping("/auth")
 public class AuthenticationController {
     private final UserService userService;
-    private UserRepository userRepository;
-    private JWTUtil jwtUtil;
-    private AuthenticationManager authenticationManager;
-    private PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final JWTUtil jwtUtil;
+    private final AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder;
 
     public AuthenticationController(UserService userService,
                                     UserRepository userRepository,
