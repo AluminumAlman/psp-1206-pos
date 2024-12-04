@@ -36,4 +36,10 @@ public class JWTUtil {
         DecodedJWT jwt = verifier.verify(token);
         return jwt.getSubject();
     }
+
+    public String validateTokenAndRetrieveEmail(String token) throws JWTVerificationException {
+        JWTVerifier verifier = JWT.require(Algorithm.HMAC256(secret)).withIssuer(issuer).build();
+        DecodedJWT jwt = verifier.verify(token);
+        return jwt.getClaim("email").asString();
+    }
 }
