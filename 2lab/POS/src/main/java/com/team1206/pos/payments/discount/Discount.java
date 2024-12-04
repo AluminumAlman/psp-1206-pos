@@ -22,17 +22,17 @@ public class Discount {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "percent")
-    private Integer percent; // Optional field
+    @Column(name = "percent", nullable = true)
+    private Integer percent;
 
-    @Column(name = "amount")
-    private Integer amount; // Optional field
+    @Column(name = "amount", nullable = true)
+    private Integer amount;
 
-    @Column(name = "valid_from")
-    private LocalDateTime validFrom; // Optional field
+    @Column(name = "valid_from", nullable = true)
+    private LocalDateTime validFrom;
 
-    @Column(name = "valid_until")
-    private LocalDateTime validUntil; // Optional field
+    @Column(name = "valid_until", nullable = true)
+    private LocalDateTime validUntil;
 
     @ManyToOne
     @JoinColumn(name = "merchant_id", nullable = false)
@@ -41,7 +41,7 @@ public class Discount {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", nullable = true)
     private LocalDateTime updatedAt;
 
     @PreUpdate
