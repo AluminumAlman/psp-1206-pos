@@ -1,12 +1,11 @@
 package com.team1206.pos.user.user;
 
-import com.team1206.pos.service.service.Service;
 import com.team1206.pos.user.merchant.Merchant;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.io.Serial;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -14,12 +13,13 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-
+@Table(name = "\"user\"")
 public class User {
+
     public enum Role {
-        Employee,
-        BusinessOwner,
-        SuperAdmin,
+        SUPER_ADMIN,
+        EMPLOYEE,
+        MERCHANT_OWNER
     }
 
     @Id
@@ -39,17 +39,16 @@ public class User {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
-    @Column(name = "role", nullable = false, length = 40)
-    @Enumerated(EnumType.STRING)
-    private List<Role> roles;
-
-    @ManyToMany(mappedBy = "users")
-    private List<Service> services;
-
     @ManyToOne
     @JoinColumn(name = "merchant_id")
     private Merchant merchant;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "role", nullable = false, length = 40)
+    @Enumerated(EnumType.STRING)
+    @NotEmpty(message = "At least one role must be assigned")
+    private List<Role> roles;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
