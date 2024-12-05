@@ -1,6 +1,7 @@
 package com.team1206.pos.exceptions;
 
 import io.micrometer.common.lang.NonNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -13,12 +14,16 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+
+    @Value("${spring.profiles.active:prod}")
+    private String activeProfile;
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorObject> handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
@@ -65,6 +70,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         errorObject.setPath(request.getDescription(false).replace("uri=", ""));
         errorObject.setTimestamp(LocalDateTime.now());
 
+        // Add stack trace in development mode
+        if ("dev".equalsIgnoreCase(activeProfile)) {
+            errorObject.setDetails(Collections.singletonMap("stackTrace", getStackTrace(ex)));
+        }
+
         return new ResponseEntity<>(errorObject, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    // Helper method to get the stack trace as a string
+    private String getStackTrace(Exception ex) {
+        StringBuilder stackTrace = new StringBuilder();
+        for (StackTraceElement element : ex.getStackTrace()) {
+            stackTrace.append(element.toString()).append("\n");
+        }
+        return stackTrace.toString();
     }
 }
