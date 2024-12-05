@@ -26,6 +26,13 @@ Open the PostgreSQL terminal (`psql`) and execute the following SQL commands to 
 CREATE DATABASE pos;
 CREATE USER datauser WITH PASSWORD '6y3wxsnq';
 GRANT ALL PRIVILEGES ON DATABASE pos TO datauser;
+\c pos
+GRANT USAGE ON SCHEMA public TO datauser;
+GRANT CREATE ON SCHEMA public TO datauser;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO datauser;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO datauser;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO datauser;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO datauser;
 ```
 
 
