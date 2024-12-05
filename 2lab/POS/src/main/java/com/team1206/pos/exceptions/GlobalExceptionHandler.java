@@ -1,7 +1,6 @@
 package com.team1206.pos.exceptions;
 
 import io.micrometer.common.lang.NonNull;
-import io.micrometer.common.lang.Nullable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -21,24 +20,12 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(MerchantNotFoundException.class)
-    public ResponseEntity<ErrorObject> handleMerchantNotFoundException(MerchantNotFoundException ex, WebRequest request) {
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorObject> handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
         ErrorObject errorObject = new ErrorObject();
         errorObject.setStatusCode(HttpStatus.NOT_FOUND.value());
-        errorObject.setUuid(ex.getMessage());
-        errorObject.setMessage("Merchant not found");
-        errorObject.setPath(request.getDescription(false).replace("uri=", ""));
-        errorObject.setTimestamp(LocalDateTime.now());
-
-        return new ResponseEntity<>(errorObject, HttpStatus.NOT_FOUND);
-    }
-
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorObject> handleUserNotFoundException(UserNotFoundException ex, WebRequest request) {
-        ErrorObject errorObject = new ErrorObject();
-        errorObject.setStatusCode(HttpStatus.NOT_FOUND.value());
-        errorObject.setUuid(ex.getMessage());
-        errorObject.setMessage("User not found");
+        errorObject.setUuid(ex.getUuid());
+        errorObject.setMessage(String.format("%s not found", ex.getResourceType().getDisplayName()));
         errorObject.setPath(request.getDescription(false).replace("uri=", ""));
         errorObject.setTimestamp(LocalDateTime.now());
 
@@ -48,8 +35,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             @NonNull MethodArgumentNotValidException ex,
-            @Nullable HttpHeaders headers,
-            @Nullable HttpStatusCode status,
+            @NonNull HttpHeaders headers,
+            @NonNull HttpStatusCode status,
             @NonNull WebRequest request) {
 
         // Collect detailed validation error messages

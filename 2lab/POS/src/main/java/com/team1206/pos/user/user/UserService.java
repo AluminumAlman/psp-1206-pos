@@ -1,7 +1,7 @@
 package com.team1206.pos.user.user;
 
-import com.team1206.pos.exceptions.MerchantNotFoundException;
-import com.team1206.pos.exceptions.UserNotFoundException;
+import com.team1206.pos.enums.ResourceType;
+import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.merchant.MerchantRepository;
 import jakarta.transaction.Transactional;
@@ -27,7 +27,7 @@ public class UserService {
 
         // Fetch merchant
         Merchant merchant = merchantRepository.findById(request.getMerchantId())
-                .orElseThrow(() -> new MerchantNotFoundException(request.getMerchantId().toString()));
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.MERCHANT, request.getMerchantId().toString()));
         user.setMerchant(merchant);
 
         // Save user
@@ -37,7 +37,7 @@ public class UserService {
 
     public UserResponseDTO getUserById(UUID userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(userId.toString()));
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, userId.toString()));
         return mapToResponseDTO(user);
     }
 
