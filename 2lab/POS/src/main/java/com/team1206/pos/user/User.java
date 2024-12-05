@@ -1,7 +1,7 @@
-package com.team1206.pos.user.user;
+package com.team1206.pos.user;
 
 import com.team1206.pos.enums.UserRoles;
-import com.team1206.pos.user.merchant.Merchant;
+import com.team1206.pos.merchant.Merchant;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;

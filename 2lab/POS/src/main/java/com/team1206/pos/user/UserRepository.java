@@ -1,4 +1,4 @@
-package com.team1206.pos.user.user;
+package com.team1206.pos.user;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

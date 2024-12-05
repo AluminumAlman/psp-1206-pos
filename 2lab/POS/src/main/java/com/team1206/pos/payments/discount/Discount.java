@@ -1,6 +1,6 @@
 package com.team1206.pos.payments.discount;
 
-import com.team1206.pos.user.merchant.Merchant;
+import com.team1206.pos.merchant.Merchant;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
