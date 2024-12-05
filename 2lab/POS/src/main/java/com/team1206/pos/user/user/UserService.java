@@ -2,8 +2,6 @@ package com.team1206.pos.user.user;
 
 import com.team1206.pos.enums.ResourceType;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
-import com.team1206.pos.user.merchant.MerchantRepository;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -13,11 +11,11 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public UserService(UserRepository userRepository, MerchantRepository merchantRepository) {
+    public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
-    @Transactional
+    // Create a new user
     public UserResponseDTO createUser(UserRequestDTO request) {
         User user = new User();
         setUserFieldsFromRequest(user, request);
@@ -33,6 +31,7 @@ public class UserService {
         return mapToResponseDTO(savedUser);
     }
 
+    // Get user by UUID
     public UserResponseDTO getUserById(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, userId.toString()));
