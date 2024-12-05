@@ -1,4 +1,4 @@
-package com.team1206.pos.user.user;
+package com.team1206.pos.user;
 
 import com.team1206.pos.enums.UserRoles;
 import jakarta.validation.constraints.*;
