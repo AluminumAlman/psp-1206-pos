@@ -60,8 +60,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleGenericException(Exception ex, WebRequest request) {
         ErrorObject errorObject = new ErrorObject();
         errorObject.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        errorObject.setUuid(ex.getMessage());
-        errorObject.setMessage("Internal Server Error");
+        errorObject.setUuid("");
+        errorObject.setMessage(ex.getMessage());
         errorObject.setPath(request.getDescription(false).replace("uri=", ""));
         errorObject.setTimestamp(LocalDateTime.now());
 

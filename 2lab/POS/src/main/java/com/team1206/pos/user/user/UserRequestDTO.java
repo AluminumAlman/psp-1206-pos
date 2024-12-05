@@ -1,15 +1,8 @@
 package com.team1206.pos.user.user;
 
-import com.team1206.pos.user.user.User.Role;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import com.team1206.pos.enums.UserRoles;
+import jakarta.validation.constraints.*;
 import lombok.Data;
-
-import java.util.List;
-import java.util.UUID;
 
 @Data
 public class UserRequestDTO {
@@ -31,9 +24,6 @@ public class UserRequestDTO {
     @Size(max = 255)
     private String password;
 
-    @NotEmpty(message = "At least one role must be assigned")
-    private List<Role> roles;
-
-    @NotNull(message = "Merchant ID is required")
-    private UUID merchantId;
+    @NotNull(message = "A role must be assigned")
+    private UserRoles role;
 }
