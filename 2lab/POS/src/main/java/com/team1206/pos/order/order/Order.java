@@ -15,6 +15,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
+@Table(name = "\"order\"")
 public class Order {
     public enum Status {
         Open,
