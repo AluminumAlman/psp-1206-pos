@@ -11,7 +11,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-
+@Table(name = "\"discount\"")
 public class Discount {
 
     @Id

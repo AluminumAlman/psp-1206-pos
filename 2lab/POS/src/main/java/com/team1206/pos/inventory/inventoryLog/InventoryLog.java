@@ -12,6 +12,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
+@Table(name = "\"inventory_log\"")
 public class InventoryLog {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID) // Auto-generate UUID

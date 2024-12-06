@@ -14,6 +14,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
+@Table(name = "\"charge\"")
 public class Charge {
     public enum Type {
         Tax,

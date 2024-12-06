@@ -12,6 +12,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
+@Table(name = "\"product_variation\"")
 public class ProductVariation {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID) // Auto-generate UUID

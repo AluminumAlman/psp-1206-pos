@@ -11,6 +11,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
+@Table(name = "\"transaction\"")
 public class Transaction {
     public enum PaymentMethod {
         Cash,
