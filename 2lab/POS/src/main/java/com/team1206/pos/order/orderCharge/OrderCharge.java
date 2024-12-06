@@ -1,6 +1,5 @@
-package com.team1206.pos.payments.discount;
+package com.team1206.pos.order.orderCharge;
 
-import com.team1206.pos.user.merchant.Merchant;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,15 +10,24 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-
-public class Discount {
+public class OrderCharge {
+    public enum Type {
+        Tax,
+        Charge,
+        Tip,
+        Discount,
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "type", nullable = false)
+    @Enumerated(EnumType.ORDINAL)
+    private Type type;
+
+    @Column(name = "name", nullable = false, length = 100)
     private String name;
 
     @Column(name = "percent", nullable = true)
@@ -27,16 +35,6 @@ public class Discount {
 
     @Column(name = "amount", nullable = true)
     private Integer amount;
-
-    @Column(name = "valid_from", nullable = true)
-    private LocalDateTime validFrom;
-
-    @Column(name = "valid_until", nullable = true)
-    private LocalDateTime validUntil;
-
-    @ManyToOne
-    @JoinColumn(name = "merchant_id", nullable = false)
-    private Merchant merchant;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
