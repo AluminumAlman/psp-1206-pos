@@ -4,47 +4,51 @@ import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.inventory.productCategory.ProductCategoryRepository;
 import com.team1206.pos.inventory.productCategory.ProductCategory;
 import com.team1206.pos.inventory.productVariation.ProductVariation;
-import com.team1206.pos.inventory.productVariation.ProductVariationRepository;
 import com.team1206.pos.payments.charge.ChargeRepository;
 import com.team1206.pos.payments.charge.Charge;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ProductService {
 
     private final ProductRepository productRepository;
     private final ProductCategoryRepository productCategoryRepository;
-    private final ProductVariationRepository productVariationRepository;
     private final ChargeRepository chargeRepository;
-    public ProductService(ProductRepository productRepository, ProductCategoryRepository productCategoryRepository, ProductVariationRepository productVariationRepository, ChargeRepository chargeRepository) {
+    public ProductService(ProductRepository productRepository, ProductCategoryRepository productCategoryRepository, ChargeRepository chargeRepository) {
         this.productRepository = productRepository;
         this.productCategoryRepository = productCategoryRepository;
-        this.productVariationRepository = productVariationRepository;
         this.chargeRepository = chargeRepository;
     }
 
 
-    // Create new Product
-    public ProductResponseDTO createProduct(createProductRequestDTO requestDTO) {
+    public ProductResponseDTO createProduct(CreateProductRequestDTO requestDTO) {
+
+        ProductCategory category = productCategoryRepository.findById(requestDTO.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found for ID: " + requestDTO.getCategoryId())); // TO-DO ExceptionHandler
         Product product = new Product();
 
         product.setName(requestDTO.getName());
         product.setPrice(requestDTO.getPrice());
-
-        ProductCategory category = productCategoryRepository.findById(requestDTO.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found for ID: " + requestDTO.getCategoryId()));
         product.setCategory(category);
 
-        // Map variations if provided
-        if (requestDTO.getVariationIds() != null && !requestDTO.getVariationIds().isEmpty()) {
-            List<ProductVariation> variations = productVariationRepository.findAllById(requestDTO.getVariationIds());
-            product.setVariations(variations);
-        }
-
-        // Map charges if provided (optional)
-        if (requestDTO.getChargeIds() != null && !requestDTO.getChargeIds().isEmpty()) {
+        // Check for missing ChargeIds
+        if (!requestDTO.getChargeIds().isEmpty()) {
             List<Charge> charges = chargeRepository.findAllById(requestDTO.getChargeIds());
+            List<UUID> foundChargeIds = charges.stream()
+                    .map(Charge::getId)
+                    .toList();
+
+            // Find missing charges
+            List<UUID> missingChargeIds = requestDTO.getChargeIds().stream()
+                    .filter(id -> !foundChargeIds.contains(id))
+                    .toList();
+
+            if (!missingChargeIds.isEmpty()) {
+                throw new IllegalArgumentException("Some charges were not found: " + missingChargeIds);
+            }
+
             product.setCharges(charges);
         }
 
@@ -53,6 +57,8 @@ public class ProductService {
         return mapToResponseDTO(savedProduct);
     }
 
+
+    // Mappers
     private ProductResponseDTO mapToResponseDTO(Product product) {
         ProductResponseDTO responseDTO = new ProductResponseDTO();
         responseDTO.setId(product.getId());
