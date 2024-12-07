@@ -29,4 +29,20 @@ public class ProductCategoryController {
         ProductCategoryResponseDTO category = productCategoryService.getProductCategory(id);
         return ResponseEntity.ok(category);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ProductCategoryResponseDTO> updateCategory(
+            @PathVariable String id,
+            @RequestBody @Valid UpdateProductCategoryRequestDTO requestDTO) {
+        ProductCategoryResponseDTO updatedCategory = productCategoryService.updateCategory(id, requestDTO);
+        return ResponseEntity.ok(updatedCategory);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCategory(@PathVariable String id) {
+        productCategoryService.deleteCategory(id);
+        return ResponseEntity.noContent().build(); // Return 204 No Content on successful deletion
+    }
+
+
 }

@@ -23,7 +23,7 @@ public class ProductCategoryService {
 
     public ProductCategoryResponseDTO createProductCategory(CreateProductCategoryRequestDTO requestDTO) {
         Merchant merchant = merchantRepository.findById(requestDTO.getMerchantId())
-                .orElseThrow(() -> new ResourceNotFoundException("Merchant not found for ID: " + requestDTO.getMerchantId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Merchant not found for ID: " + requestDTO.getMerchantId())); // TO-DO exceptionHandler
 
         ProductCategory category = mapToEntity(requestDTO, merchant);
         ProductCategory savedCategory = productCategoryRepository.save(category);
@@ -32,7 +32,7 @@ public class ProductCategoryService {
 
     public ProductCategoryResponseDTO getProductCategory(String id) {
         ProductCategory category = productCategoryRepository.findById(UUID.fromString(id))
-                .orElseThrow(() -> new ResourceNotFoundException("ProductCategory not found for ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("ProductCategory not found for ID: " + id)); // TO-DO exceptionHandler
         return mapToResponseDTO(category);
     }
 
@@ -43,7 +43,32 @@ public class ProductCategoryService {
                 .collect(Collectors.toList());
     }
 
+    // TO-DO testing
+    public void deleteCategory(String id) {
+        ProductCategory category = productCategoryRepository.findById(UUID.fromString(id))
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with ID: " + id)); // TO-DO exceptionHandler
 
+        if (!category.getProducts().isEmpty()) {
+            throw new IllegalStateException("Cannot delete category as there are products assigned to it."); // TO-DO exceptionHandler
+        }
+
+        productCategoryRepository.delete(category);
+    }
+
+    public ProductCategoryResponseDTO updateCategory(String id, UpdateProductCategoryRequestDTO requestDTO) {
+
+        ProductCategory category = productCategoryRepository.findById(UUID.fromString(id))
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found for ID: " + id)); // TO-DO exceptionHandler
+
+        category.setName(requestDTO.getName());
+
+        ProductCategory updatedCategory = productCategoryRepository.save(category);
+
+        return mapToResponseDTO(updatedCategory);
+    }
+
+
+    // Mappers
     private ProductCategory mapToEntity(CreateProductCategoryRequestDTO requestDTO, Merchant merchant) {
         ProductCategory category = new ProductCategory();
         category.setName(requestDTO.getName());
