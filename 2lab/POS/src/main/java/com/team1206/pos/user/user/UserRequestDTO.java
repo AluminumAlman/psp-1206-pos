@@ -1,6 +1,6 @@
 package com.team1206.pos.user.user;
 
-import com.team1206.pos.enums.UserRoles;
+import com.team1206.pos.common.enums.UserRoles;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 

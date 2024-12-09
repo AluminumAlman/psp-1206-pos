@@ -1,6 +1,6 @@
 package com.team1206.pos.user.merchant;
 
-import com.team1206.pos.enums.ResourceType;
+import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;

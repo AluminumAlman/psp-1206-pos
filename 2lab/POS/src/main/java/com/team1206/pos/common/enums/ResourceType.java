@@ -1,11 +1,12 @@
-package com.team1206.pos.enums;
+package com.team1206.pos.common.enums;
 
 import lombok.Getter;
 
 @Getter
 public enum ResourceType {
     MERCHANT("Merchant"),
-    USER("User");
+    USER("User"),
+    SERVICE("Service");
 
     private final String displayName;
 
