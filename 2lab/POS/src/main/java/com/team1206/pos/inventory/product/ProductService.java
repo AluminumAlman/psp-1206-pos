@@ -6,10 +6,14 @@ import com.team1206.pos.inventory.productCategory.ProductCategory;
 import com.team1206.pos.inventory.productVariation.ProductVariation;
 import com.team1206.pos.payments.charge.ChargeRepository;
 import com.team1206.pos.payments.charge.Charge;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.UUID;
 
+// TO-DO change Integer to floating after model is changed
 @Service
 public class ProductService {
 
@@ -49,10 +53,12 @@ public class ProductService {
         return mapToResponseDTO(product);
     }
 
-    public List<ProductResponseDTO> getAllProducts() {
-        return productRepository.findAll().stream()
-                .map(this::mapToResponseDTO)
-                .toList();
+    public Page<ProductResponseDTO> getAllProducts(String name, Integer price, UUID categoryId, int limit, int offset) {
+        Pageable pageable = PageRequest.of(offset / limit, limit); // Create Pageable object
+        Page<Product> productPage = productRepository.findAllWithFilters(name, price, categoryId, pageable);
+
+        // Map Page<Product> to Page<ProductResponseDTO>
+        return productPage.map(this::mapToResponseDTO);
     }
 
     public ProductResponseDTO updateProduct(UUID id, UpdateProductRequestDTO updateProductRequestDTO) {
