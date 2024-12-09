@@ -9,7 +9,7 @@ This project is a Spring Boot application that integrates PostgreSQL for databas
 Before setting up the application, ensure you have the following installed on your local machine:
 
 - **Java 23**
-- **Maven** (or Gradle for project build automation)
+- **Maven**
 - **PostgreSQL** (locally or via Docker)
 
 ## Setting Up the Database Locally
@@ -26,6 +26,14 @@ Open the PostgreSQL terminal (`psql`) and execute the following SQL commands to 
 CREATE DATABASE pos;
 CREATE USER datauser WITH PASSWORD '6y3wxsnq';
 GRANT ALL PRIVILEGES ON DATABASE pos TO datauser;
+\c pos
+GRANT USAGE ON SCHEMA public TO datauser;
+GRANT CREATE ON SCHEMA public TO datauser;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO datauser;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO datauser;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO datauser;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO datauser;
+
 ```
 
 
@@ -34,6 +42,6 @@ GRANT ALL PRIVILEGES ON DATABASE pos TO datauser;
 Once the application is running, you can interact with the API through Swagger UI:
 
 - **API Endpoints**: [Swagger UI](http://localhost:8080/swagger-ui/index.html)
-- **Raw API Docs (OpenAPI)**: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)`
+- **Raw API Docs (OpenAPI)**: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
 
 * * * * *

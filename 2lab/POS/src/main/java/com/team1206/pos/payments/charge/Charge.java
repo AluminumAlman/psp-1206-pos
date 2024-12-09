@@ -1,8 +1,6 @@
 package com.team1206.pos.payments.charge;
 
 import com.team1206.pos.inventory.product.Product;
-import com.team1206.pos.inventory.productCategory.ProductCategory;
-import com.team1206.pos.inventory.productVariation.ProductVariation;
 import com.team1206.pos.service.service.Service;
 import com.team1206.pos.user.merchant.Merchant;
 import jakarta.persistence.*;
@@ -16,6 +14,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
+@Table(name = "\"charge\"")
 public class Charge {
     public enum Type {
         Tax,
@@ -64,7 +63,7 @@ public class Charge {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", nullable = true)
     private LocalDateTime updatedAt;
 
     @PreUpdate

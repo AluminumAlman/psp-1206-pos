@@ -13,6 +13,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
+@Table(name = "\"product_category\"")
 public class ProductCategory {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID) // Auto-generate UUID
