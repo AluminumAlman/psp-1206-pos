@@ -30,8 +30,8 @@ public class ProductCategoryService {
         return mapToResponseDTO(savedCategory);
     }
 
-    public ProductCategoryResponseDTO getProductCategory(String id) {
-        ProductCategory category = productCategoryRepository.findById(UUID.fromString(id))
+    public ProductCategoryResponseDTO getProductCategory(UUID id) {
+        ProductCategory category = productCategoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("ProductCategory not found for ID: " + id)); // TO-DO exceptionHandler
         return mapToResponseDTO(category);
     }
@@ -43,9 +43,8 @@ public class ProductCategoryService {
                 .collect(Collectors.toList());
     }
 
-    // TO-DO testing
-    public void deleteCategory(String id) {
-        ProductCategory category = productCategoryRepository.findById(UUID.fromString(id))
+    public void deleteCategory(UUID id) {
+        ProductCategory category = productCategoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with ID: " + id)); // TO-DO exceptionHandler
 
         if (!category.getProducts().isEmpty()) {
@@ -55,9 +54,9 @@ public class ProductCategoryService {
         productCategoryRepository.delete(category);
     }
 
-    public ProductCategoryResponseDTO updateCategory(String id, UpdateProductCategoryRequestDTO requestDTO) {
+    public ProductCategoryResponseDTO updateCategory(UUID id, UpdateProductCategoryRequestDTO requestDTO) {
 
-        ProductCategory category = productCategoryRepository.findById(UUID.fromString(id))
+        ProductCategory category = productCategoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found for ID: " + id)); // TO-DO exceptionHandler
 
         category.setName(requestDTO.getName());
