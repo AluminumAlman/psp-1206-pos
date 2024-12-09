@@ -1,5 +1,7 @@
 package com.team1206.pos.inventory.productCategory;
 
+import com.team1206.pos.enums.ResourceType;
+import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.user.merchant.MerchantRepository;
@@ -23,7 +25,7 @@ public class ProductCategoryService {
 
     public ProductCategoryResponseDTO createProductCategory(CreateProductCategoryRequestDTO requestDTO) {
         Merchant merchant = merchantRepository.findById(requestDTO.getMerchantId())
-                .orElseThrow(() -> new ResourceNotFoundException("Merchant not found for ID: " + requestDTO.getMerchantId())); // TO-DO exceptionHandler
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.CATEGORY, requestDTO.getMerchantId().toString()));
 
         ProductCategory category = mapToEntity(requestDTO, merchant);
         ProductCategory savedCategory = productCategoryRepository.save(category);
@@ -32,7 +34,7 @@ public class ProductCategoryService {
 
     public ProductCategoryResponseDTO getProductCategory(UUID id) {
         ProductCategory category = productCategoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("ProductCategory not found for ID: " + id)); // TO-DO exceptionHandler
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.CATEGORY, id.toString()));
         return mapToResponseDTO(category);
     }
 
@@ -45,10 +47,10 @@ public class ProductCategoryService {
 
     public void deleteCategory(UUID id) {
         ProductCategory category = productCategoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found with ID: " + id)); // TO-DO exceptionHandler
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.CATEGORY, id.toString()));
 
         if (!category.getProducts().isEmpty()) {
-            throw new IllegalStateException("Cannot delete category as there are products assigned to it."); // TO-DO exceptionHandler
+            throw new IllegalStateExceptionWithId("Cannot delete category as there are products assigned to it.", id.toString()); // TO-DO exceptionHandler
         }
 
         productCategoryRepository.delete(category);
@@ -57,7 +59,7 @@ public class ProductCategoryService {
     public ProductCategoryResponseDTO updateCategory(UUID id, UpdateProductCategoryRequestDTO requestDTO) {
 
         ProductCategory category = productCategoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found for ID: " + id)); // TO-DO exceptionHandler
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.CATEGORY, id.toString()));
 
         category.setName(requestDTO.getName());
 

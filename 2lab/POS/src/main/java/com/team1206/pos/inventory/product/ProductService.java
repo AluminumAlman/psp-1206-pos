@@ -1,5 +1,6 @@
 package com.team1206.pos.inventory.product;
 
+import com.team1206.pos.enums.ResourceType;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.inventory.productCategory.ProductCategoryRepository;
 import com.team1206.pos.inventory.productCategory.ProductCategory;
@@ -30,7 +31,7 @@ public class ProductService {
 
     public ProductResponseDTO createProduct(CreateProductRequestDTO requestDTO) {
         ProductCategory category = productCategoryRepository.findById(requestDTO.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found for ID: " + requestDTO.getCategoryId())); // TO-DO ExceptionHandler
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, requestDTO.getCategoryId().toString()));
         Product product = new Product();
         product.setName(requestDTO.getName());
         product.setPrice(requestDTO.getPrice());
@@ -49,7 +50,7 @@ public class ProductService {
 
     public ProductResponseDTO getProductById(UUID id) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found for ID: " + id)); // TO-DO ExceptionHandler
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, id.toString()));
         return mapToResponseDTO(product);
     }
 
@@ -63,7 +64,7 @@ public class ProductService {
 
     public ProductResponseDTO updateProduct(UUID id, UpdateProductRequestDTO updateProductRequestDTO) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found for ID: " + id)); // TO-DO exceptionHandler
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, id.toString())); // TO-DO exceptionHandler
 
         if (updateProductRequestDTO.getName() != null && !updateProductRequestDTO.getName().isBlank()) {
             product.setName(updateProductRequestDTO.getName());
@@ -75,7 +76,7 @@ public class ProductService {
 
         if (updateProductRequestDTO.getCategoryId() != null) {
             ProductCategory category = productCategoryRepository.findById(updateProductRequestDTO.getCategoryId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Category not found for ID: " + updateProductRequestDTO.getCategoryId()));  // TO-DO exceptionHandler
+                    .orElseThrow(() -> new ResourceNotFoundException(ResourceType.CATEGORY, updateProductRequestDTO.getCategoryId().toString()));  // TO-DO exceptionHandler
             product.setCategory(category);
         }
 
@@ -91,7 +92,7 @@ public class ProductService {
 
     public void deleteProductById(UUID id) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found for ID: " + id)); // TO-DO ExceptionHandler
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, id.toString())); // TO-DO ExceptionHandler
 
         productRepository.delete(product);
     }
@@ -113,7 +114,7 @@ public class ProductService {
                 .toList();
 
         if (!missingChargeIds.isEmpty()) {
-            throw new ResourceNotFoundException("Some charges were not found for IDs: " + missingChargeIds);
+            throw new ResourceNotFoundException(ResourceType.CHARGE, missingChargeIds.toString()); // TO-DO patestuoti
         }
 
         return charges;
