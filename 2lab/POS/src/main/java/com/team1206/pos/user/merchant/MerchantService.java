@@ -1,6 +1,7 @@
 package com.team1206.pos.user.merchant;
 
-import com.team1206.pos.exceptions.MerchantNotFoundException;
+import com.team1206.pos.enums.ResourceType;
+import com.team1206.pos.exceptions.ResourceNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -9,8 +10,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-//TODO issiaiskint ar verta daryt interface
-// Man atrodo turi buti klase (viskas yra gerai)
 @Service
 public class MerchantService {
     private final MerchantRepository merchantRepository;
@@ -40,7 +39,7 @@ public class MerchantService {
     public MerchantResponseDTO getMerchantById(UUID merchantId) {
         return merchantRepository.findById(merchantId)
                 .map(this::mapToResponseDTO)
-                .orElseThrow(() -> new MerchantNotFoundException(merchantId.toString()));
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.MERCHANT, merchantId.toString()));
     }
 
     // Update merchant by ID
@@ -48,7 +47,7 @@ public class MerchantService {
     public MerchantResponseDTO updateMerchantById(UUID merchantId, MerchantRequestDTO request) {
         Merchant retrievedMerchant = merchantRepository
                 .findById(merchantId)
-                .orElseThrow(() -> new MerchantNotFoundException(merchantId.toString()));
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.MERCHANT, merchantId.toString()));
 
         setMerchantFieldsFromRequest(retrievedMerchant, request);
 
@@ -66,7 +65,7 @@ public class MerchantService {
                 throw new RuntimeException("An error occurred while deleting the merchant.", e);
             }
         } else {
-            throw new MerchantNotFoundException(merchantId.toString());
+            throw new ResourceNotFoundException(ResourceType.MERCHANT, merchantId.toString());
         }
     }
 

@@ -34,9 +34,8 @@ public class SecurityConfiguration {
             .httpBasic(AbstractHttpConfigurer::disable)
             .cors(Customizer.withDefaults())
             .authorizeHttpRequests(authorize -> authorize
-                                                    .requestMatchers("/auth/**").permitAll()
-                                                    .requestMatchers("/users/**").permitAll()
-                                                    .anyRequest().permitAll())
+                    .requestMatchers("/auth/**").permitAll()
+                    .anyRequest().permitAll())
             .exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint((request, response, authException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")))
             .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationProvider(authenticationProvider())

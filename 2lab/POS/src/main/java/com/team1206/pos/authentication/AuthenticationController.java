@@ -1,7 +1,8 @@
 package com.team1206.pos.authentication;
 
 import com.team1206.pos.authentication.security.JWTUtil;
-import com.team1206.pos.exceptions.UserNotFoundException;
+import com.team1206.pos.enums.ResourceType;
+import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.user.user.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -47,7 +48,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public Map<String, Object> loginHandler(@RequestBody LoginCredentials body) {
+    public Map<String, Object> loginHandler(@RequestBody LoginRequestDTO body) {
         try {
             UsernamePasswordAuthenticationToken authInputToken =
                     new UsernamePasswordAuthenticationToken(body.getEmail(), body.getPassword());
@@ -55,7 +56,7 @@ public class AuthenticationController {
             authenticationManager.authenticate(authInputToken);
 
             User user = userRepository.findByEmail(body.getEmail())
-                                      .orElseThrow(() -> new UserNotFoundException(body.getEmail()));
+                                      .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, body.getEmail()));
 
             String token = jwtUtil.generateToken(user.getEmail(),
                                                  user.getFirstName() + " " + user.getLastName());

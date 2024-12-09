@@ -1,5 +1,6 @@
 package com.team1206.pos.service.service;
 
+import com.team1206.pos.payments.charge.Charge;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.user.User;
 import jakarta.persistence.*;
@@ -13,6 +14,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
+@Table(name = "\"service\"")
 public class Service {
 
     @Id
@@ -32,6 +34,9 @@ public class Service {
     @ManyToMany
     @JoinTable(name = "services_users", joinColumns = @JoinColumn(name = "service_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
     private List<User> users;
+
+    @ManyToMany(mappedBy = "services")
+    private List<Charge> charges;
 
     @ManyToOne
     @JoinColumn(name = "merchant_id", nullable = false)

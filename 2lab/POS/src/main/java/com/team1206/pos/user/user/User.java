@@ -1,13 +1,13 @@
 package com.team1206.pos.user.user;
 
+import com.team1206.pos.enums.UserRoles;
 import com.team1206.pos.user.merchant.Merchant;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -15,12 +15,6 @@ import java.util.UUID;
 @Entity
 @Table(name = "\"user\"")
 public class User {
-
-    public enum Role {
-        SUPER_ADMIN,
-        EMPLOYEE,
-        MERCHANT_OWNER
-    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -40,20 +34,18 @@ public class User {
     private String password;
 
     @ManyToOne
-    @JoinColumn(name = "merchant_id")
+    @JoinColumn(name = "merchant_id", nullable = true)
     private Merchant merchant;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role", nullable = false, length = 40)
     @Enumerated(EnumType.STRING)
-    @NotEmpty(message = "At least one role must be assigned")
-    private List<Role> roles;
+    @NotNull(message = "A role must be assigned")
+    private UserRoles role;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", nullable = true)
     private LocalDateTime updatedAt;
 
     @PreUpdate

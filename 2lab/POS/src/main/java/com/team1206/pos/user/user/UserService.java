@@ -1,10 +1,7 @@
 package com.team1206.pos.user.user;
 
-import com.team1206.pos.exceptions.MerchantNotFoundException;
-import com.team1206.pos.exceptions.UserNotFoundException;
-import com.team1206.pos.user.merchant.Merchant;
-import com.team1206.pos.user.merchant.MerchantRepository;
-import jakarta.transaction.Transactional;
+import com.team1206.pos.enums.ResourceType;
+import com.team1206.pos.exceptions.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -13,31 +10,31 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final MerchantRepository merchantRepository;
 
-    public UserService(UserRepository userRepository, MerchantRepository merchantRepository) {
+    public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.merchantRepository = merchantRepository;
     }
 
-    @Transactional
+    // Create a new user
     public UserResponseDTO createUser(UserRequestDTO request) {
         User user = new User();
         setUserFieldsFromRequest(user, request);
 
+        /* paliksiu uzkomentuota nes paskui prireiks dar
         // Fetch merchant
         Merchant merchant = merchantRepository.findById(request.getMerchantId())
-                .orElseThrow(() -> new MerchantNotFoundException(request.getMerchantId().toString()));
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.MERCHANT, request.getMerchantId().toString()));
         user.setMerchant(merchant);
+        */
 
-        // Save user
         User savedUser = userRepository.save(user);
         return mapToResponseDTO(savedUser);
     }
 
+    // Get user by UUID
     public UserResponseDTO getUserById(UUID userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(userId.toString()));
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, userId.toString()));
         return mapToResponseDTO(user);
     }
 
@@ -47,7 +44,7 @@ public class UserService {
         user.setLastName(request.getLastName());
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
-        user.setRoles(request.getRoles());
+        user.setRole(request.getRole());
     }
 
     private UserResponseDTO mapToResponseDTO(User user) {
@@ -56,8 +53,7 @@ public class UserService {
         dto.setFirstName(user.getFirstName());
         dto.setLastName(user.getLastName());
         dto.setEmail(user.getEmail());
-        dto.setRoles(user.getRoles());
-        dto.setMerchantId(user.getMerchant().getId());
+        dto.setRole(user.getRole());
         dto.setCreatedAt(user.getCreatedAt());
         dto.setUpdatedAt(user.getUpdatedAt());
         return dto;
