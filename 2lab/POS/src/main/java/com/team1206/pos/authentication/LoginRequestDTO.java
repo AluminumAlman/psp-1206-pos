@@ -2,11 +2,9 @@ package com.team1206.pos.authentication;
 
 import lombok.*;
 
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
+@Data
 public class LoginRequestDTO {
 
     private String email;
