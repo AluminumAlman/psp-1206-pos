@@ -34,7 +34,7 @@ public class Service {
 
     @ManyToMany
     @JoinTable(name = "services_users", joinColumns = @JoinColumn(name = "service_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
-    private List<User> users;
+    private List<User> employees;
 
     @ManyToMany(mappedBy = "services")
     private List<Charge> charges;

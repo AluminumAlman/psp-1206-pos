@@ -45,9 +45,7 @@ public class ServiceService {
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.MERCHANT, requestDTO.getMerchantId().toString()));
 
         com.team1206.pos.service.service.Service service = new com.team1206.pos.service.service.Service();
-        service.setName(requestDTO.getName());
-        service.setPrice(requestDTO.getPrice());
-        service.setDuration(requestDTO.getDuration());
+        SetServiceFieldsFromRequestDTO(service, requestDTO);
         service.setMerchant(merchant);
 
         com.team1206.pos.service.service.Service savedService = serviceRepository.save(service);
@@ -62,9 +60,7 @@ public class ServiceService {
         Merchant merchant = merchantRepository.findById(requestDTO.getMerchantId())
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.MERCHANT, requestDTO.getMerchantId().toString()));
 
-        service.setName(requestDTO.getName());
-        service.setPrice(requestDTO.getPrice());
-        service.setDuration(requestDTO.getDuration());
+        SetServiceFieldsFromRequestDTO(service, requestDTO);
         service.setMerchant(merchant);
 
         com.team1206.pos.service.service.Service updatedService = serviceRepository.save(service);
@@ -96,5 +92,11 @@ public class ServiceService {
         dto.setMerchantId(service.getMerchant().getId());
         dto.setCreatedAt(service.getCreatedAt());
         return dto;
+    }
+
+    private void SetServiceFieldsFromRequestDTO(com.team1206.pos.service.service.Service service, ServiceRequestDTO requestDTO) {
+        service.setName(requestDTO.getName());
+        service.setPrice(requestDTO.getPrice());
+        service.setDuration(requestDTO.getDuration());
     }
 }

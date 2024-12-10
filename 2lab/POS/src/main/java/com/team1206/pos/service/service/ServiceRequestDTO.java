@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -21,6 +22,12 @@ public class ServiceRequestDTO {
     @NotNull(message = "Duration is required.")
     @Min(value = 1, message = "Duration must be greater than or equal to 1.")
     private Long duration;
+
+    @NotNull(message = "List of employees is required.")
+    private List<UUID> employeeIds;
+
+    @NotNull(message = "List of charges is required.")
+    private List<UUID> chargeIds;
 
     @NotNull(message = "Merchant ID is required.")
     private UUID merchantId;

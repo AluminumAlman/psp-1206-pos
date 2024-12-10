@@ -1,7 +1,7 @@
 package com.team1206.pos.authentication;
 
 import com.team1206.pos.authentication.security.JWTUtil;
-import com.team1206.pos.enums.ResourceType;
+import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.user.user.*;
 import org.springframework.security.authentication.AuthenticationManager;
