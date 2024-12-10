@@ -1,6 +1,7 @@
 package com.team1206.pos.user.user;
 
 import com.team1206.pos.common.enums.UserRoles;
+import com.team1206.pos.service.reservation.Reservation;
 import com.team1206.pos.user.merchant.Merchant;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -8,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -41,6 +43,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     @NotNull(message = "A role must be assigned")
     private UserRoles role;
+
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Reservation> reservations;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
