@@ -8,7 +8,7 @@ import java.util.Map;
 @Data
 public class ErrorObject {
     private Integer statusCode;
-    private String uuid;
+    private String identifier;
     private String message;
     private String path;
     private LocalDateTime timestamp;
