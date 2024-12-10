@@ -4,6 +4,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -12,6 +13,7 @@ public class ServiceResponseDTO {
     private String name;
     private BigDecimal price;
     private Long duration;
+    private List<UUID> employeeIds;
     private UUID merchantId;
     private LocalDateTime createdAt;
 }
