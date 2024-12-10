@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,7 +18,7 @@ public class ServiceRequestDTO {
 
     @NotNull(message = "Price is required.")
     @Min(value = 0, message = "Price must be greater than or equal to 0.")
-    private Integer price;
+    private BigDecimal price;
 
     @NotNull(message = "Duration is required.")
     @Min(value = 1, message = "Duration must be greater than or equal to 1.")

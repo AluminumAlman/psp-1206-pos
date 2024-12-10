@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -27,7 +28,7 @@ public class Service {
     private String name;
 
     @Column(name = "price", nullable = false)
-    private Integer price;
+    private BigDecimal price;
 
     @Column(name = "duration", nullable = false)
     private Long duration;

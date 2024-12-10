@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @RestController
@@ -23,7 +24,7 @@ public class ServiceController {
             @RequestParam(value = "limit", defaultValue = "10") int limit,
             @RequestParam(value = "offset", defaultValue = "0") int offset,
             @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "price", required = false) Double price,
+            @RequestParam(value = "price", required = false) BigDecimal price,
             @RequestParam(value = "duration", required = false) Long duration) {
         return ResponseEntity.ok(serviceService.getServices(limit, offset, name, price, duration));
     }

@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -24,7 +25,7 @@ public class ServiceService {
     }
 
     // Get services paginated
-    public PaginatedResponseDTO<ServiceResponseDTO> getServices(int offset, int limit, String name, Double price, Long duration) {
+    public PaginatedResponseDTO<ServiceResponseDTO> getServices(int offset, int limit, String name, BigDecimal price, Long duration) {
         Page<com.team1206.pos.service.service.Service> servicePage = serviceRepository.findAllWithFilters(name, price, duration, PageRequest.of(1, 20));
         List<ServiceResponseDTO> items = servicePage.getContent()
                 .stream()
