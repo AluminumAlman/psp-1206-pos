@@ -1,6 +1,7 @@
 package com.team1206.pos.service.service;
 
 import com.team1206.pos.payments.charge.Charge;
+import com.team1206.pos.service.reservation.Reservation;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.user.User;
 import jakarta.persistence.*;
@@ -41,6 +42,9 @@ public class Service {
     @ManyToOne
     @JoinColumn(name = "merchant_id", nullable = false)
     private Merchant merchant;
+
+    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Reservation> reservations;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
