@@ -87,6 +87,9 @@ public class ServiceService {
         dto.setName(service.getName());
         dto.setPrice(service.getPrice());
         dto.setDuration(service.getDuration());
+        dto.setEmployeeFullNames(service.getEmployees().stream()
+                .map(employee -> employee.getFirstName() + " " + employee.getLastName())
+                .toList());
         dto.setMerchantId(service.getMerchant().getId());
         dto.setCreatedAt(service.getCreatedAt());
         return dto;

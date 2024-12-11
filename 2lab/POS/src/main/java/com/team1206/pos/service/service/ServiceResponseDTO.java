@@ -13,7 +13,7 @@ public class ServiceResponseDTO {
     private String name;
     private BigDecimal price;
     private Long duration;
-    private List<UUID> employeeIds;
+    private List<String> employeeFullNames;
     private UUID merchantId;
     private LocalDateTime createdAt;
 }

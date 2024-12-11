@@ -27,7 +27,7 @@ public class Service {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "price", nullable = false)
+    @Column(name = "price", nullable = false, precision = 19, scale = 2)
     private BigDecimal price;
 
     @Column(name = "duration", nullable = false)
