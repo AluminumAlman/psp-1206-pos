@@ -1,5 +1,7 @@
 package com.team1206.pos.payments.charge;
 
+import com.team1206.pos.enums.ChargeScope;
+import com.team1206.pos.enums.ChargeType;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.service.service.Service;
 import com.team1206.pos.user.merchant.Merchant;
@@ -16,16 +18,6 @@ import java.util.UUID;
 @Entity
 @Table(name = "\"charge\"")
 public class Charge {
-    public enum Type {
-        Tax,
-        Service,
-    }
-
-    public enum Scope {
-        Order,
-        Product,
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID) // Auto-generate UUID
     @Column(name = "id", updatable = false, nullable = false)
@@ -33,11 +25,11 @@ public class Charge {
 
     @Column(name = "type", nullable = false)
     @Enumerated(EnumType.ORDINAL)
-    private Type type;
+    private ChargeType type;
 
     @Column(name = "scope", nullable = false)
     @Enumerated(EnumType.ORDINAL)
-    private Scope scope;
+    private ChargeScope scope;
 
     @Column(name = "name", nullable = false, length = 100)
     private String name;
