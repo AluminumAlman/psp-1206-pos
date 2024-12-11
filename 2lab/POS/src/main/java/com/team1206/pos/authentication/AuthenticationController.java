@@ -19,11 +19,11 @@ public class AuthenticationController {
 
     @PostMapping("/register")
     public Map<String, Object> register(@RequestBody UserRequestDTO user) {
-        return authenticationService.registrationHandler(user);
+        return authenticationService.handleRegistration(user);
     }
 
     @PostMapping("/login")
     public Map<String, Object> loginHandler(@RequestBody LoginRequestDTO body) {
-        return authenticationService.loginHandler(body);
+        return authenticationService.handleLogin(body);
     }
 }

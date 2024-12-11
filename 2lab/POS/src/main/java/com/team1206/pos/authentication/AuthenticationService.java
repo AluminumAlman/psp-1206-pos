@@ -32,7 +32,7 @@ public class AuthenticationService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public Map<String, Object> registrationHandler(UserRequestDTO user) {
+    public Map<String, Object> handleRegistration(UserRequestDTO user) {
         String encodedPass = passwordEncoder.encode(user.getPassword());
         user.setPassword(encodedPass);
         UserResponseDTO response = userService.createUser(user);
@@ -41,7 +41,7 @@ public class AuthenticationService {
         return Collections.singletonMap("jwt-token", token);
     }
 
-    public Map<String, Object> loginHandler(LoginRequestDTO body) {
+    public Map<String, Object> handleLogin(LoginRequestDTO body) {
         UsernamePasswordAuthenticationToken authInputToken =
                 new UsernamePasswordAuthenticationToken(body.getEmail(), body.getPassword());
 
