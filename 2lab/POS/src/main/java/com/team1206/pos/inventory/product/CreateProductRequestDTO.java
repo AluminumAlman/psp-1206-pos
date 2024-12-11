@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,7 +16,7 @@ public class CreateProductRequestDTO {
 
     @NotNull(message = "Price is required")
     @Positive(message = "Price must be a positive value")
-    private Integer price;
+    private BigDecimal price;
 
     @NotNull(message = "Category ID is required")
     private UUID categoryId;

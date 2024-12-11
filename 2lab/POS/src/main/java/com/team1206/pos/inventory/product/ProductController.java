@@ -5,9 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @RestController
@@ -28,7 +26,7 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<Page<ProductResponseDTO>> getAllProducts(
             @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "price", required = false) Integer price,
+            @RequestParam(value = "price", required = false) BigDecimal price,
             @RequestParam(value = "categoryId", required = false) UUID categoryId,
             @RequestParam(value = "offset", defaultValue = "0") int offset,
             @RequestParam(value = "limit", defaultValue = "20") int limit) {
