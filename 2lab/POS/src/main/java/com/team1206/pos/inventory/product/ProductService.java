@@ -56,7 +56,7 @@ public class ProductService {
         return mapToResponseDTO(product);
     }
 
-    public Page<ProductResponseDTO> getAllProducts(String name, BigDecimal price, UUID categoryId, int limit, int offset) {
+    public Page<ProductResponseDTO> getAllProducts(String name, BigDecimal price, UUID categoryId, int offset, int limit) {
         Pageable pageable = PageRequest.of(offset / limit, limit); // Create Pageable object
         Page<Product> productPage = productRepository.findAllWithFilters(name, price, categoryId, pageable);
 

@@ -23,7 +23,7 @@ public class ServiceService {
     }
 
     // Get services paginated
-    public Page<ServiceResponseDTO> getServices(int offset, int limit, String name, BigDecimal price, Long duration) {
+    public Page<ServiceResponseDTO> getServices(int limit, int offset, String name, BigDecimal price, Long duration) {
         Pageable pageable = PageRequest.of(offset / limit, limit); // Convert offset and limit into Pageable
 
         // Fetch the filtered results

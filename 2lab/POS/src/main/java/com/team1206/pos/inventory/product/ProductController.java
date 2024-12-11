@@ -31,11 +31,16 @@ public class ProductController {
             @RequestParam(value = "offset", defaultValue = "0") int offset,
             @RequestParam(value = "limit", defaultValue = "20") int limit) {
 
-        Page<ProductResponseDTO> productPage = productService.getAllProducts(name, price, categoryId, limit, offset);
+        if (limit < 1) {
+            throw new IllegalArgumentException("Limit must be at least 1");
+        } else if (offset < 0) {
+            throw new IllegalArgumentException("Offset must be at least 0");
+        }
+
+        Page<ProductResponseDTO> productPage = productService.getAllProducts(name, price, categoryId, offset, limit);
 
         return ResponseEntity.ok(productPage);
     }
-
 
 
     @GetMapping("/{id}")

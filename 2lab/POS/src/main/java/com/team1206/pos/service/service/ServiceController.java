@@ -21,26 +21,33 @@ public class ServiceController {
 
     // GET: Fetch Services with Filters and Pagination
     @GetMapping
-    @Operation( summary = "Get paged services" )
+    @Operation(summary = "Get paged services")
     public ResponseEntity<Page<ServiceResponseDTO>> getServices(
             @RequestParam(value = "limit", defaultValue = "10") int limit,
             @RequestParam(value = "offset", defaultValue = "0") int offset,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "price", required = false) BigDecimal price,
             @RequestParam(value = "duration", required = false) Long duration) {
+
+        if (limit < 1) {
+            throw new IllegalArgumentException("Limit must be at least 1");
+        } else if (offset < 0) {
+            throw new IllegalArgumentException("Offset must be at least 0");
+        }
+
         return ResponseEntity.ok(serviceService.getServices(limit, offset, name, price, duration));
     }
 
     // POST: Create a New Service
     @PostMapping
-    @Operation( summary = "Create a new service" )
+    @Operation(summary = "Create a new service")
     public ResponseEntity<ServiceResponseDTO> createService(@Valid @RequestBody ServiceRequestDTO serviceRequestDTO) {
         return ResponseEntity.status(HttpStatus.CREATED).body(serviceService.createService(serviceRequestDTO));
     }
 
     // PUT: Update Service by ID
     @PutMapping("/{serviceId}")
-    @Operation( summary = "Update service by ID" )
+    @Operation(summary = "Update service by ID")
     public ResponseEntity<ServiceResponseDTO> updateService(
             @PathVariable UUID serviceId,
             @Valid @RequestBody ServiceRequestDTO serviceRequestDTO) {
@@ -49,14 +56,14 @@ public class ServiceController {
 
     // GET: Retrieve Service by ID
     @GetMapping("/{serviceId}")
-    @Operation( summary = "Retrieve service by ID" )
+    @Operation(summary = "Retrieve service by ID")
     public ResponseEntity<ServiceResponseDTO> getServiceById(@PathVariable UUID serviceId) {
         return ResponseEntity.ok(serviceService.getServiceById(serviceId));
     }
 
     // DELETE: Remove Service by ID
     @DeleteMapping("/{serviceId}")
-    @Operation( summary = "Delete a service by ID" )
+    @Operation(summary = "Delete a service by ID")
     public ResponseEntity<Void> deleteService(@PathVariable UUID serviceId) {
         serviceService.deleteService(serviceId);
         return ResponseEntity.noContent().build();
