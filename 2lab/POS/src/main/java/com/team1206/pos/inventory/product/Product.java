@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -29,8 +30,8 @@ public class Product {
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 
-    @Column(name = "price", nullable = false)
-    private Integer price;
+    @Column(name = "price", nullable = false, precision = 19, scale = 2)
+    private BigDecimal price;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductVariation> variations;

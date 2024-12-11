@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 public interface ProductRepository extends JpaRepository<Product, UUID> {
@@ -15,7 +16,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "(:price IS NULL OR p.price = :price) AND " +
             "(:categoryId IS NULL OR p.category.id = :categoryId)")
     Page<Product> findAllWithFilters(@Param("name") String name,
-                                     @Param("price") Integer price,
+                                     @Param("price") BigDecimal price,
                                      @Param("categoryId") UUID categoryId,
                                      Pageable pageable);
 }
