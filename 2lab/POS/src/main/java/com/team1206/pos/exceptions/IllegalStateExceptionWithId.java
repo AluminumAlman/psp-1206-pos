@@ -7,7 +7,7 @@ import java.io.Serial;
 @Getter
 public class IllegalStateExceptionWithId extends RuntimeException {
     @Serial
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
     private final String uuid;
 
     public IllegalStateExceptionWithId(String message, String uuid) {

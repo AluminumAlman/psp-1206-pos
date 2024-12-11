@@ -6,7 +6,7 @@ import lombok.Getter;
 public enum ResourceType {
     MERCHANT("Merchant"),
     USER("User"),
-    CATEGORY("Product Category"),
+    PRODUCT_CATEGORY("Product Category"),
     PRODUCT("Product"),
     CHARGE("Charge");
 

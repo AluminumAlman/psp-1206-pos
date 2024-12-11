@@ -31,7 +31,7 @@ public class ProductService {
 
     public ProductResponseDTO createProduct(CreateProductRequestDTO requestDTO) {
         ProductCategory category = productCategoryRepository.findById(requestDTO.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, requestDTO.getCategoryId().toString()));
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_CATEGORY, requestDTO.getCategoryId().toString()));
         Product product = new Product();
         product.setName(requestDTO.getName());
         product.setPrice(requestDTO.getPrice());
@@ -64,7 +64,7 @@ public class ProductService {
 
     public ProductResponseDTO updateProduct(UUID id, UpdateProductRequestDTO updateProductRequestDTO) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, id.toString())); // TO-DO exceptionHandler
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, id.toString()));
 
         if (updateProductRequestDTO.getName() != null && !updateProductRequestDTO.getName().isBlank()) {
             product.setName(updateProductRequestDTO.getName());
@@ -76,7 +76,7 @@ public class ProductService {
 
         if (updateProductRequestDTO.getCategoryId() != null) {
             ProductCategory category = productCategoryRepository.findById(updateProductRequestDTO.getCategoryId())
-                    .orElseThrow(() -> new ResourceNotFoundException(ResourceType.CATEGORY, updateProductRequestDTO.getCategoryId().toString()));  // TO-DO exceptionHandler
+                    .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_CATEGORY, updateProductRequestDTO.getCategoryId().toString()));
             product.setCategory(category);
         }
 
@@ -91,10 +91,10 @@ public class ProductService {
     }
 
     public void deleteProductById(UUID id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, id.toString())); // TO-DO ExceptionHandler
-
-        productRepository.delete(product);
+        if (!productRepository.existsById(id)) {
+            throw new ResourceNotFoundException(ResourceType.PRODUCT, id.toString());
+        }
+        productRepository.deleteById(id);
     }
 
     // Helpers

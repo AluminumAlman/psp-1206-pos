@@ -25,7 +25,7 @@ public class ProductCategoryService {
 
     public ProductCategoryResponseDTO createProductCategory(CreateProductCategoryRequestDTO requestDTO) {
         Merchant merchant = merchantRepository.findById(requestDTO.getMerchantId())
-                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.CATEGORY, requestDTO.getMerchantId().toString()));
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.MERCHANT, requestDTO.getMerchantId().toString()));
 
         ProductCategory category = mapToEntity(requestDTO, merchant);
         ProductCategory savedCategory = productCategoryRepository.save(category);
@@ -34,7 +34,7 @@ public class ProductCategoryService {
 
     public ProductCategoryResponseDTO getProductCategory(UUID id) {
         ProductCategory category = productCategoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.CATEGORY, id.toString()));
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_CATEGORY, id.toString()));
         return mapToResponseDTO(category);
     }
 
@@ -47,10 +47,10 @@ public class ProductCategoryService {
 
     public void deleteCategory(UUID id) {
         ProductCategory category = productCategoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.CATEGORY, id.toString()));
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_CATEGORY, id.toString()));
 
         if (!category.getProducts().isEmpty()) {
-            throw new IllegalStateExceptionWithId("Cannot delete category as there are products assigned to it.", id.toString()); // TO-DO exceptionHandler
+            throw new IllegalStateExceptionWithId("Cannot delete category as there are products assigned to it.", id.toString());
         }
 
         productCategoryRepository.delete(category);
@@ -59,7 +59,7 @@ public class ProductCategoryService {
     public ProductCategoryResponseDTO updateCategory(UUID id, UpdateProductCategoryRequestDTO requestDTO) {
 
         ProductCategory category = productCategoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.CATEGORY, id.toString()));
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_CATEGORY, id.toString()));
 
         category.setName(requestDTO.getName());
 
