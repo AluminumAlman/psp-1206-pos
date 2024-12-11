@@ -2,6 +2,8 @@ package com.team1206.pos.user.user;
 
 import com.team1206.pos.enums.ResourceType;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
+import com.team1206.pos.user.merchant.Merchant;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -34,7 +36,7 @@ public class UserService {
     // Get user by UUID
     public UserResponseDTO getUserById(UUID userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, userId.toString()));
+                                  .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, userId.toString()));
         return mapToResponseDTO(user);
     }
 
@@ -57,5 +59,19 @@ public class UserService {
         dto.setCreatedAt(user.getCreatedAt());
         dto.setUpdatedAt(user.getUpdatedAt());
         return dto;
+    }
+
+    public UUID getMerchantIdFromLoggedInUser() {
+        // Retrieve the authenticated user's email
+        String email =
+                ((org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext()
+                                                                                                  .getAuthentication()
+                                                                                                  .getPrincipal()).getUsername();
+
+        // Fetch the user and return the merchant's ID if present
+        return userRepository.findByEmail(email)
+                             .map(User::getMerchant)
+                             .map(Merchant::getId)
+                             .orElse(null);
     }
 }
