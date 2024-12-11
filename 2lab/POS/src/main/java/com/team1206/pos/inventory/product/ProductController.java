@@ -26,7 +26,7 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<Map<String, Object>> getAllProducts(
+    public ResponseEntity<Page<ProductResponseDTO>> getAllProducts(
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "price", required = false) Integer price,
             @RequestParam(value = "categoryId", required = false) UUID categoryId,
@@ -35,14 +35,9 @@ public class ProductController {
 
         Page<ProductResponseDTO> productPage = productService.getAllProducts(name, price, categoryId, limit, offset);
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("total", productPage.getTotalElements());
-        response.put("offset", offset);
-        response.put("limit", limit);
-        response.put("items", productPage.getContent());
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(productPage);
     }
+
 
 
     @GetMapping("/{id}")
