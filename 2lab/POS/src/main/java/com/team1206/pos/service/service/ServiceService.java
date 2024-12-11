@@ -4,22 +4,27 @@ import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.merchant.MerchantRepository;
+import com.team1206.pos.user.user.User;
+import com.team1206.pos.user.user.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 @Service
 public class ServiceService {
     private final ServiceRepository serviceRepository;
     private final MerchantRepository merchantRepository;
+    private final UserService userService;
 
-    public ServiceService(ServiceRepository serviceRepository, MerchantRepository merchantRepository) {
+    public ServiceService(ServiceRepository serviceRepository, MerchantRepository merchantRepository, UserService userService) {
         this.serviceRepository = serviceRepository;
         this.merchantRepository = merchantRepository;
+        this.userService = userService;
     }
 
     // Get services paginated
@@ -99,5 +104,17 @@ public class ServiceService {
         service.setName(requestDTO.getName());
         service.setPrice(requestDTO.getPrice());
         service.setDuration(requestDTO.getDuration());
+
+        List<UUID> employeeIds = requestDTO.getEmployeeIds();
+
+        List<User> employees = userService.findAllById(employeeIds);
+
+        // If the number of returned users is not equal to the number of IDs, some users were not found
+        if (employees.size() != employeeIds.size()) {
+            throw new ResourceNotFoundException(ResourceType.USER, "Some employee IDs were not found");
+        }
+
+        service.setEmployees(employees);
     }
+
 }
