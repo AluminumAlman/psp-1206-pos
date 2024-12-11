@@ -34,6 +34,7 @@ public class ServiceService {
         // Fetch the filtered results
         Page<com.team1206.pos.service.service.Service> servicePage = serviceRepository.findAllWithFilters(name, price, duration, pageable);
 
+        // Map the Page<Service> to Page<ServiceResponseDTO>
         return servicePage.map(this::mapToResponseDTO);
     }
 

@@ -3,6 +3,10 @@ package com.team1206.pos.service.service;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,21 +26,36 @@ public class ServiceController {
     // GET: Fetch Services with Filters and Pagination
     @GetMapping
     @Operation(summary = "Get paged services")
-    public ResponseEntity<Page<ServiceResponseDTO>> getServices(
+    public ResponseEntity<PagedModel<EntityModel<ServiceResponseDTO>>> getServices(
             @RequestParam(value = "limit", defaultValue = "10") int limit,
             @RequestParam(value = "offset", defaultValue = "0") int offset,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "price", required = false) BigDecimal price,
-            @RequestParam(value = "duration", required = false) Long duration) {
+            @RequestParam(value = "duration", required = false) Long duration,
+            Pageable pageable,
+            PagedResourcesAssembler<ServiceResponseDTO> assembler) {
 
+        // Validate parameters
         if (limit < 1) {
             throw new IllegalArgumentException("Limit must be at least 1");
-        } else if (offset < 0) {
+        }
+        if (offset < 0) {
             throw new IllegalArgumentException("Offset must be at least 0");
         }
 
-        return ResponseEntity.ok(serviceService.getServices(limit, offset, name, price, duration));
+        if (limit > 100) {
+            limit = 100;
+        }
+
+        // Fetch services from the service layer
+        Page<ServiceResponseDTO> servicePage = serviceService.getServices(limit, offset, name, price, duration);
+
+        // Convert the Page<ServiceResponseDTO> to a PagedModel<EntityModel<ServiceResponseDTO>>
+        org.springframework.hateoas.PagedModel<EntityModel<ServiceResponseDTO>> pagedModel = assembler.toModel(servicePage);
+
+        return ResponseEntity.ok(pagedModel);
     }
+
 
     // POST: Create a New Service
     @PostMapping
