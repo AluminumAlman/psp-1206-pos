@@ -6,7 +6,6 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -57,15 +56,13 @@ public class MerchantService {
 
     // Delete merchant by ID
     public void deleteMerchantById(UUID merchantId) {
-        Optional<Merchant> merchant = merchantRepository.findById(merchantId);
-        if (merchant.isPresent()) {
-            try {
-                merchantRepository.deleteById(merchantId);
-            } catch (Exception e) {
-                throw new RuntimeException("An error occurred while deleting the merchant.", e);
-            }
-        } else {
+        if (!merchantRepository.existsById(merchantId)) {
             throw new ResourceNotFoundException(ResourceType.MERCHANT, merchantId.toString());
+        }
+        try {
+            merchantRepository.deleteById(merchantId);
+        } catch (Exception e) {
+            throw new RuntimeException("An error occurred while deleting the merchant with ID: " + merchantId, e);
         }
     }
 

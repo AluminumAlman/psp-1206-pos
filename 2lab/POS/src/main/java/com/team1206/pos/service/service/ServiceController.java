@@ -1,7 +1,7 @@
 package com.team1206.pos.service.service;
 
-import com.team1206.pos.common.dto.PaginatedResponseDTO;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +20,7 @@ public class ServiceController {
 
     // GET: Fetch Services with Filters and Pagination
     @GetMapping
-    public ResponseEntity<PaginatedResponseDTO<ServiceResponseDTO>> getServices(
+    public ResponseEntity<Page<ServiceResponseDTO>> getServices(
             @RequestParam(value = "limit", defaultValue = "10") int limit,
             @RequestParam(value = "offset", defaultValue = "0") int offset,
             @RequestParam(value = "name", required = false) String name,
