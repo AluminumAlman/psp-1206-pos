@@ -33,7 +33,8 @@ public class ProductController {
 
         if (limit < 1) {
             throw new IllegalArgumentException("Limit must be at least 1");
-        } else if (offset < 0) {
+        }
+        if (offset < 0) {
             throw new IllegalArgumentException("Offset must be at least 0");
         }
 
