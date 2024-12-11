@@ -40,6 +40,13 @@ public class UserService {
         return mapToResponseDTO(user);
     }
 
+    // Get user by email
+    public UserResponseDTO getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                                  .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, email));
+        return mapToResponseDTO(user);
+    }
+
     // Helper methods
     private void setUserFieldsFromRequest(User user, UserRequestDTO request) {
         user.setFirstName(request.getFirstName());

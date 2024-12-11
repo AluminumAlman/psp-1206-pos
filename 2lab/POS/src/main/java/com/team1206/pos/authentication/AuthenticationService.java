@@ -1,8 +1,6 @@
 package com.team1206.pos.authentication;
 
 import com.team1206.pos.authentication.security.JWTUtil;
-import com.team1206.pos.enums.ResourceType;
-import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.user.user.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,18 +13,15 @@ import java.util.Map;
 @Service
 public class AuthenticationService {
     private final UserService userService;
-    private final UserRepository userRepository;
     private final JWTUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
 
     public AuthenticationService(UserService userService,
-                                 UserRepository userRepository,
                                  JWTUtil jwtUtil,
                                  AuthenticationManager authenticationManager,
                                  PasswordEncoder passwordEncoder) {
         this.userService = userService;
-        this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
         this.authenticationManager = authenticationManager;
         this.passwordEncoder = passwordEncoder;
@@ -47,8 +42,7 @@ public class AuthenticationService {
 
         authenticationManager.authenticate(authInputToken);
 
-        User user = userRepository.findByEmail(body.getEmail())
-                                  .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, body.getEmail()));
+        UserResponseDTO user = userService.getUserByEmail(body.getEmail());
 
         String token = jwtUtil.generateToken(user.getEmail(),
                                              user.getFirstName() + " " + user.getLastName());
