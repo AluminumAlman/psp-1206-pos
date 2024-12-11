@@ -3,7 +3,7 @@ package com.team1206.pos.service.service;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.user.merchant.Merchant;
-import com.team1206.pos.user.merchant.MerchantRepository;
+import com.team1206.pos.user.merchant.MerchantService;
 import com.team1206.pos.user.user.User;
 import com.team1206.pos.user.user.UserService;
 import org.springframework.data.domain.Page;
@@ -18,13 +18,13 @@ import java.util.UUID;
 @Service
 public class ServiceService {
     private final ServiceRepository serviceRepository;
-    private final MerchantRepository merchantRepository;
     private final UserService userService;
+    private final MerchantService merchantService;
 
-    public ServiceService(ServiceRepository serviceRepository, MerchantRepository merchantRepository, UserService userService) {
+    public ServiceService(ServiceRepository serviceRepository, UserService userService, MerchantService merchantService) {
         this.serviceRepository = serviceRepository;
-        this.merchantRepository = merchantRepository;
         this.userService = userService;
+        this.merchantService = merchantService;
     }
 
     // Get services paginated
@@ -40,8 +40,7 @@ public class ServiceService {
 
     // Create Service
     public ServiceResponseDTO createService(ServiceRequestDTO requestDTO) {
-        Merchant merchant = merchantRepository.findById(requestDTO.getMerchantId())
-                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.MERCHANT, requestDTO.getMerchantId().toString()));
+        Merchant merchant = merchantService.findById(requestDTO.getMerchantId());
 
         com.team1206.pos.service.service.Service service = new com.team1206.pos.service.service.Service();
         SetServiceFieldsFromRequestDTO(service, requestDTO);
@@ -56,8 +55,7 @@ public class ServiceService {
         com.team1206.pos.service.service.Service service = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.SERVICE, serviceId.toString()));
 
-        Merchant merchant = merchantRepository.findById(requestDTO.getMerchantId())
-                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.MERCHANT, requestDTO.getMerchantId().toString()));
+        Merchant merchant = merchantService.findById(requestDTO.getMerchantId());
 
         SetServiceFieldsFromRequestDTO(service, requestDTO);
         service.setMerchant(merchant);
