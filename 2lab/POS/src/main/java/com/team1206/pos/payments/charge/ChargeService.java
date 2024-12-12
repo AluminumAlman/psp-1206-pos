@@ -7,6 +7,9 @@ import com.team1206.pos.service.service.Service;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.merchant.MerchantRepository;
 import com.team1206.pos.user.merchant.MerchantService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,20 +22,23 @@ public class ChargeService {
     private final MerchantService merchantService;
     MerchantRepository merchantRepository;
 
-    public ChargeService(ChargeRepository chargeRepository,
-                         MerchantRepository merchantRepository,
-                         MerchantService merchantService) {
+    public ChargeService(
+            ChargeRepository chargeRepository,
+            MerchantRepository merchantRepository,
+            MerchantService merchantService) {
         this.chargeRepository = chargeRepository;
         this.merchantRepository = merchantRepository;
         this.merchantService = merchantService;
     }
 
-    // TODO: Pakeisti į Pageable
-    public List<ChargeResponseDTO> getCharges() {
-        return chargeRepository.findAll()
-                               .stream()
-                               .map(this::mapToResponseDTO)
-                               .collect(Collectors.toList());
+    public Page<ChargeResponseDTO> getCharges(int limit, int offset, String chargeType) {
+        Pageable pageable = PageRequest.of(offset / limit, limit);
+
+        Page<Charge> chargePage =
+                chargeRepository.findAllWithFilters(ChargeType.valueOf(chargeType.toUpperCase()),
+                                                    pageable);
+
+        return chargePage.map(this::mapToResponseDTO);
     }
 
 
