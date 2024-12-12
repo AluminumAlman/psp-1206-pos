@@ -37,6 +37,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorObject, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(IllegalStateExceptionWithId.class)
+    public ResponseEntity<ErrorObject> handleIllegalStateException(IllegalStateExceptionWithId ex, WebRequest request) {
+        ErrorObject errorObject = new ErrorObject();
+        errorObject.setStatusCode(HttpStatus.CONFLICT.value()); // Uses 409 Conflict
+        errorObject.setUuid(ex.getUuid());
+        errorObject.setMessage(ex.getMessage());
+        errorObject.setPath(request.getDescription(false).replace("uri=", ""));
+        errorObject.setTimestamp(LocalDateTime.now());
+
+        return new ResponseEntity<>(errorObject, HttpStatus.CONFLICT);
+    }
+
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             @NonNull MethodArgumentNotValidException ex,

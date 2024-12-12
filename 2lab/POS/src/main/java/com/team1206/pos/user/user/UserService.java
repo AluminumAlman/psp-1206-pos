@@ -5,6 +5,8 @@ import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.merchant.MerchantRepository;
 import org.springframework.dao.DataIntegrityViolationException;
+import com.team1206.pos.user.merchant.Merchant;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -79,6 +81,13 @@ public class UserService {
         return mapToResponseDTO(updatedUser);
     }
 
+    // Get user by email
+    public UserResponseDTO getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, email));
+        return mapToResponseDTO(user);
+    }
+
     // Helper methods
     private void setUserFieldsFromRequest(User user, UserRequestDTO request) {
         user.setFirstName(request.getFirstName());
@@ -97,7 +106,20 @@ public class UserService {
         dto.setRole(user.getRole());
         dto.setCreatedAt(user.getCreatedAt());
         dto.setUpdatedAt(user.getUpdatedAt());
-        dto.setMerchantId(user.getMerchant() != null ? user.getMerchant().getId() : null);
         return dto;
+    }
+
+    public UUID getMerchantIdFromLoggedInUser() {
+        // Retrieve the authenticated user's email
+        String email =
+                ((org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext()
+                                                                                                  .getAuthentication()
+                                                                                                  .getPrincipal()).getUsername();
+
+        // Fetch the user and return the merchant's ID if present
+        return userRepository.findByEmail(email)
+                             .map(User::getMerchant)
+                             .map(Merchant::getId)
+                             .orElse(null);
     }
 }
