@@ -9,6 +9,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -37,19 +38,21 @@ public class Charge {
     @Column(name = "percent", nullable = true)
     private Integer percent;
 
-    @Column(name = "amount", nullable = true)
-    private Integer amount;
+    @Column(name = "amount", nullable = true, precision = 19, scale = 2)
+    private BigDecimal amount;
 
     @ManyToMany
-    @JoinTable(name = "charges_products", joinColumns = @JoinColumn(name = "charge_id"), inverseJoinColumns = @JoinColumn(name = "product_id"))
+    @JoinTable(name = "charges_products", joinColumns = @JoinColumn(name = "charge_id"),
+            inverseJoinColumns = @JoinColumn(name = "product_id"))
     private List<Product> products;
 
     @ManyToMany
-    @JoinTable(name = "charges_services", joinColumns = @JoinColumn(name = "charge_id"), inverseJoinColumns = @JoinColumn(name = "service_id"))
+    @JoinTable(name = "charges_services", joinColumns = @JoinColumn(name = "charge_id"),
+            inverseJoinColumns = @JoinColumn(name = "service_id"))
     private List<Service> services;
 
     @ManyToOne
-    @JoinColumn(name = "merchant", nullable = false)
+    @JoinColumn(name = "merchant_id", nullable = false)
     private Merchant merchant;
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -57,6 +60,9 @@ public class Charge {
 
     @Column(name = "updated_at", nullable = true)
     private LocalDateTime updatedAt;
+
+    @Column(name = "is_active")
+    private Boolean isActive = true;
 
     @PreUpdate
     public void setUpdatedAt() {
