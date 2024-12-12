@@ -1,6 +1,7 @@
 package com.team1206.pos.user.user;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +11,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/users")
+@SecurityRequirement(name = "BearerAuth")
 public class UserController {
 
     private final UserService userService;
@@ -27,8 +29,12 @@ public class UserController {
 
     @GetMapping
     @Operation(summary = "Get user list")
-    public ResponseEntity<List<UserResponseDTO>> getUsers() {
-        List<UserResponseDTO> users = userService.getAllUsers();
+    public ResponseEntity<List<UserResponseDTO>> getUsers(
+            @RequestParam(required = false) String firstname,
+            @RequestParam(required = false) String lastname,
+            @RequestParam(required = false) String email
+    ) {
+        List<UserResponseDTO> users = userService.getAllUsers(firstname, lastname, email);
         return ResponseEntity.ok(users);
     }
 

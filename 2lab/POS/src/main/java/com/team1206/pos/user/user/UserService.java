@@ -1,13 +1,14 @@
 package com.team1206.pos.user.user;
 
 import com.team1206.pos.enums.ResourceType;
+import com.team1206.pos.enums.UserRoles;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.merchant.MerchantRepository;
 import org.springframework.dao.DataIntegrityViolationException;
-import com.team1206.pos.user.merchant.Merchant;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.UUID;
@@ -38,18 +39,32 @@ public class UserService {
         return mapToResponseDTO(user);
     }
 
-    // Get all users
-    public List<UserResponseDTO> getAllUsers() {
+    // Get all users with optional filters
+    public List<UserResponseDTO> getAllUsers(String firstname, String lastname, String email) {
         List<User> users = userRepository.findAll();
+
+        if (StringUtils.hasText(firstname)) {
+            users = users.stream().filter(u -> u.getFirstName().equalsIgnoreCase(firstname)).toList();
+        }
+
+        if (StringUtils.hasText(lastname)) {
+            users = users.stream().filter(u -> u.getLastName().equalsIgnoreCase(lastname)).toList();
+        }
+
+        if (StringUtils.hasText(email)) {
+            users = users.stream().filter(u -> u.getEmail().equalsIgnoreCase(email)).toList();
+        }
+
         return users.stream().map(this::mapToResponseDTO).toList();
     }
 
-
     // Update user
     public UserResponseDTO updateUser(UUID userId, UserRequestDTO request) {
+        verifyAdminOrOwnerRole();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, userId.toString()));
 
+        // Check email uniqueness if email changed
         if (!request.getEmail().equalsIgnoreCase(user.getEmail())) {
             if (userRepository.findAll().stream().anyMatch(u -> u.getEmail().equalsIgnoreCase(request.getEmail()) && !u.getId().equals(userId))) {
                 throw new DataIntegrityViolationException("Email is already in use");
@@ -63,6 +78,7 @@ public class UserService {
 
     // Delete user
     public void deleteUser(UUID userId) {
+        verifyAdminOrOwnerRole();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, userId.toString()));
         userRepository.delete(user);
@@ -70,6 +86,7 @@ public class UserService {
 
     // Assign merchant to user
     public UserResponseDTO assignMerchantToUser(UUID userId, UUID merchantId) {
+        verifyAdminOrOwnerRole();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, userId.toString()));
 
@@ -106,20 +123,28 @@ public class UserService {
         dto.setRole(user.getRole());
         dto.setCreatedAt(user.getCreatedAt());
         dto.setUpdatedAt(user.getUpdatedAt());
+        dto.setMerchantId(user.getMerchant() != null ? user.getMerchant().getId() : null);
         return dto;
     }
 
-    public UUID getMerchantIdFromLoggedInUser() {
-        // Retrieve the authenticated user's email
+    private User getCurrentUser() {
         String email =
                 ((org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext()
-                                                                                                  .getAuthentication()
-                                                                                                  .getPrincipal()).getUsername();
+                        .getAuthentication()
+                        .getPrincipal()).getUsername();
 
-        // Fetch the user and return the merchant's ID if present
         return userRepository.findByEmail(email)
-                             .map(User::getMerchant)
-                             .map(Merchant::getId)
-                             .orElse(null);
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, email));
+    }
+
+    private UserRoles getCurrentUserRole() {
+        return getCurrentUser().getRole();
+    }
+
+    public void verifyAdminOrOwnerRole() {
+        UserRoles currentUserRole = getCurrentUserRole();
+        if (!(currentUserRole == UserRoles.SUPER_ADMIN || currentUserRole == UserRoles.MERCHANT_OWNER)) {
+            throw new DataIntegrityViolationException("You do not have permission to perform this action.");
+        }
     }
 }
