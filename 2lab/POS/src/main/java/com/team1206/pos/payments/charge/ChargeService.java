@@ -2,6 +2,8 @@ package com.team1206.pos.payments.charge;
 
 import com.team1206.pos.common.enums.ChargeScope;
 import com.team1206.pos.common.enums.ChargeType;
+import com.team1206.pos.common.enums.ResourceType;
+import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.service.service.Service;
 import com.team1206.pos.user.merchant.Merchant;
@@ -31,17 +33,25 @@ public class ChargeService {
         this.merchantService = merchantService;
     }
 
-    public Page<ChargeResponseDTO> getCharges(int limit, int offset, String chargeType) {
+    // Get charges by merchantId paginated
+    public Page<ChargeResponseDTO> getCharges(int limit, int offset, UUID merchantId) {
         Pageable pageable = PageRequest.of(offset / limit, limit);
 
-        Page<Charge> chargePage =
-                chargeRepository.findAllWithFilters(ChargeType.valueOf(chargeType.toUpperCase()),
-                                                    pageable);
+        Page<Charge> chargePage = chargeRepository.findAllWithFilters(merchantId, pageable);
 
         return chargePage.map(this::mapToResponseDTO);
     }
 
+    // Get charges by chargeType paginated
+    public Page<ChargeResponseDTO> getCharges(int limit, int offset, String chargeType) {
+        Pageable pageable = PageRequest.of(offset / limit, limit);
 
+        Page<Charge> chargePage = chargeRepository.findAllWithFilters(ChargeType.valueOf(chargeType.toUpperCase()), pageable);
+
+        return chargePage.map(this::mapToResponseDTO);
+    }
+
+    // Create charge
     public ChargeResponseDTO createCharge(ChargeRequestDTO request) {
         Merchant merchant = merchantService.findById(request.getMerchantId());
 
@@ -51,14 +61,60 @@ public class ChargeService {
         return mapToResponseDTO(savedCharge);
     }
 
-    private Charge mapToEntity(ChargeRequestDTO request, Merchant merchant) {
-        Charge charge = new Charge();
+    // Retrieve charge by ID
+    public ChargeResponseDTO getChargeById(UUID chargeId) {
+        Charge charge = chargeRepository.findById(chargeId)
+                                        .orElseThrow(() -> new ResourceNotFoundException(ResourceType.CHARGE, chargeId.toString()));
+
+        return mapToResponseDTO(charge);
+    }
+
+    // Update charge by ID
+    public ChargeResponseDTO updateCharge(UUID chargeId, ChargeRequestDTO request) {
+        Charge charge = chargeRepository.findById(chargeId)
+                                        .orElseThrow(() -> new ResourceNotFoundException(ResourceType.CHARGE, chargeId.toString()));
+
+        Merchant merchant = merchantService.findById(request.getMerchantId());
+
+        setChargeFieldsFromRequestDTO(charge, request);
+        charge.setMerchant(merchant);
+
+        Charge updatedCharge = chargeRepository.save(charge);
+
+        return mapToResponseDTO(updatedCharge);
+    }
+
+    // Deactivate charge by ID
+    public void deactivateCharge(UUID chargeId) {
+        Charge charge = chargeRepository.findById(chargeId)
+                                        .orElseThrow(() -> new ResourceNotFoundException(ResourceType.CHARGE, chargeId.toString()));
+
+        charge.setIsActive(false);
+
+        chargeRepository.save(charge);
+    }
+
+    // Reactivate charge by ID
+    public ChargeResponseDTO reactivateCharge(UUID chargeId) {
+        Charge charge = chargeRepository.findById(chargeId)
+                                        .orElseThrow(() -> new ResourceNotFoundException(ResourceType.CHARGE, chargeId.toString()));
+
+        charge.setIsActive(true);
+
+        Charge updatedCharge = chargeRepository.save(charge);
+
+        return mapToResponseDTO(updatedCharge);
+    }
+
+
+    // *** Helper methods ***
+
+    private void setChargeFieldsFromRequestDTO(Charge charge, ChargeRequestDTO request) {
         charge.setType(ChargeType.valueOf(request.getChargeType().toUpperCase()));
         charge.setScope(ChargeScope.valueOf(request.getChargeScope().toUpperCase()));
         charge.setName(request.getName());
         charge.setPercent(request.getPercent());
         charge.setAmount(request.getAmount());
-        charge.setMerchant(merchant);
 
 //         Convert product UUIDs to Product entities
         List<Product> products = request.getProducts().stream().map(productId -> {
@@ -75,7 +131,13 @@ public class ChargeService {
             return service;
         }).collect(Collectors.toList());
         charge.setServices(services);
+    }
 
+    private Charge mapToEntity(ChargeRequestDTO request, Merchant merchant) {
+        Charge charge = new Charge();
+
+        setChargeFieldsFromRequestDTO(charge, request);
+        charge.setMerchant(merchant);
         charge.setCreatedAt(LocalDateTime.now());
         charge.setIsActive(true);
 

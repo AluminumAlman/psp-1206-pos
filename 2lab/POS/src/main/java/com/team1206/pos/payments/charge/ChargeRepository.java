@@ -12,4 +12,7 @@ import java.util.UUID;
 public interface ChargeRepository extends JpaRepository<Charge, UUID> {
     @Query("SELECT c FROM Charge c WHERE (:chargeType IS NULL OR c.type = :chargeType)")
     Page<Charge> findAllWithFilters(@Param("chargeType") ChargeType chargeType, Pageable pageable);
+
+    @Query("SELECT c FROM Charge c WHERE (:merchantId IS NULL OR c.merchant.id = :merchantId)")
+    Page<Charge> findAllWithFilters(@Param("merchantId") UUID merchantId, Pageable pageable);
 }
