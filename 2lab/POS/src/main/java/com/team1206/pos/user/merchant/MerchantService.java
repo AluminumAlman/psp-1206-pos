@@ -1,12 +1,11 @@
 package com.team1206.pos.user.merchant;
 
-import com.team1206.pos.enums.ResourceType;
+import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -21,7 +20,7 @@ public class MerchantService {
     // Create a new merchant
     public MerchantResponseDTO createMerchant(MerchantRequestDTO request) {
         Merchant merchant = new Merchant();
-        setMerchantFieldsFromRequest(merchant, request);
+        setMerchantFieldsFromRequestDTO(merchant, request);
 
         Merchant savedMerchant = merchantRepository.save(merchant);
         return mapToResponseDTO(savedMerchant);
@@ -49,7 +48,7 @@ public class MerchantService {
                 .findById(merchantId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.MERCHANT, merchantId.toString()));
 
-        setMerchantFieldsFromRequest(retrievedMerchant, request);
+        setMerchantFieldsFromRequestDTO(retrievedMerchant, request);
 
         Merchant updatedMerchant = merchantRepository.save(retrievedMerchant);
         return mapToResponseDTO(updatedMerchant);
@@ -57,16 +56,19 @@ public class MerchantService {
 
     // Delete merchant by ID
     public void deleteMerchantById(UUID merchantId) {
-        Optional<Merchant> merchant = merchantRepository.findById(merchantId);
-        if (merchant.isPresent()) {
-            try {
-                merchantRepository.deleteById(merchantId);
-            } catch (Exception e) {
-                throw new RuntimeException("An error occurred while deleting the merchant.", e);
-            }
-        } else {
+        if (!merchantRepository.existsById(merchantId)) {
             throw new ResourceNotFoundException(ResourceType.MERCHANT, merchantId.toString());
         }
+        try {
+            merchantRepository.deleteById(merchantId);
+        } catch (Exception e) {
+            throw new RuntimeException("An error occurred while deleting the merchant with ID: " + merchantId, e);
+        }
+    }
+
+    public Merchant findById(UUID merchantId) {
+        return merchantRepository.findById(merchantId)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.MERCHANT, merchantId.toString()));
     }
 
     // Map Merchant entity to Response DTO
@@ -86,14 +88,14 @@ public class MerchantService {
     }
 
     // Set merchant fields
-    private void setMerchantFieldsFromRequest(Merchant merchant, MerchantRequestDTO request) {
-        merchant.setName(request.getName());
-        merchant.setPhone(request.getPhone());
-        merchant.setEmail(request.getEmail());
-        merchant.setCurrency(request.getCurrency());
-        merchant.setAddress(request.getAddress());
-        merchant.setCity(request.getCity());
-        merchant.setCountry(request.getCountry());
-        merchant.setPostcode(request.getPostcode());
+    private void setMerchantFieldsFromRequestDTO(Merchant merchant, MerchantRequestDTO requestDTO) {
+        merchant.setName(requestDTO.getName());
+        merchant.setPhone(requestDTO.getPhone());
+        merchant.setEmail(requestDTO.getEmail());
+        merchant.setCurrency(requestDTO.getCurrency());
+        merchant.setAddress(requestDTO.getAddress());
+        merchant.setCity(requestDTO.getCity());
+        merchant.setCountry(requestDTO.getCountry());
+        merchant.setPostcode(requestDTO.getPostcode());
     }
 }
