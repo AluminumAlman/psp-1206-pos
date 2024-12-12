@@ -1,6 +1,6 @@
 package com.team1206.pos.inventory.productCategory;
 
-import com.team1206.pos.enums.ResourceType;
+import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.exceptions.ResourceNotFoundException;

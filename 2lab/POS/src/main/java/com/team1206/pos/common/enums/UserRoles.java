@@ -1,4 +1,4 @@
-package com.team1206.pos.enums;
+package com.team1206.pos.common.enums;
 
 public enum UserRoles {
     SUPER_ADMIN,
