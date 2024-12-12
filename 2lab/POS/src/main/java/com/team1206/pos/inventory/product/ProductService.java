@@ -1,6 +1,6 @@
 package com.team1206.pos.inventory.product;
 
-import com.team1206.pos.enums.ResourceType;
+import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.inventory.productCategory.ProductCategory;
 import com.team1206.pos.inventory.productCategory.ProductCategoryService;
@@ -54,7 +54,7 @@ public class ProductService {
         return mapToResponseDTO(product);
     }
 
-    public Page<ProductResponseDTO> getAllProducts(String name, BigDecimal price, UUID categoryId, int limit, int offset) {
+    public Page<ProductResponseDTO> getAllProducts(String name, BigDecimal price, UUID categoryId, int offset, int limit) {
         Pageable pageable = PageRequest.of(offset / limit, limit); // Create Pageable object
         Page<Product> productPage = productRepository.findAllWithFilters(name, price, categoryId, pageable);
 

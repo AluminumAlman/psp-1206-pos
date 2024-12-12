@@ -1,11 +1,12 @@
 package com.team1206.pos.user.user;
 
-import com.team1206.pos.enums.ResourceType;
+import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.user.merchant.Merchant;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -36,15 +37,41 @@ public class UserService {
     // Get user by UUID
     public UserResponseDTO getUserById(UUID userId) {
         User user = userRepository.findById(userId)
-                                  .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, userId.toString()));
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, userId.toString()));
         return mapToResponseDTO(user);
     }
 
     // Get user by email
     public UserResponseDTO getUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
-                                  .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, email));
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, email));
         return mapToResponseDTO(user);
+    }
+
+    // Get list of user refs from their IDs
+    public List<User> findAllById(List<UUID> userIds) {
+        List<User> employees = userRepository.findAllById(userIds);
+
+        // If the number of returned users is not equal to the number of IDs, some users were not found
+        if (employees.size() != userIds.size()) {
+            throw new ResourceNotFoundException(ResourceType.USER, "Some employee IDs were not found");
+        }
+        return employees;
+    }
+
+    // Get merchant ID from logged in user
+    public UUID getMerchantIdFromLoggedInUser() {
+        // Retrieve the authenticated user's email
+        String email =
+                ((org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext()
+                        .getAuthentication()
+                        .getPrincipal()).getUsername();
+
+        // Fetch the user and return the merchant's ID if present
+        return userRepository.findByEmail(email)
+                .map(User::getMerchant)
+                .map(Merchant::getId)
+                .orElse(null);
     }
 
     // Helper methods
@@ -66,19 +93,5 @@ public class UserService {
         dto.setCreatedAt(user.getCreatedAt());
         dto.setUpdatedAt(user.getUpdatedAt());
         return dto;
-    }
-
-    public UUID getMerchantIdFromLoggedInUser() {
-        // Retrieve the authenticated user's email
-        String email =
-                ((org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext()
-                                                                                                  .getAuthentication()
-                                                                                                  .getPrincipal()).getUsername();
-
-        // Fetch the user and return the merchant's ID if present
-        return userRepository.findByEmail(email)
-                             .map(User::getMerchant)
-                             .map(Merchant::getId)
-                             .orElse(null);
     }
 }

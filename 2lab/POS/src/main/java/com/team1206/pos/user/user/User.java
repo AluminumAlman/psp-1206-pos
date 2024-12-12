@@ -1,6 +1,6 @@
 package com.team1206.pos.user.user;
 
-import com.team1206.pos.enums.UserRoles;
+import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.service.reservation.Reservation;
 import com.team1206.pos.user.merchant.Merchant;
 import jakarta.persistence.*;
