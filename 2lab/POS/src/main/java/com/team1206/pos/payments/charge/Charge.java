@@ -1,7 +1,7 @@
 package com.team1206.pos.payments.charge;
 
-import com.team1206.pos.enums.ChargeScope;
-import com.team1206.pos.enums.ChargeType;
+import com.team1206.pos.common.enums.ChargeScope;
+import com.team1206.pos.common.enums.ChargeType;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.service.service.Service;
 import com.team1206.pos.user.merchant.Merchant;

@@ -1,14 +1,13 @@
 package com.team1206.pos.payments.charge;
 
-import com.team1206.pos.enums.ChargeScope;
-import com.team1206.pos.enums.ChargeType;
-import com.team1206.pos.enums.ResourceType;
+import com.team1206.pos.common.enums.ChargeScope;
+import com.team1206.pos.common.enums.ChargeType;
+import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.service.service.Service;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.merchant.MerchantRepository;
-import com.team1206.pos.user.merchant.MerchantService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,8 +19,9 @@ public class ChargeService {
     private final ChargeRepository chargeRepository;
     MerchantRepository merchantRepository;
 
-    public ChargeService(ChargeRepository chargeRepository) {
+    public ChargeService(ChargeRepository chargeRepository, MerchantRepository merchantRepository) {
         this.chargeRepository = chargeRepository;
+        this.merchantRepository = merchantRepository;
     }
 
     public List<ChargeResponseDTO> getCharges() {

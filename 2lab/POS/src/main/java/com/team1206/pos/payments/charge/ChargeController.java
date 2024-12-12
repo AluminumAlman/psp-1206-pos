@@ -1,12 +1,11 @@
 package com.team1206.pos.payments.charge;
 
 import com.team1206.pos.payments.charge.validation.OneOf;
+import com.team1206.pos.user.merchant.MerchantRequestDTO;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -29,8 +28,8 @@ public class ChargeController {
 
     @PostMapping
     @Operation(summary = "Create a new charge")
-    public ResponseEntity<ChargeResponseDTO> createCharge() {
-        ChargeResponseDTO response = chargeService.createCharge();
+    public ResponseEntity<ChargeResponseDTO> createCharge(@Valid @RequestBody ChargeRequestDTO request) {
+        ChargeResponseDTO response = chargeService.createCharge(request);
         return ResponseEntity.ok(response);
     }
 }
