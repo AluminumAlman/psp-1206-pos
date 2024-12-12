@@ -103,15 +103,7 @@ public class ServiceService {
         service.setPrice(requestDTO.getPrice());
         service.setDuration(requestDTO.getDuration());
 
-        List<UUID> employeeIds = requestDTO.getEmployeeIds();
-
-        List<User> employees = userService.findAllById(employeeIds);
-
-        // If the number of returned users is not equal to the number of IDs, some users were not found
-        if (employees.size() != employeeIds.size()) {
-            throw new ResourceNotFoundException(ResourceType.USER, "Some employee IDs were not found");
-        }
-
+        List<User> employees = userService.findAllById(requestDTO.getEmployeeIds());
         service.setEmployees(employees);
     }
 

@@ -50,7 +50,13 @@ public class UserService {
 
     // Get list of user refs from their IDs
     public List<User> findAllById(List<UUID> userIds) {
-        return userRepository.findAllById(userIds);
+        List<User> employees = userRepository.findAllById(userIds);
+
+        // If the number of returned users is not equal to the number of IDs, some users were not found
+        if (employees.size() != userIds.size()) {
+            throw new ResourceNotFoundException(ResourceType.USER, "Some employee IDs were not found");
+        }
+        return employees;
     }
 
     // Get merchant ID from logged in user
