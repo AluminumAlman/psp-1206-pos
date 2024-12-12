@@ -31,6 +31,13 @@ public class ProductController {
             @RequestParam(value = "offset", defaultValue = "0") int offset,
             @RequestParam(value = "limit", defaultValue = "20") int limit) {
 
+        if (limit <= 0) {
+            throw new IllegalArgumentException("Limit must be greater than 0");
+        }
+        if (offset < 0) {
+            throw new IllegalArgumentException("Offset cannot be negative");
+        }
+
         Page<ProductResponseDTO> productPage = productService.getAllProducts(name, price, categoryId, limit, offset);
 
         return ResponseEntity.ok(productPage);
