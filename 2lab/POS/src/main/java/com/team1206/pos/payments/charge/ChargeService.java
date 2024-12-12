@@ -2,12 +2,11 @@ package com.team1206.pos.payments.charge;
 
 import com.team1206.pos.common.enums.ChargeScope;
 import com.team1206.pos.common.enums.ChargeType;
-import com.team1206.pos.common.enums.ResourceType;
-import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.service.service.Service;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.merchant.MerchantRepository;
+import com.team1206.pos.user.merchant.MerchantService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,13 +16,18 @@ import java.util.stream.Collectors;
 @org.springframework.stereotype.Service
 public class ChargeService {
     private final ChargeRepository chargeRepository;
+    private final MerchantService merchantService;
     MerchantRepository merchantRepository;
 
-    public ChargeService(ChargeRepository chargeRepository, MerchantRepository merchantRepository) {
+    public ChargeService(ChargeRepository chargeRepository,
+                         MerchantRepository merchantRepository,
+                         MerchantService merchantService) {
         this.chargeRepository = chargeRepository;
         this.merchantRepository = merchantRepository;
+        this.merchantService = merchantService;
     }
 
+    // TODO: Pakeisti į Pageable
     public List<ChargeResponseDTO> getCharges() {
         return chargeRepository.findAll()
                                .stream()
@@ -31,10 +35,9 @@ public class ChargeService {
                                .collect(Collectors.toList());
     }
 
+
     public ChargeResponseDTO createCharge(ChargeRequestDTO request) {
-        Merchant merchant = merchantRepository.findById(request.getMerchantId())
-                                              .orElseThrow(() -> new ResourceNotFoundException(ResourceType.MERCHANT, request.getMerchantId()
-                                                                                                                             .toString()));
+        Merchant merchant = merchantService.findById(request.getMerchantId());
 
         Charge charge = mapToEntity(request, merchant);
         Charge savedCharge = chargeRepository.save(charge);
@@ -51,26 +54,20 @@ public class ChargeService {
         charge.setAmount(request.getAmount());
         charge.setMerchant(merchant);
 
-        // Convert product UUIDs to Product entities
-        List<Product> products = request.getProducts()
-                                        .stream()
-                                        .map(productId -> {
-                                            Product product = new Product();
-                                            product.setId(productId);
-                                            return product;
-                                        })
-                                        .collect(Collectors.toList());
+//         Convert product UUIDs to Product entities
+        List<Product> products = request.getProducts().stream().map(productId -> {
+            Product product = new Product();
+            product.setId(productId);
+            return product;
+        }).collect(Collectors.toList());
         charge.setProducts(products);
 
-        // Convert service UUIDs to Service entities
-        List<Service> services = request.getServices()
-                                        .stream()
-                                        .map(serviceId -> {
-                                            Service service = new Service();
-                                            service.setId(serviceId);
-                                            return service;
-                                        })
-                                        .collect(Collectors.toList());
+//         Convert service UUIDs to Service entities
+        List<Service> services = request.getServices().stream().map(serviceId -> {
+            Service service = new Service();
+            service.setId(serviceId);
+            return service;
+        }).collect(Collectors.toList());
         charge.setServices(services);
 
         charge.setCreatedAt(LocalDateTime.now());
@@ -90,6 +87,7 @@ public class ChargeService {
         responseDTO.setMerchantId(charge.getMerchant().getId());
         responseDTO.setCreatedAt(charge.getCreatedAt());
         responseDTO.setUpdatedAt(charge.getUpdatedAt());
+        responseDTO.setIsActive(charge.getIsActive());
         responseDTO.setProducts(charge.getProducts()
                                       .stream()
                                       .map(Product::getId)

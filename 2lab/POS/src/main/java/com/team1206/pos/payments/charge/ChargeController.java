@@ -1,7 +1,6 @@
 package com.team1206.pos.payments.charge;
 
 import com.team1206.pos.payments.charge.validation.OneOf;
-import com.team1206.pos.user.merchant.MerchantRequestDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +20,7 @@ public class ChargeController {
 
     @GetMapping
     @Operation(summary = "Get all charges")
+    // TODO: Pakeisti į Pageable
     public ResponseEntity<List<ChargeResponseDTO>> getCharges() {
         List<ChargeResponseDTO> response = chargeService.getCharges();
         return ResponseEntity.ok(response);

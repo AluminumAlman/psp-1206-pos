@@ -41,6 +41,15 @@ public class Charge {
     @Column(name = "amount", nullable = true, precision = 19, scale = 2)
     private BigDecimal amount;
 
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at", nullable = true)
+    private LocalDateTime updatedAt;
+
+    @Column(name = "is_active")
+    private Boolean isActive = true;
+
     @ManyToMany
     @JoinTable(name = "charges_products", joinColumns = @JoinColumn(name = "charge_id"),
             inverseJoinColumns = @JoinColumn(name = "product_id"))
@@ -54,15 +63,6 @@ public class Charge {
     @ManyToOne
     @JoinColumn(name = "merchant_id", nullable = false)
     private Merchant merchant;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
-
-    @Column(name = "updated_at", nullable = true)
-    private LocalDateTime updatedAt;
-
-    @Column(name = "is_active")
-    private Boolean isActive = true;
 
     @PreUpdate
     public void setUpdatedAt() {

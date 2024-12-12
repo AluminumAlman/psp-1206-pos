@@ -17,6 +17,7 @@ public class ChargeResponseDTO {
     private UUID merchantId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Boolean isActive;
     private UUID[] products;
     private UUID[] services;
 }
