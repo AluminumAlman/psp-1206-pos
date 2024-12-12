@@ -27,7 +27,7 @@ public class ProductCategoryController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductCategoryResponseDTO> getProductCategoryById(@PathVariable String id) {
-        ProductCategoryResponseDTO category = productCategoryService.getProductCategory(UUID.fromString(id));
+        ProductCategoryResponseDTO category = productCategoryService.getProductCategoryById(UUID.fromString(id));
         return ResponseEntity.ok(category);
     }
 
@@ -35,13 +35,13 @@ public class ProductCategoryController {
     public ResponseEntity<ProductCategoryResponseDTO> updateCategory(
             @PathVariable String id,
             @RequestBody @Valid UpdateProductCategoryRequestDTO requestDTO) {
-        ProductCategoryResponseDTO updatedCategory = productCategoryService.updateCategory(UUID.fromString(id), requestDTO);
+        ProductCategoryResponseDTO updatedCategory = productCategoryService.updateCategoryById(UUID.fromString(id), requestDTO);
         return ResponseEntity.ok(updatedCategory);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable String id) {
-        productCategoryService.deleteCategory(UUID.fromString(id));
+        productCategoryService.deleteCategoryById(UUID.fromString(id));
         return ResponseEntity.noContent().build(); // Return 204 No Content on successful deletion
     }
 

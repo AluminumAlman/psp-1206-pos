@@ -2,8 +2,8 @@ package com.team1206.pos.inventory.product;
 
 import com.team1206.pos.enums.ResourceType;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
-import com.team1206.pos.inventory.productCategory.ProductCategoryRepository;
 import com.team1206.pos.inventory.productCategory.ProductCategory;
+import com.team1206.pos.inventory.productCategory.ProductCategoryService;
 import com.team1206.pos.inventory.productVariation.ProductVariation;
 import com.team1206.pos.payments.charge.ChargeRepository;
 import com.team1206.pos.payments.charge.Charge;
@@ -16,24 +16,22 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
-// TO-DO change Integer to floating after model is changed
 @Service
 public class ProductService {
 
     private final ProductRepository productRepository;
-    private final ProductCategoryRepository productCategoryRepository;
     private final ChargeRepository chargeRepository;
+    private final ProductCategoryService productCategoryService;
 
-    public ProductService(ProductRepository productRepository, ProductCategoryRepository productCategoryRepository, ChargeRepository chargeRepository) {
+    public ProductService(ProductRepository productRepository, ChargeRepository chargeRepository, ProductCategoryService productCategoryService) {
         this.productRepository = productRepository;
-        this.productCategoryRepository = productCategoryRepository;
         this.chargeRepository = chargeRepository;
+        this.productCategoryService = productCategoryService;
     }
 
 
     public ProductResponseDTO createProduct(CreateProductRequestDTO requestDTO) {
-        ProductCategory category = productCategoryRepository.findById(requestDTO.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_CATEGORY, requestDTO.getCategoryId().toString()));
+        ProductCategory category = productCategoryService.getCategoryEntityById(requestDTO.getCategoryId());
         Product product = new Product();
         product.setName(requestDTO.getName());
         product.setPrice(requestDTO.getPrice());
@@ -64,7 +62,7 @@ public class ProductService {
         return productPage.map(this::mapToResponseDTO);
     }
 
-    public ProductResponseDTO updateProduct(UUID id, UpdateProductRequestDTO updateProductRequestDTO) {
+    public ProductResponseDTO updateProductById(UUID id, UpdateProductRequestDTO updateProductRequestDTO) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, id.toString()));
 
@@ -77,8 +75,7 @@ public class ProductService {
         }
 
         if (updateProductRequestDTO.getCategoryId() != null) {
-            ProductCategory category = productCategoryRepository.findById(updateProductRequestDTO.getCategoryId())
-                    .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_CATEGORY, updateProductRequestDTO.getCategoryId().toString()));
+            ProductCategory category = productCategoryService.getCategoryEntityById(updateProductRequestDTO.getCategoryId());
             product.setCategory(category);
         }
 
@@ -105,7 +102,7 @@ public class ProductService {
             return List.of(); // Return an empty list if no charges are provided
         }
 
-        List<Charge> charges = chargeRepository.findAllById(chargeIds);
+        List<Charge> charges = chargeRepository.findAllById(chargeIds); // TODO pakeisti i atitinkama Charges service layer metoda
         List<UUID> foundChargeIds = charges.stream()
                 .map(Charge::getId)
                 .toList();
@@ -116,7 +113,7 @@ public class ProductService {
                 .toList();
 
         if (!missingChargeIds.isEmpty()) {
-            throw new ResourceNotFoundException(ResourceType.CHARGE, missingChargeIds.toString()); // TO-DO patestuoti
+            throw new ResourceNotFoundException(ResourceType.CHARGE, missingChargeIds.toString()); // TODO patestuoti kai bus Charges
         }
 
         return charges;
