@@ -7,6 +7,7 @@ public enum ResourceType {
     MERCHANT("Merchant"),
     USER("User"),
     SERVICE("Service"),
+    RESERVATION("Reservation"),
     PRODUCT_CATEGORY("Product Category"),
     PRODUCT("Product"),
     PRODUCT_VARIATION("Product Variation"),
