@@ -19,7 +19,7 @@ public class Discount {
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
-    @Column(name = "name", nullable = false)
+    @Column(length = 255, name = "name", nullable = false)
     private String name;
 
     @Column(name = "percent", nullable = true)

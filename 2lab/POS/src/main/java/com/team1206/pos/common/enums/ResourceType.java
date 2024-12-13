@@ -9,7 +9,8 @@ public enum ResourceType {
     SERVICE("Service"),
     PRODUCT_CATEGORY("Product Category"),
     PRODUCT("Product"),
-    CHARGE("Charge");
+    CHARGE("Charge"),
+    DISCOUNT("Discount");
 
     private final String displayName;
 
