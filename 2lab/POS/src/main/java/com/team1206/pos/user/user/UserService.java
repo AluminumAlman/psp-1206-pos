@@ -48,6 +48,12 @@ public class UserService {
         return mapToResponseDTO(user);
     }
 
+    // Service layer methods
+    public User getUserEntityById(UUID userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, userId.toString()));
+    }
+
     // Get list of user refs from their IDs
     public List<User> findAllById(List<UUID> userIds) {
         List<User> employees = userRepository.findAllById(userIds);
@@ -74,7 +80,7 @@ public class UserService {
                 .orElse(null);
     }
 
-    // Helper methods
+    // Mappers
     private void setUserFieldsFromRequest(User user, UserRequestDTO request) {
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());

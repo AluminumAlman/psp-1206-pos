@@ -83,7 +83,13 @@ public class ServiceService {
         }
     }
 
-    // helper methods
+    // Service layer methods
+    public com.team1206.pos.service.service.Service getServiceEntityById(UUID serviceId) {
+        return serviceRepository.findById(serviceId)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.SERVICE, serviceId.toString()));
+    }
+
+    // Mappers
     private ServiceResponseDTO mapToResponseDTO(com.team1206.pos.service.service.Service service) {
         ServiceResponseDTO dto = new ServiceResponseDTO();
         dto.setId(service.getId());
