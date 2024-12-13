@@ -23,7 +23,7 @@ public class ProductVariation {
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 
-    @Column(name = "price", nullable = false)
+    @Column(name = "price", nullable = false, precision = 19, scale = 2)
     private BigDecimal price;
 
     @ManyToOne
