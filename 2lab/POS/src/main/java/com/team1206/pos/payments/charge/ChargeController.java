@@ -21,36 +21,20 @@ public class ChargeController {
 
     @GetMapping("/merchant")
     @Operation(summary = "Get all charges by merchant ID")
-    public ResponseEntity<Page<ChargeResponseDTO>> getCharges(
+    public ResponseEntity<Page<ChargeResponseDTO>> getChargesByMerchant(
             @RequestParam(value = "limit", defaultValue = "10") int limit,
             @RequestParam(value = "offset", defaultValue = "0") int offset,
             @RequestParam(value = "merchantId") UUID merchantId) {
-        if (limit < 1) {
-            throw new IllegalArgumentException("Limit must be at least 1");
-        }
-        else if (offset < 0) {
-            throw new IllegalArgumentException("Offset must be at least 0");
-        }
-
-        Page<ChargeResponseDTO> response = chargeService.getCharges(limit, offset, merchantId);
-        return ResponseEntity.ok(response);
+        return chargeService.handleGetChargesRequest(limit, offset, () -> chargeService.getCharges(limit, offset, merchantId));
     }
 
     @GetMapping
     @Operation(summary = "Get all charges by type")
-    public ResponseEntity<Page<ChargeResponseDTO>> getCharges(
+    public ResponseEntity<Page<ChargeResponseDTO>> getChargesByType(
             @RequestParam(value = "limit", defaultValue = "10") int limit,
             @RequestParam(value = "offset", defaultValue = "0") int offset,
             @RequestParam(value = "chargeType") String chargeType) {
-        if (limit < 1) {
-            throw new IllegalArgumentException("Limit must be at least 1");
-        }
-        else if (offset < 0) {
-            throw new IllegalArgumentException("Offset must be at least 0");
-        }
-
-        Page<ChargeResponseDTO> response = chargeService.getCharges(limit, offset, chargeType);
-        return ResponseEntity.ok(response);
+        return chargeService.handleGetChargesRequest(limit, offset, () -> chargeService.getCharges(limit, offset, chargeType));
     }
 
     @PostMapping

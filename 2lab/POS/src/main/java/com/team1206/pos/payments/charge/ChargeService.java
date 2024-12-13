@@ -7,29 +7,26 @@ import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.service.service.Service;
 import com.team1206.pos.user.merchant.Merchant;
-import com.team1206.pos.user.merchant.MerchantRepository;
 import com.team1206.pos.user.merchant.MerchantService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @org.springframework.stereotype.Service
 public class ChargeService {
     private final ChargeRepository chargeRepository;
     private final MerchantService merchantService;
-    MerchantRepository merchantRepository;
 
-    public ChargeService(
-            ChargeRepository chargeRepository,
-            MerchantRepository merchantRepository,
-            MerchantService merchantService) {
+    public ChargeService(ChargeRepository chargeRepository, MerchantService merchantService) {
         this.chargeRepository = chargeRepository;
-        this.merchantRepository = merchantRepository;
         this.merchantService = merchantService;
     }
 
@@ -46,7 +43,9 @@ public class ChargeService {
     public Page<ChargeResponseDTO> getCharges(int limit, int offset, String chargeType) {
         Pageable pageable = PageRequest.of(offset / limit, limit);
 
-        Page<Charge> chargePage = chargeRepository.findAllWithFilters(ChargeType.valueOf(chargeType.toUpperCase()), pageable);
+        Page<Charge> chargePage = chargeRepository.findAllWithFilters(
+                ChargeType.valueOf(chargeType.toUpperCase()),
+                pageable);
 
         return chargePage.map(this::mapToResponseDTO);
     }
@@ -63,16 +62,20 @@ public class ChargeService {
 
     // Retrieve charge by ID
     public ChargeResponseDTO getChargeById(UUID chargeId) {
-        Charge charge = chargeRepository.findById(chargeId)
-                                        .orElseThrow(() -> new ResourceNotFoundException(ResourceType.CHARGE, chargeId.toString()));
+        Charge charge =
+                chargeRepository.findById(chargeId).orElseThrow(() -> new ResourceNotFoundException(
+                        ResourceType.CHARGE,
+                        chargeId.toString()));
 
         return mapToResponseDTO(charge);
     }
 
     // Update charge by ID
     public ChargeResponseDTO updateCharge(UUID chargeId, ChargeRequestDTO request) {
-        Charge charge = chargeRepository.findById(chargeId)
-                                        .orElseThrow(() -> new ResourceNotFoundException(ResourceType.CHARGE, chargeId.toString()));
+        Charge charge =
+                chargeRepository.findById(chargeId).orElseThrow(() -> new ResourceNotFoundException(
+                        ResourceType.CHARGE,
+                        chargeId.toString()));
 
         Merchant merchant = merchantService.findById(request.getMerchantId());
 
@@ -86,8 +89,10 @@ public class ChargeService {
 
     // Deactivate charge by ID
     public void deactivateCharge(UUID chargeId) {
-        Charge charge = chargeRepository.findById(chargeId)
-                                        .orElseThrow(() -> new ResourceNotFoundException(ResourceType.CHARGE, chargeId.toString()));
+        Charge charge =
+                chargeRepository.findById(chargeId).orElseThrow(() -> new ResourceNotFoundException(
+                        ResourceType.CHARGE,
+                        chargeId.toString()));
 
         charge.setIsActive(false);
 
@@ -96,8 +101,10 @@ public class ChargeService {
 
     // Reactivate charge by ID
     public ChargeResponseDTO reactivateCharge(UUID chargeId) {
-        Charge charge = chargeRepository.findById(chargeId)
-                                        .orElseThrow(() -> new ResourceNotFoundException(ResourceType.CHARGE, chargeId.toString()));
+        Charge charge =
+                chargeRepository.findById(chargeId).orElseThrow(() -> new ResourceNotFoundException(
+                        ResourceType.CHARGE,
+                        chargeId.toString()));
 
         charge.setIsActive(true);
 
@@ -108,6 +115,20 @@ public class ChargeService {
 
 
     // *** Helper methods ***
+
+    public ResponseEntity<Page<ChargeResponseDTO>> handleGetChargesRequest(
+            int limit,
+            int offset,
+            Supplier<Page<ChargeResponseDTO>> serviceCall) {
+        if (limit < 1) {
+            throw new IllegalArgumentException("Limit must be at least 1");
+        } else if (offset < 0) {
+            throw new IllegalArgumentException("Offset must be at least 0");
+        }
+
+        Page<ChargeResponseDTO> response = serviceCall.get();
+        return ResponseEntity.ok(response);
+    }
 
     private void setChargeFieldsFromRequestDTO(Charge charge, ChargeRequestDTO request) {
         charge.setType(ChargeType.valueOf(request.getChargeType().toUpperCase()));
