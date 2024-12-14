@@ -9,6 +9,7 @@ public enum ResourceType {
     SERVICE("Service"),
     PRODUCT_CATEGORY("Product Category"),
     PRODUCT("Product"),
+    PRODUCT_VARIATION("Product Variation"),
     CHARGE("Charge"),
     DISCOUNT("Discount");
 
