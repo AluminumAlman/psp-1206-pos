@@ -1,7 +1,7 @@
 package com.team1206.pos.user.user;
 
-import com.team1206.pos.enums.ResourceType;
-import com.team1206.pos.enums.UserRoles;
+import com.team1206.pos.common.enums.ResourceType;
+import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.merchant.MerchantRepository;
@@ -24,7 +24,6 @@ public class UserService {
         this.merchantRepository = merchantRepository;
     }
 
-    // Create a new user (no merchant required)
     public UserResponseDTO createUser(UserRequestDTO request) {
         User user = new User();
         setUserFieldsFromRequest(user, request);
@@ -32,14 +31,12 @@ public class UserService {
         return mapToResponseDTO(savedUser);
     }
 
-    // Get user by UUID
     public UserResponseDTO getUserById(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, userId.toString()));
         return mapToResponseDTO(user);
     }
 
-    // Get all users with optional filters
     public List<UserResponseDTO> getAllUsers(String firstname, String lastname, String email) {
         List<User> users = userRepository.findAll();
 
@@ -58,80 +55,73 @@ public class UserService {
         return users.stream().map(this::mapToResponseDTO).toList();
     }
 
-    // Update user
     public UserResponseDTO updateUser(UUID userId, UserRequestDTO request) {
         verifyAdminOrOwnerRole();
-        User user = userRepository.findById(userId)
+        User targetUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, userId.toString()));
 
-        // Check email uniqueness if email changed
-        if (!request.getEmail().equalsIgnoreCase(user.getEmail())) {
+        verifySameMerchantIfOwner(targetUser);
+        if (!request.getEmail().equalsIgnoreCase(targetUser.getEmail())) {
             if (userRepository.findAll().stream().anyMatch(u -> u.getEmail().equalsIgnoreCase(request.getEmail()) && !u.getId().equals(userId))) {
                 throw new DataIntegrityViolationException("Email is already in use");
             }
         }
 
-        setUserFieldsFromRequest(user, request);
-        User updatedUser = userRepository.save(user);
+        setUserFieldsFromRequest(targetUser, request);
+        User updatedUser = userRepository.save(targetUser);
         return mapToResponseDTO(updatedUser);
     }
 
-    // Delete user
     public void deleteUser(UUID userId) {
         verifyAdminOrOwnerRole();
-        User user = userRepository.findById(userId)
+        User targetUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, userId.toString()));
-        userRepository.delete(user);
+
+        verifySameMerchantIfOwner(targetUser);
+        userRepository.delete(targetUser);
     }
 
-    // Assign merchant to user
     public UserResponseDTO assignMerchantToUser(UUID userId, UUID merchantId) {
         verifyAdminOrOwnerRole();
-        User user = userRepository.findById(userId)
+        User targetUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, userId.toString()));
 
+        verifySameMerchantIfOwner(targetUser);
         Merchant merchant = merchantRepository.findById(merchantId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.MERCHANT, merchantId.toString()));
 
-        user.setMerchant(merchant);
-        User updatedUser = userRepository.save(user);
+        targetUser.setMerchant(merchant);
+        User updatedUser = userRepository.save(targetUser);
         return mapToResponseDTO(updatedUser);
     }
 
-    // Get user by email
     public UserResponseDTO getUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, email));
         return mapToResponseDTO(user);
     }
 
-    // Get list of user refs from their IDs
     public List<User> findAllById(List<UUID> userIds) {
         List<User> employees = userRepository.findAllById(userIds);
 
-        // If the number of returned users is not equal to the number of IDs, some users were not found
         if (employees.size() != userIds.size()) {
             throw new ResourceNotFoundException(ResourceType.USER, "Some employee IDs were not found");
         }
         return employees;
     }
 
-    // Get merchant ID from logged in user
     public UUID getMerchantIdFromLoggedInUser() {
-        // Retrieve the authenticated user's email
         String email =
                 ((org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext()
                         .getAuthentication()
                         .getPrincipal()).getUsername();
 
-        // Fetch the user and return the merchant's ID if present
         return userRepository.findByEmail(email)
                 .map(User::getMerchant)
                 .map(Merchant::getId)
                 .orElse(null);
     }
 
-    // Helper methods
     private void setUserFieldsFromRequest(User user, UserRequestDTO request) {
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
@@ -171,6 +161,20 @@ public class UserService {
         UserRoles currentUserRole = getCurrentUserRole();
         if (!(currentUserRole == UserRoles.SUPER_ADMIN || currentUserRole == UserRoles.MERCHANT_OWNER)) {
             throw new DataIntegrityViolationException("You do not have permission to perform this action.");
+        }
+    }
+
+    private void verifySameMerchantIfOwner(User targetUser) {
+        User currentUser = getCurrentUser();
+        UserRoles currentUserRole = currentUser.getRole();
+
+        if (currentUserRole == UserRoles.MERCHANT_OWNER) {
+            UUID currentMerchantId = currentUser.getMerchant() != null ? currentUser.getMerchant().getId() : null;
+            UUID targetMerchantId = targetUser.getMerchant() != null ? targetUser.getMerchant().getId() : null;
+
+            if (currentMerchantId == null || !currentMerchantId.equals(targetMerchantId)) {
+                throw new DataIntegrityViolationException("You do not have permission to modify a user from a different merchant.");
+            }
         }
     }
 }
