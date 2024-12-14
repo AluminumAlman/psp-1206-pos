@@ -3,7 +3,6 @@ package com.team1206.pos.service.reservation;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.service.service.Service;
-import com.team1206.pos.service.service.ServiceRepository;
 import com.team1206.pos.service.service.ServiceService;
 import com.team1206.pos.user.user.User;
 import com.team1206.pos.user.user.UserService;
