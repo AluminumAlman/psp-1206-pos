@@ -15,16 +15,14 @@ import java.util.UUID;
 public class ProductVariationService {
     private final ProductVariationRepository productVariationRepository;
     private final ProductService productService;
-    private final ProductRepository productRepository;
 
-    public ProductVariationService(ProductVariationRepository productVariationRepository, ProductService productService, ProductRepository productRepository) {
+    public ProductVariationService(ProductVariationRepository productVariationRepository, ProductService productService) {
         this.productVariationRepository = productVariationRepository;
         this.productService = productService;
-        this.productRepository = productRepository;
     }
 
-    public ProductVariationResponseDTO createProductVariation(CreateProductVariationRequestDTO productVariationDTO) {
-        Product product = productService.getProductEntityById(productVariationDTO.getProductId());
+    public ProductVariationResponseDTO createProductVariation(UUID productId, CreateProductVariationBodyDTO productVariationDTO) {
+        Product product = productService.getProductEntityById(productId);
 
         ProductVariation productVariation = new ProductVariation();
         productVariation.setName(productVariationDTO.getName());
@@ -46,6 +44,8 @@ public class ProductVariationService {
     }
 
     public List<ProductVariationResponseDTO> getAllProductVariations(UUID productId) {
+        productService.getProductEntityById(productId); // To check whether exists
+
         List<ProductVariation> productVariations = productVariationRepository.findByProduct_Id(productId);
 
         return productVariations.stream()
