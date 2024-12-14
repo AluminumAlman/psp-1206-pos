@@ -3,7 +3,6 @@ package com.team1206.pos.inventory.productVariation;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.inventory.product.Product;
-import com.team1206.pos.inventory.product.ProductRepository;
 import com.team1206.pos.inventory.product.ProductService;
 import org.springframework.stereotype.Service;
 
@@ -51,6 +50,27 @@ public class ProductVariationService {
         return productVariations.stream()
                 .map(this::mapToResponseDTO)
                 .toList();
+    }
+
+    public ProductVariationResponseDTO updateProductVariationById (UUID productVariationId, UpdateProductVariationBodyDTO updateProductVariationBodyDTO)
+    {
+        ProductVariation productVariation = productVariationRepository.findById(productVariationId)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_VARIATION, productVariationId.toString()));
+
+        if(updateProductVariationBodyDTO.getName() != null && !updateProductVariationBodyDTO.getName().isBlank())
+            productVariation.setName(updateProductVariationBodyDTO.getName());
+        if(updateProductVariationBodyDTO.getPrice() != null)
+            productVariation.setPrice(updateProductVariationBodyDTO.getPrice());
+
+        productVariationRepository.save(productVariation);
+        return mapToResponseDTO(productVariation);
+    }
+
+    public void deleteProductVariationById(UUID productVariationId)
+    {
+        if(!productVariationRepository.existsById(productVariationId))
+            throw new ResourceNotFoundException(ResourceType.PRODUCT_VARIATION, productVariationId.toString());
+        productVariationRepository.deleteById(productVariationId);
     }
 
     // Mappers

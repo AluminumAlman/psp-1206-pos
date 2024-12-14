@@ -1,7 +1,5 @@
 package com.team1206.pos.inventory.productVariation;
 
-import com.team1206.pos.inventory.product.CreateProductRequestDTO;
-import com.team1206.pos.inventory.product.ProductResponseDTO;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,8 +18,8 @@ public class ProductVariationController {
     @PostMapping("/{productId}/variations")
     public ResponseEntity<ProductVariationResponseDTO> createProductVariation(
             @PathVariable String productId,
-            @Valid @RequestBody CreateProductVariationBodyDTO requestBody) {
-
+            @Valid @RequestBody CreateProductVariationBodyDTO requestBody
+    ) {
         ProductVariationResponseDTO createdVariation =
                 productVariationService.createProductVariation(UUID.fromString(productId), requestBody);
 
@@ -31,7 +29,8 @@ public class ProductVariationController {
     @GetMapping("/{productId}/variations/{variationId}")
     public ResponseEntity<ProductVariationResponseDTO> getProductVariation(
             @PathVariable String productId,
-            @PathVariable String variationId) {
+            @PathVariable String variationId
+    ) {
 
         // TODO Ar verta tikrinti, ar variacija atitinka productId is url ir ar tas produktas egzistuoja
         ProductVariationResponseDTO variation = productVariationService.getProductVariationById(UUID.fromString(variationId));
@@ -45,5 +44,24 @@ public class ProductVariationController {
     ) {
         List<ProductVariationResponseDTO> variations = productVariationService.getAllProductVariations(UUID.fromString(productId));
         return ResponseEntity.ok(variations);
+    }
+
+    @PutMapping("/{productId}/variations/{variationId}")
+    public ResponseEntity<ProductVariationResponseDTO> updateProductVariation(
+            @PathVariable String productId,
+            @PathVariable String variationId,
+            @Valid @RequestBody UpdateProductVariationBodyDTO requestBody
+    ) {
+        ProductVariationResponseDTO productVariation = productVariationService.updateProductVariationById(UUID.fromString(variationId), requestBody);
+        return ResponseEntity.ok(productVariation);
+    }
+
+    @DeleteMapping("/{productId}/variations/{variationId}")
+    public ResponseEntity<Void> deleteProductVariation(
+            @PathVariable String productId,
+            @PathVariable String variationId
+    ) {
+        productVariationService.deleteProductVariationById(UUID.fromString(variationId));
+        return ResponseEntity.noContent().build();
     }
 }
