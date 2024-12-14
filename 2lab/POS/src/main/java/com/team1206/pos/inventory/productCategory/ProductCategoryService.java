@@ -1,6 +1,6 @@
 package com.team1206.pos.inventory.productCategory;
 
-import com.team1206.pos.enums.ResourceType;
+import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
@@ -24,7 +24,7 @@ public class ProductCategoryService {
 
 
     public ProductCategoryResponseDTO createProductCategory(CreateProductCategoryRequestDTO requestDTO) {
-        Merchant merchant = merchantRepository.findById(requestDTO.getMerchantId())
+        Merchant merchant = merchantRepository.findById(requestDTO.getMerchantId()) // TODO pakeisti i getMerchantEntityById is merchantService
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.MERCHANT, requestDTO.getMerchantId().toString()));
 
         ProductCategory category = mapToEntity(requestDTO, merchant);
@@ -32,7 +32,7 @@ public class ProductCategoryService {
         return mapToResponseDTO(savedCategory);
     }
 
-    public ProductCategoryResponseDTO getProductCategory(UUID id) {
+    public ProductCategoryResponseDTO getProductCategoryById(UUID id) {
         ProductCategory category = productCategoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_CATEGORY, id.toString()));
         return mapToResponseDTO(category);
@@ -45,7 +45,7 @@ public class ProductCategoryService {
                 .collect(Collectors.toList());
     }
 
-    public void deleteCategory(UUID id) {
+    public void deleteCategoryById(UUID id) {
         ProductCategory category = productCategoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_CATEGORY, id.toString()));
 
@@ -56,7 +56,7 @@ public class ProductCategoryService {
         productCategoryRepository.delete(category);
     }
 
-    public ProductCategoryResponseDTO updateCategory(UUID id, UpdateProductCategoryRequestDTO requestDTO) {
+    public ProductCategoryResponseDTO updateCategoryById(UUID id, UpdateProductCategoryRequestDTO requestDTO) {
 
         ProductCategory category = productCategoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_CATEGORY, id.toString()));
@@ -66,6 +66,13 @@ public class ProductCategoryService {
         ProductCategory updatedCategory = productCategoryRepository.save(category);
 
         return mapToResponseDTO(updatedCategory);
+    }
+
+
+    // Service layer methods
+    public ProductCategory getCategoryEntityById(UUID id) {
+        return productCategoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_CATEGORY, id.toString()));
     }
 
 

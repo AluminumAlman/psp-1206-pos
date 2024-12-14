@@ -31,7 +31,14 @@ public class ProductController {
             @RequestParam(value = "offset", defaultValue = "0") int offset,
             @RequestParam(value = "limit", defaultValue = "20") int limit) {
 
-        Page<ProductResponseDTO> productPage = productService.getAllProducts(name, price, categoryId, limit, offset);
+        if (limit < 1) {
+            throw new IllegalArgumentException("Limit must be at least 1");
+        }
+        if (offset < 0) {
+            throw new IllegalArgumentException("Offset must be at least 0");
+        }
+
+        Page<ProductResponseDTO> productPage = productService.getAllProducts(name, price, categoryId, offset, limit);
 
         return ResponseEntity.ok(productPage);
     }
@@ -44,10 +51,10 @@ public class ProductController {
         return ResponseEntity.ok(product);
     }
 
-    // TO-DO testing with charge assignment
+    // TODO testing with charge assignment
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable String id, @RequestBody UpdateProductRequestDTO requestDTO) {
-        ProductResponseDTO updatedProduct = productService.updateProduct(UUID.fromString(id), requestDTO);
+        ProductResponseDTO updatedProduct = productService.updateProductById(UUID.fromString(id), requestDTO);
         return ResponseEntity.ok(updatedProduct);
     }
 

@@ -1,6 +1,6 @@
 package com.team1206.pos.exceptions;
 
-import com.team1206.pos.enums.ResourceType;
+import com.team1206.pos.common.enums.ResourceType;
 import lombok.Getter;
 
 import java.io.Serial;

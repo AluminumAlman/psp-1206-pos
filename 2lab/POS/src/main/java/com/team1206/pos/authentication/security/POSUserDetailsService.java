@@ -1,7 +1,7 @@
 package com.team1206.pos.authentication.security;
 
-import com.team1206.pos.enums.ResourceType;
-import com.team1206.pos.enums.UserRoles;
+import com.team1206.pos.common.enums.ResourceType;
+import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.user.user.User;
 import com.team1206.pos.user.user.UserRepository;

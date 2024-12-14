@@ -105,6 +105,32 @@ public class UserService {
         return mapToResponseDTO(user);
     }
 
+    // Get list of user refs from their IDs
+    public List<User> findAllById(List<UUID> userIds) {
+        List<User> employees = userRepository.findAllById(userIds);
+
+        // If the number of returned users is not equal to the number of IDs, some users were not found
+        if (employees.size() != userIds.size()) {
+            throw new ResourceNotFoundException(ResourceType.USER, "Some employee IDs were not found");
+        }
+        return employees;
+    }
+
+    // Get merchant ID from logged in user
+    public UUID getMerchantIdFromLoggedInUser() {
+        // Retrieve the authenticated user's email
+        String email =
+                ((org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext()
+                        .getAuthentication()
+                        .getPrincipal()).getUsername();
+
+        // Fetch the user and return the merchant's ID if present
+        return userRepository.findByEmail(email)
+                .map(User::getMerchant)
+                .map(Merchant::getId)
+                .orElse(null);
+    }
+
     // Helper methods
     private void setUserFieldsFromRequest(User user, UserRequestDTO request) {
         user.setFirstName(request.getFirstName());
