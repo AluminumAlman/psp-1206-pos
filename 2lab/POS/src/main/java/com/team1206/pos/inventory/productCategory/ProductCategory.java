@@ -1,6 +1,7 @@
 package com.team1206.pos.inventory.productCategory;
 
 import com.team1206.pos.inventory.product.Product;
+import com.team1206.pos.payments.discount.Discount;
 import com.team1206.pos.user.merchant.Merchant;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -29,6 +30,9 @@ public class ProductCategory {
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product> products;
+
+    @ManyToMany(mappedBy = "productCategories")
+    private List<Discount> discounts;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();

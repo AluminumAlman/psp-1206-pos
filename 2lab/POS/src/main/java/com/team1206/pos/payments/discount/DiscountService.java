@@ -1,12 +1,8 @@
 package com.team1206.pos.payments.discount;
 
-import com.team1206.pos.authentication.security.JWTUtil;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
-import com.team1206.pos.user.merchant.Merchant;
-import com.team1206.pos.user.merchant.MerchantRepository;
-import com.team1206.pos.user.user.UserRepository;
-import org.springframework.dao.EmptyResultDataAccessException;
+import com.team1206.pos.user.merchant.MerchantService;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 
@@ -18,22 +14,18 @@ import java.util.UUID;
 @Service
 public class DiscountService {
     private final DiscountRepository discountRepository;
-    private final UserRepository userRepository;
-    private final MerchantRepository merchantRepository;
-    private final JWTUtil jwtUtil;
+    private final MerchantService merchantService;
 
     public DiscountService(DiscountRepository discountRepository,
-                           UserRepository userRepository,
-                           MerchantRepository merchantRepository,
-                           JWTUtil jwtUtil) {
+                           MerchantService merchantService) {
         this.discountRepository = discountRepository;
-        this.userRepository = userRepository;
-        this.merchantRepository = merchantRepository;
-        this.jwtUtil = jwtUtil;
+        this.merchantService = merchantService;
     }
 
-    public DiscountResponseDTO createDiscount(DiscountRequestDTO discountRequestDTO) {
+    @Transactional
+    public DiscountResponseDTO createDiscount(DiscountRequestDTO discountRequestDTO, UUID merchantId) {
         Discount discount = mapRequestDTOToEntity(discountRequestDTO, new Discount());
+        discount.setMerchant(merchantService.findById(merchantId));
         discountRepository.save(discount);
         return toResponseDTO(discount);
     }
@@ -42,7 +34,8 @@ public class DiscountService {
         List<Discount> discounts = discountRepository.findAll();
         List<DiscountResponseDTO> discountResponseDTOS = new ArrayList<>();
         for (Discount discount : discounts) {
-            discountResponseDTOS.add(toResponseDTO(discount));
+            if (discount.getIsActive())
+                discountResponseDTOS.add(toResponseDTO(discount));
         }
         return discountResponseDTOS;
     }
@@ -50,6 +43,9 @@ public class DiscountService {
     public DiscountResponseDTO getDiscount(UUID id) throws ResourceNotFoundException {
         Discount discount = discountRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.DISCOUNT, id.toString()));
+        if (!discount.getIsActive())
+            throw new ResourceNotFoundException(ResourceType.DISCOUNT, id.toString());
+
         return toResponseDTO(discount);
     }
 
@@ -57,6 +53,9 @@ public class DiscountService {
     public DiscountResponseDTO updateDiscount(UUID id, DiscountRequestDTO discountRequestDTO) {
         Discount discount = discountRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.DISCOUNT, id.toString()));
+        if (!discount.getIsActive())
+            throw new ResourceNotFoundException(ResourceType.DISCOUNT, id.toString());
+
         mapRequestDTOToEntity(discountRequestDTO, discount);
         discountRepository.save(discount);
         return toResponseDTO(discount);
@@ -64,14 +63,13 @@ public class DiscountService {
 
     @Transactional
     public void deleteDiscount(UUID id) {
-        if (!discountRepository.existsById(id)) {
+        Discount discount = discountRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.DISCOUNT, id.toString()));
+        if (!discount.getIsActive())
             throw new ResourceNotFoundException(ResourceType.DISCOUNT, id.toString());
-        }
-        try {
-            discountRepository.deleteById(id);
-        } catch (Exception e) {
-            throw new RuntimeException("An error occurred while deleting discount with ID: " + id, e);
-        }
+
+        discount.setIsActive(false);
+        discountRepository.save(discount);
     }
 
     public Discount mapRequestDTOToEntity(DiscountRequestDTO discountRequestDTO, Discount discount) {
@@ -80,10 +78,6 @@ public class DiscountService {
         discount.setAmount(discountRequestDTO.getAmount());
         discount.setValidFrom(discountRequestDTO.getValidFrom());
         discount.setValidUntil(discountRequestDTO.getValidUntil());
-        UUID merchantId = discountRequestDTO.getMerchantId();
-        Merchant merchant = merchantRepository.findById(merchantId)
-                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.MERCHANT, merchantId.toString()));
-        discount.setMerchant(merchant);
         return discount;
     }
 

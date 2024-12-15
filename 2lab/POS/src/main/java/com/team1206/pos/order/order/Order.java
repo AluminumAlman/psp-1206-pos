@@ -2,6 +2,7 @@ package com.team1206.pos.order.order;
 
 import com.team1206.pos.order.orderCharge.OrderCharge;
 import com.team1206.pos.order.orderItem.OrderItem;
+import com.team1206.pos.payments.discount.Discount;
 import com.team1206.pos.payments.transaction.Transaction;
 import com.team1206.pos.user.merchant.Merchant;
 import jakarta.persistence.*;
@@ -46,6 +47,12 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "merchant", nullable = false)
     private Merchant merchant;
+
+    @ManyToMany
+    @JoinTable(name = "orders_discounts",
+            joinColumns = @JoinColumn(name = "order_id"),
+            inverseJoinColumns = @JoinColumn(name = "discount_id"))
+    private List<Discount> discounts;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();

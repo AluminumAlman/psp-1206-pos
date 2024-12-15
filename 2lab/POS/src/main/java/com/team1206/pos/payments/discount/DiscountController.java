@@ -3,7 +3,6 @@ package com.team1206.pos.payments.discount;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,11 +10,11 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
+// TODO: add authorization.
 @RestController
 @RequestMapping("/discounts")
 public class DiscountController {
     private final DiscountService discountService;
-
     public DiscountController(DiscountService discountService) {
         this.discountService = discountService;
     }
@@ -31,8 +30,10 @@ public class DiscountController {
     @Operation(summary = "Create new discount")
     public ResponseEntity<DiscountResponseDTO> createDiscount(
             HttpServletRequest request,
-            @Valid @RequestBody DiscountRequestDTO discountRequestDTO) throws Exception {
-        DiscountResponseDTO response = discountService.createDiscount(discountRequestDTO);
+            @Valid @RequestBody DiscountRequestDTO discountRequestDTO,
+            @RequestParam(name = "merchantId") UUID merchantId) throws Exception {
+        DiscountResponseDTO response = discountService.createDiscount(discountRequestDTO, merchantId);
+
         StringBuffer linkToResource = request.getRequestURL().append('/').append(response.getId());
         return ResponseEntity.created(new URI(linkToResource.toString())).body(response);
     }

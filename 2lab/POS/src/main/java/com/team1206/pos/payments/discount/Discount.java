@@ -3,8 +3,6 @@ package com.team1206.pos.payments.discount;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.inventory.productCategory.ProductCategory;
 import com.team1206.pos.inventory.productVariation.ProductVariation;
-import com.team1206.pos.order.order.Order;
-import com.team1206.pos.order.orderItem.OrderItem;
 import com.team1206.pos.service.service.Service;
 import com.team1206.pos.user.merchant.Merchant;
 import jakarta.persistence.*;
@@ -46,6 +44,12 @@ public class Discount {
     private Merchant merchant;
 
     @ManyToMany
+    @JoinTable(name = "discounts_services",
+            joinColumns = @JoinColumn(name = "discount_id"),
+            inverseJoinColumns = @JoinColumn(name = "service_id"))
+    private List<Service> services;
+
+    @ManyToMany
     @JoinTable(name = "discounts_product_categories",
             joinColumns = @JoinColumn(name = "discount_id"),
             inverseJoinColumns = @JoinColumn(name = "product_category_id"))
@@ -63,26 +67,8 @@ public class Discount {
             inverseJoinColumns = @JoinColumn(name = "product_variation_id"))
     private List<ProductVariation> productVariations;
 
-    @ManyToMany
-    @JoinTable(name = "discounts_services",
-            joinColumns = @JoinColumn(name = "discount_id"),
-            inverseJoinColumns = @JoinColumn(name = "service_id"))
-    private List<Service> services;
-
-    @ManyToMany
-    @JoinTable(name = "discounts_orders",
-            joinColumns = @JoinColumn(name = "discount_id"),
-            inverseJoinColumns = @JoinColumn(name = "order_id"))
-    private List<Order> orders;
-
-    @ManyToMany
-    @JoinTable(name = "discounts_order_items",
-            joinColumns = @JoinColumn(name = "discount_id"),
-            inverseJoinColumns = @JoinColumn(name = "order_item_id"))
-    private List<OrderItem> orderItems;
-
     @Column(name = "isActive")
-    private Boolean isActive;
+    private Boolean isActive = true;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -93,5 +79,9 @@ public class Discount {
     @PreUpdate
     public void setUpdatedAt() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public boolean isValidFor(LocalDateTime now) {
+        return validFrom.isBefore(now) && validUntil.isAfter(now);
     }
 }
