@@ -96,6 +96,12 @@ public class ProductService {
         productRepository.deleteById(id);
     }
 
+    // Service layer methods
+    public Product getProductEntityById(UUID id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, id.toString()));
+    }
+
     // Helpers
     private List<Charge> validateAndFetchCharges(List<UUID> chargeIds) {
         if (chargeIds == null || chargeIds.isEmpty()) {
