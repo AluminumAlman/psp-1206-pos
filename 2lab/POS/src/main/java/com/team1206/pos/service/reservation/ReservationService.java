@@ -1,11 +1,13 @@
 package com.team1206.pos.service.reservation;
 
+import com.team1206.pos.SNS.SNSService;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.service.service.Service;
 import com.team1206.pos.service.service.ServiceService;
 import com.team1206.pos.user.user.User;
 import com.team1206.pos.user.user.UserService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,17 +18,23 @@ import java.util.UUID;
 
 @org.springframework.stereotype.Service
 public class ReservationService {
+    @Value("${spring.profiles.active:prod}")
+    private String activeProfile;
+
     private final ReservationRepository reservationRepository;
     private final UserService userService;
     private final ServiceService serviceService;
+    private final SNSService snsService;
 
     public ReservationService(
             ReservationRepository reservationRepository,
             UserService userService,
-            ServiceService serviceService) {
+            ServiceService serviceService,
+            SNSService snsService) {
         this.reservationRepository = reservationRepository;
         this.userService = userService;
         this.serviceService = serviceService;
+        this.snsService = snsService;
     }
 
     // Get reservations paginated with filters
@@ -59,6 +67,13 @@ public class ReservationService {
         reservation.setEmployee(employee);
 
         Reservation savedReservation = reservationRepository.save(reservation);
+
+        snsService.sendSms("dev".equalsIgnoreCase(activeProfile) ? "+37061654765" : savedReservation.getPhone(),
+                String.format("Hey, %s, Your reservation at %s for %s with %s %s is confirmed for %tF at %tR. Thank you for choosing us!",
+                savedReservation.getFirstName(), service.getMerchant().getName(), service.getName(),
+                employee.getFirstName(), employee.getLastName(),
+                savedReservation.getAppointedAt(), savedReservation.getAppointedAt()));
+
         return mapToResponseDTO(savedReservation);
     }
 
@@ -76,6 +91,13 @@ public class ReservationService {
         reservation.setEmployee(employee);
 
         Reservation updatedReservation = reservationRepository.save(reservation);
+
+        snsService.sendSms("dev".equalsIgnoreCase(activeProfile) ? "+37061654765" : updatedReservation.getPhone(),
+                String.format("Hey, %s, Your reservation at %s for %s with %s %s is confirmed for %tF at %tR. Thank you for choosing us!",
+                        updatedReservation.getFirstName(), service.getMerchant().getName(), service.getName(),
+                        employee.getFirstName(), employee.getLastName(),
+                        updatedReservation.getAppointedAt(), updatedReservation.getAppointedAt()));
+
         return mapToResponseDTO(updatedReservation);
     }
 

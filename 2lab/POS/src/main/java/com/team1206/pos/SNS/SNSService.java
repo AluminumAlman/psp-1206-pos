@@ -1,11 +1,14 @@
 package com.team1206.pos.SNS;
 
+import com.team1206.pos.exceptions.SnsServiceException;
+import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sns.model.PublishRequest;
 import software.amazon.awssdk.services.sns.model.PublishResponse;
+import software.amazon.awssdk.services.sns.model.SnsException;
 
+@Service
 public class SNSService {
-
 
     public void sendSms(String phoneNumber, String message) {
         try (SnsClient snsClient = SnsClient.create()) {
@@ -18,8 +21,16 @@ public class SNSService {
             // Publish the message
             PublishResponse response = snsClient.publish(request);
             System.out.println("Message sent with ID: " + response.messageId());
+        } catch (SnsException snsException) {
+            // Extract details from the AWS exception
+            System.err.println("AWS SNS Error: " + snsException.awsErrorDetails().errorMessage());
+            System.err.println("Error Code: " + snsException.awsErrorDetails().errorCode());
+            System.err.println("Service Name: " + snsException.awsErrorDetails().serviceName());
+
+            throw new SnsServiceException("Failed to send SMS via AWS SNS", snsException);
         } catch (Exception e) {
-            System.err.println("Failed to send SMS: " + e.getMessage());
+            System.err.println("Unexpected error while sending SMS: " + e.getMessage());
+            throw new SnsServiceException("An unexpected error occurred", e);
         }
     }
 }

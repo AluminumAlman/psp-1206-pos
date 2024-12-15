@@ -72,6 +72,23 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorObject, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(SnsServiceException.class)
+    public ResponseEntity<ErrorObject> handleSmsServiceException(SnsServiceException ex, WebRequest request) {
+        ErrorObject errorObject = new ErrorObject();
+        errorObject.setStatusCode(HttpStatus.SERVICE_UNAVAILABLE.value()); // Use 503 Service Unavailable for external service errors
+        errorObject.setMessage("Failed to send SMS: " + ex.getMessage());
+        errorObject.setPath(request.getDescription(false).replace("uri=", ""));
+        errorObject.setTimestamp(LocalDateTime.now());
+
+        // Add detailed cause in development mode
+        if ("dev".equalsIgnoreCase(activeProfile)) {
+            errorObject.setDetails(Collections.singletonMap("cause", ex.getCause() != null ? ex.getCause().getMessage() : "Unknown cause"));
+        }
+
+        return new ResponseEntity<>(errorObject, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+
     // Handle generic exceptions (fallback)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleGenericException(Exception ex, WebRequest request) {
