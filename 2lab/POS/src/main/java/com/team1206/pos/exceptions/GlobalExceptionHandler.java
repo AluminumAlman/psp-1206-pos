@@ -75,19 +75,41 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(SnsServiceException.class)
     public ResponseEntity<ErrorObject> handleSmsServiceException(SnsServiceException ex, WebRequest request) {
         ErrorObject errorObject = new ErrorObject();
-        errorObject.setStatusCode(HttpStatus.SERVICE_UNAVAILABLE.value()); // Use 503 Service Unavailable for external service errors
-        errorObject.setMessage("Failed to send SMS: " + ex.getMessage());
+        errorObject.setStatusCode(HttpStatus.SERVICE_UNAVAILABLE.value()); // Use 503 Service Unavailable
+        errorObject.setMessage(ex.getMessage());
         errorObject.setPath(request.getDescription(false).replace("uri=", ""));
         errorObject.setTimestamp(LocalDateTime.now());
 
-        // Add detailed cause in development mode
+        // Add additional details in dev mode
         if ("dev".equalsIgnoreCase(activeProfile)) {
-            errorObject.setDetails(Collections.singletonMap("cause", ex.getCause() != null ? ex.getCause().getMessage() : "Unknown cause"));
+            Map<String, String> details = new HashMap<>();
+            details.put("cause", ex.getCause() != null ? ex.getCause().getMessage() : "Unknown cause");
+            // Add custom details if the exception contains AWS-specific metadata
+            if (ex.getCause() instanceof software.amazon.awssdk.services.sns.model.SnsException snsException) {
+                details.put("AWS Service Name", snsException.awsErrorDetails().serviceName());
+                details.put("AWS Error Code", snsException.awsErrorDetails().errorCode());
+            }
+            errorObject.setDetails(details);
         }
 
         return new ResponseEntity<>(errorObject, HttpStatus.SERVICE_UNAVAILABLE);
     }
 
+    @ExceptionHandler(UnauthorizedActionException.class)
+    public ResponseEntity<ErrorObject> handleUnauthorizedActionException(UnauthorizedActionException ex, WebRequest request) {
+        ErrorObject errorObject = new ErrorObject();
+        errorObject.setStatusCode(HttpStatus.FORBIDDEN.value()); // 403 Forbidden
+        errorObject.setMessage(ex.getMessage());
+        errorObject.setPath(request.getDescription(false).replace("uri=", ""));
+        errorObject.setTimestamp(LocalDateTime.now());
+
+        // Optional: Include the specific action the user attempted
+        if ("dev".equalsIgnoreCase(activeProfile)) {
+            errorObject.setDetails(Collections.singletonMap("attemptedAction", ex.getAction()));
+        }
+
+        return new ResponseEntity<>(errorObject, HttpStatus.FORBIDDEN);
+    }
 
     // Handle generic exceptions (fallback)
     @ExceptionHandler(Exception.class)

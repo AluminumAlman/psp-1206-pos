@@ -2,6 +2,8 @@ package com.team1206.pos.service.reservation;
 
 import com.team1206.pos.SNS.SNSService;
 import com.team1206.pos.common.enums.ResourceType;
+import com.team1206.pos.common.enums.UserRoles;
+import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.service.service.Service;
 import com.team1206.pos.service.service.ServiceService;
@@ -60,6 +62,7 @@ public class ReservationService {
         Service service = serviceService.getServiceEntityById(requestDTO.getServiceId());
 
         User employee = userService.getUserEntityById(requestDTO.getEmployeeId());
+        verifyUserRole(employee, UserRoles.EMPLOYEE);
 
         Reservation reservation = new Reservation();
         mapRequestToReservation(requestDTO, reservation);
@@ -85,6 +88,7 @@ public class ReservationService {
         Service service = serviceService.getServiceEntityById(requestDTO.getServiceId());
 
         User employee = userService.getUserEntityById(requestDTO.getEmployeeId());
+        verifyUserRole(employee, UserRoles.EMPLOYEE);
 
         mapRequestToReservation(requestDTO, reservation);
         reservation.setService(service);
@@ -128,6 +132,13 @@ public class ReservationService {
         // Return placeholder data for now
         AvailableSlotsResponseDTO responseDTO = new AvailableSlotsResponseDTO();
         return responseDTO;
+    }
+
+    // Helper methods
+    private void verifyUserRole(User user, UserRoles userRole) {
+        if (!user.getRole().equals(userRole)) {
+            throw new IllegalStateExceptionWithId("User role is invalid for this operation!", user.getId().toString());
+        }
     }
 
     // Mappers

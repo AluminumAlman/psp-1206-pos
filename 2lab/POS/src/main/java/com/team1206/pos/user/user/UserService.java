@@ -3,6 +3,7 @@ package com.team1206.pos.user.user;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
+import com.team1206.pos.exceptions.UnauthorizedActionException;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.merchant.MerchantRepository;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -168,7 +169,7 @@ public class UserService {
     public void verifyAdminOrOwnerRole() {
         UserRoles currentUserRole = getCurrentUserRole();
         if (!(currentUserRole == UserRoles.SUPER_ADMIN || currentUserRole == UserRoles.MERCHANT_OWNER)) {
-            throw new DataIntegrityViolationException("You do not have permission to perform this action.");
+            throw new UnauthorizedActionException("You do not have permission to perform this action.", "");
         }
     }
 
@@ -181,7 +182,7 @@ public class UserService {
             UUID targetMerchantId = targetUser.getMerchant() != null ? targetUser.getMerchant().getId() : null;
 
             if (currentMerchantId == null || !currentMerchantId.equals(targetMerchantId)) {
-                throw new DataIntegrityViolationException("You do not have permission to modify a user from a different merchant.");
+                throw new UnauthorizedActionException("You do not have permission to perform this action.", "You do not have permission to modify a user from a different merchant.");
             }
         }
     }
