@@ -1,5 +1,6 @@
 package com.team1206.pos.inventory.productVariation;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,7 @@ public class ProductVariationController {
         this.productVariationService = productVariationService;
     }
 
+    @Operation(summary = "Create new product variation")
     @PostMapping("/{productId}/variations")
     public ResponseEntity<ProductVariationResponseDTO> createProductVariation(
             @PathVariable String productId,
@@ -26,6 +28,7 @@ public class ProductVariationController {
         return ResponseEntity.ok(createdVariation);
     }
 
+    @Operation(summary = "Get product's variation by ID")
     @GetMapping("/{productId}/variations/{variationId}")
     public ResponseEntity<ProductVariationResponseDTO> getProductVariation(
             @PathVariable String productId,
@@ -38,6 +41,7 @@ public class ProductVariationController {
         return ResponseEntity.ok(variation);
     }
 
+    @Operation(summary = "Get all product's variations")
     @GetMapping("/{productId}/variations")
     public ResponseEntity<List<ProductVariationResponseDTO>> getProductVariations(
             @PathVariable String productId
@@ -46,6 +50,7 @@ public class ProductVariationController {
         return ResponseEntity.ok(variations);
     }
 
+    @Operation(summary = "Update product's variation by ID")
     @PutMapping("/{productId}/variations/{variationId}")
     public ResponseEntity<ProductVariationResponseDTO> updateProductVariation(
             @PathVariable String productId,
@@ -56,6 +61,7 @@ public class ProductVariationController {
         return ResponseEntity.ok(productVariation);
     }
 
+    @Operation(summary = "Delete product's variation by ID")
     @DeleteMapping("/{productId}/variations/{variationId}")
     public ResponseEntity<Void> deleteProductVariation(
             @PathVariable String productId,
