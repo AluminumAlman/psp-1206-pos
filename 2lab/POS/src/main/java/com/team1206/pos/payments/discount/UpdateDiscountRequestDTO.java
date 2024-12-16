@@ -8,7 +8,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class DiscountRequestDTO {
+public class UpdateDiscountRequestDTO {
     @NotNull(message = "Discount name must not be null.")
     @NotBlank(message = "Discount name must not be blank.")
     @Size(max = 255, message = "Discount name size must not exceed 255.")

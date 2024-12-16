@@ -23,9 +23,16 @@ public class DiscountService {
     }
 
     @Transactional
-    public DiscountResponseDTO createDiscount(DiscountRequestDTO discountRequestDTO, UUID merchantId) {
-        Discount discount = mapRequestDTOToEntity(discountRequestDTO, new Discount());
-        discount.setMerchant(merchantService.findById(merchantId));
+    public DiscountResponseDTO createDiscount(CreateDiscountRequestDTO discountRequestDTO) {
+        Discount discount = new Discount();
+
+        discount.setName(discountRequestDTO.getName());
+        discount.setPercent(discountRequestDTO.getPercent());
+        discount.setAmount(discountRequestDTO.getAmount());
+        discount.setValidFrom(discountRequestDTO.getValidFrom());
+        discount.setValidUntil(discountRequestDTO.getValidUntil());
+        discount.setMerchant(merchantService.findById(discountRequestDTO.getMerchantId()));
+
         discountRepository.save(discount);
         return toResponseDTO(discount);
     }
@@ -50,13 +57,18 @@ public class DiscountService {
     }
 
     @Transactional
-    public DiscountResponseDTO updateDiscount(UUID id, DiscountRequestDTO discountRequestDTO) {
+    public DiscountResponseDTO updateDiscount(UUID id, UpdateDiscountRequestDTO discountRequestDTO) {
         Discount discount = discountRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.DISCOUNT, id.toString()));
         if (!discount.getIsActive())
             throw new ResourceNotFoundException(ResourceType.DISCOUNT, id.toString());
 
-        mapRequestDTOToEntity(discountRequestDTO, discount);
+        discount.setName(discountRequestDTO.getName());
+        discount.setPercent(discountRequestDTO.getPercent());
+        discount.setAmount(discountRequestDTO.getAmount());
+        discount.setValidFrom(discountRequestDTO.getValidFrom());
+        discount.setValidUntil(discountRequestDTO.getValidUntil());
+
         discountRepository.save(discount);
         return toResponseDTO(discount);
     }
@@ -70,15 +82,6 @@ public class DiscountService {
 
         discount.setIsActive(false);
         discountRepository.save(discount);
-    }
-
-    public Discount mapRequestDTOToEntity(DiscountRequestDTO discountRequestDTO, Discount discount) {
-        discount.setName(discountRequestDTO.getName());
-        discount.setPercent(discountRequestDTO.getPercent());
-        discount.setAmount(discountRequestDTO.getAmount());
-        discount.setValidFrom(discountRequestDTO.getValidFrom());
-        discount.setValidUntil(discountRequestDTO.getValidUntil());
-        return discount;
     }
 
     public DiscountResponseDTO toResponseDTO(Discount discount) {

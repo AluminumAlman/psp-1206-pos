@@ -30,9 +30,8 @@ public class DiscountController {
     @Operation(summary = "Create new discount")
     public ResponseEntity<DiscountResponseDTO> createDiscount(
             HttpServletRequest request,
-            @Valid @RequestBody DiscountRequestDTO discountRequestDTO,
-            @RequestParam(name = "merchantId") UUID merchantId) throws Exception {
-        DiscountResponseDTO response = discountService.createDiscount(discountRequestDTO, merchantId);
+            @Valid @RequestBody CreateDiscountRequestDTO discountRequestDTO) throws Exception {
+        DiscountResponseDTO response = discountService.createDiscount(discountRequestDTO);
 
         StringBuffer linkToResource = request.getRequestURL().append('/').append(response.getId());
         return ResponseEntity.created(new URI(linkToResource.toString())).body(response);
@@ -49,7 +48,7 @@ public class DiscountController {
     @Operation(summary = "Update discount")
     public ResponseEntity<DiscountResponseDTO> updateDiscount(
             @PathVariable("discountId") UUID discountId,
-            @Valid @RequestBody DiscountRequestDTO discountRequestDTO) {
+            @Valid @RequestBody UpdateDiscountRequestDTO discountRequestDTO) {
         DiscountResponseDTO response = discountService.updateDiscount(discountId, discountRequestDTO);
         return ResponseEntity.ok(response);
     }
