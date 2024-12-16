@@ -4,6 +4,7 @@ import com.team1206.pos.common.enums.PaymentMethodType;
 import com.team1206.pos.common.enums.TransactionStatus;
 import com.team1206.pos.order.order.Order;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,7 +30,8 @@ public class Transaction {
     @Enumerated(EnumType.ORDINAL)
     private PaymentMethodType paymentMethod;
 
-    @Column(name = "amount", nullable = false)
+    @Column(name = "amount", nullable = false, precision = 19, scale = 2)
+    @DecimalMin(value = "0.01", inclusive = false, message = "Price must be greater than 0.01")
     private BigDecimal amount;
 
     @ManyToOne
