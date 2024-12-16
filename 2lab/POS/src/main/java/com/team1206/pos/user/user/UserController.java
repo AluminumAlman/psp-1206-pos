@@ -65,4 +65,12 @@ public class UserController {
         UserResponseDTO updatedUser = userService.assignMerchantToUser(userId, request.getMerchantId());
         return ResponseEntity.ok(updatedUser);
     }
+
+    @GetMapping("/me")
+    @Operation(summary = "Retrieve current user")
+    public ResponseEntity<UserResponseDTO> getCurrentUser() {
+        UserResponseDTO currentUser = userService.getCurrentUserInfo();
+        return ResponseEntity.ok(currentUser);
+    }
+
 }
