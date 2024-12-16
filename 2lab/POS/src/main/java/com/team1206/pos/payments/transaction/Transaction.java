@@ -31,7 +31,6 @@ public class Transaction {
     private PaymentMethodType paymentMethod;
 
     @Column(name = "amount", nullable = false, precision = 19, scale = 2)
-    @DecimalMin(value = "0.01", inclusive = false, message = "Price must be greater than 0.01")
     private BigDecimal amount;
 
     @ManyToOne

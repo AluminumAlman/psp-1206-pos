@@ -1,5 +1,6 @@
 package com.team1206.pos.payments.transaction;
 
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
@@ -17,5 +18,6 @@ public class TransactionRequestDTO {
     private String paymentMethod;
 
     @NotBlank
+    @DecimalMin(value = "0.01", inclusive = false, message = "Price must be greater than 0.01")
     private BigDecimal amount;
 }
