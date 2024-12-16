@@ -11,7 +11,8 @@ public enum ResourceType {
     PRODUCT_CATEGORY("Product Category"),
     PRODUCT("Product"),
     PRODUCT_VARIATION("Product Variation"),
-    CHARGE("Charge");
+    CHARGE("Charge"),
+    DISCOUNT("Discount");
 
     private final String displayName;
 

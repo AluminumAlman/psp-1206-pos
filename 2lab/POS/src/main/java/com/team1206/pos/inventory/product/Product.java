@@ -4,6 +4,7 @@ import com.team1206.pos.inventory.inventory.Inventory;
 import com.team1206.pos.inventory.productCategory.ProductCategory;
 import com.team1206.pos.inventory.productVariation.ProductVariation;
 import com.team1206.pos.payments.charge.Charge;
+import com.team1206.pos.payments.discount.Discount;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -46,6 +47,12 @@ public class Product {
     @OneToOne(mappedBy = "product")
     private Inventory inventory;
 
+    @ManyToMany(mappedBy = "products")
+    private List<Discount> discounts;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;
 }

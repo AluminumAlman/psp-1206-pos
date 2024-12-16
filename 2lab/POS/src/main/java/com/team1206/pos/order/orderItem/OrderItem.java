@@ -4,6 +4,7 @@ import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.inventory.productVariation.ProductVariation;
 import com.team1206.pos.order.order.Order;
 import com.team1206.pos.order.orderCharge.OrderCharge;
+import com.team1206.pos.payments.discount.Discount;
 import com.team1206.pos.service.service.Service;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -43,8 +44,16 @@ public class OrderItem {
     private Service service;
 
     @ManyToMany
-    @JoinTable(name = "order_items_order_charges", joinColumns = @JoinColumn(name = "order_item_id"), inverseJoinColumns = @JoinColumn(name = "order_charge_id"))
+    @JoinTable(name = "order_items_order_charges",
+            joinColumns = @JoinColumn(name = "order_item_id"),
+            inverseJoinColumns = @JoinColumn(name = "order_charge_id"))
     private List<OrderCharge> charges;
+
+    @ManyToMany
+    @JoinTable(name = "order_items_discounts",
+            joinColumns = @JoinColumn(name = "order_item_id"),
+            inverseJoinColumns = @JoinColumn(name = "discount_id"))
+    private List<Discount> discounts;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();

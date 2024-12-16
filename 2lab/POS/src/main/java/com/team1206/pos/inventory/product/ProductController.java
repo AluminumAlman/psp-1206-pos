@@ -1,5 +1,6 @@
 package com.team1206.pos.inventory.product;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -17,12 +18,14 @@ public class ProductController {
         this.productService = productService;
     }
 
+    @Operation(summary = "Create new product")
     @PostMapping
     public ResponseEntity<ProductResponseDTO> createProduct(@Valid @RequestBody CreateProductRequestDTO requestDTO) {
         ProductResponseDTO createdProduct = productService.createProduct(requestDTO);
         return ResponseEntity.ok(createdProduct);
     }
 
+    @Operation(summary = "Get all products with filters")
     @GetMapping
     public ResponseEntity<Page<ProductResponseDTO>> getAllProducts(
             @RequestParam(value = "name", required = false) String name,
@@ -44,7 +47,7 @@ public class ProductController {
     }
 
 
-
+    @Operation(summary = "Get product by ID")
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDTO> getProduct(@PathVariable String id) {
         ProductResponseDTO product = productService.getProductById(UUID.fromString(id));
@@ -52,12 +55,14 @@ public class ProductController {
     }
 
     // TODO testing with charge assignment
+    @Operation(summary = "Update product by ID")
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable String id, @RequestBody UpdateProductRequestDTO requestDTO) {
         ProductResponseDTO updatedProduct = productService.updateProductById(UUID.fromString(id), requestDTO);
         return ResponseEntity.ok(updatedProduct);
     }
 
+    @Operation(summary = "Delete product by ID")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable String id) {
         productService.deleteProductById(UUID.fromString(id));

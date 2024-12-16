@@ -1,0 +1,99 @@
+/* src/components/Login.css */
+.login-panel {
+    text-align: center;
+}
+
+.shop-title {
+    margin-top: 20vh;
+    font-size: 200px;
+    color: #333;
+}
+
+.login-button {
+    margin-top: -5vh;
+    font-size: 70px;
+    padding: 5px 20px 20px 20px;
+    background-color: #61dafb;
+    color: white;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+}
+
+.login-button:hover {
+    background-color: #21a1f1;
+}
+
+.dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    z-index: 1000;
+}
+
+.dialog-content {
+    display: flex;
+    justify-content: space-around;
+    padding: 20px;
+}
+
+.login-form, .register-form {
+    display: flex;
+    flex-direction: column;
+}
+
+input[type="email"], input[type="password"], input[type="text"] {
+    padding: 8px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.close-dialog {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.close-dialog:hover {
+    background-color: #d32f2f;
+}
+
+.submit-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #61dafb;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.submit-button:hover {
+    background-color: #21a1f1;
+}
+
+.register-link {
+    font-size: 14px;
+}
+
+.register-link span {
+    text-decoration: underline;
+    cursor: pointer;
+    color: #007bff;
+}
+
+.form-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}

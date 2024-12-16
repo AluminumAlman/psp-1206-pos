@@ -162,6 +162,11 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, email));
     }
 
+    public UserResponseDTO getCurrentUserInfo() {
+        User currentUser = getCurrentUser(); // Already defined method in UserService
+        return mapToResponseDTO(currentUser);
+    }
+
     private UserRoles getCurrentUserRole() {
         return getCurrentUser().getRole();
     }
