@@ -135,6 +135,12 @@ public class UserService {
                 .orElse(null);
     }
 
+    public void verifyLoggedInUserBelongsToMerchant(UUID merchantId) {
+        if (getMerchantIdFromLoggedInUser() != merchantId && getCurrentUser().getRole() != UserRoles.SUPER_ADMIN) {
+            throw new UnauthorizedActionException("You do not have permission to perform this action.", "");
+        }
+    }
+
     public void verifyUserRole(User user, UserRoles userRole) {
         if (!user.getRole().equals(userRole)) {
             throw new UnauthorizedActionException("User role is invalid for this operation!", "");

@@ -111,7 +111,11 @@ public class ServiceService {
         service.setDuration(requestDTO.getDuration());
 
         List<User> employees = userService.findAllById(requestDTO.getEmployeeIds());
-        for (User user : employees) { userService.verifyUserRole(user, UserRoles.EMPLOYEE); }
+        employees.forEach(employee -> {
+            userService.verifyUserRole(employee, UserRoles.EMPLOYEE);
+            userService.verifyLoggedInUserBelongsToMerchant(employee.getMerchant().getId());
+        });
+        
         service.setEmployees(employees);
     }
 
