@@ -1,6 +1,7 @@
 package com.team1206.pos.service.service;
 
 import com.team1206.pos.common.enums.ResourceType;
+import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.merchant.MerchantService;
@@ -110,6 +111,7 @@ public class ServiceService {
         service.setDuration(requestDTO.getDuration());
 
         List<User> employees = userService.findAllById(requestDTO.getEmployeeIds());
+        for (User user : employees) { userService.verifyUserRole(user, UserRoles.EMPLOYEE); }
         service.setEmployees(employees);
     }
 
