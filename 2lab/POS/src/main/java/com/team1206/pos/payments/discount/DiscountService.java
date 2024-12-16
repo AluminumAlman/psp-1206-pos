@@ -48,16 +48,6 @@ public class DiscountService {
         return discountResponseDTOS;
     }
 
-    public List<Discount> getValidDiscounts(LocalDateTime now) {
-        List<Discount> discounts = discountRepository.findAll();
-        List<Discount> resultDiscounts = new ArrayList<>();
-        for (Discount discount : discounts) {
-            if (discount.getIsActive() && discount.isValidFor(now))
-                resultDiscounts.add(discount);
-        }
-        return resultDiscounts;
-    }
-
     public DiscountResponseDTO getDiscount(UUID id) {
         Discount discount = discountRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.DISCOUNT, id.toString()));
