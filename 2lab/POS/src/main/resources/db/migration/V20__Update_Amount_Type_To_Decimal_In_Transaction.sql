@@ -1,0 +1,2 @@
+ALTER TABLE transaction
+    ALTER COLUMN amount TYPE DECIMAL(19, 2) USING (amount::DECIMAL(19, 2));
