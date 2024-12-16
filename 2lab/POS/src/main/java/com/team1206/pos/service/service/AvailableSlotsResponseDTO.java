@@ -1,4 +1,4 @@
-package com.team1206.pos.service.reservation;
+package com.team1206.pos.service.service;
 
 import lombok.Data;
 

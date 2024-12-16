@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @RestController
@@ -68,5 +69,14 @@ public class ServiceController {
     public ResponseEntity<Void> deleteService(@PathVariable UUID serviceId) {
         serviceService.deleteService(serviceId);
         return ResponseEntity.noContent().build();
+    }
+
+    // GET: Get available reservation slots
+    @GetMapping("/{serviceId}/availableSlots")
+    @Operation(summary = "Get available reservation slots for given day")
+    public ResponseEntity<AvailableSlotsResponseDTO> getAvailableSlots(
+            @PathVariable UUID serviceId,
+            @RequestParam(value = "date") LocalDate date) {
+        return ResponseEntity.ok(serviceService.getAvailableSlots(serviceId, date));
     }
 }

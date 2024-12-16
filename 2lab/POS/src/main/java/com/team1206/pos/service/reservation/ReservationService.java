@@ -3,7 +3,6 @@ package com.team1206.pos.service.reservation;
 import com.team1206.pos.SNS.SNSService;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.common.enums.UserRoles;
-import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.service.service.Service;
 import com.team1206.pos.service.service.ServiceService;
@@ -14,7 +13,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -126,16 +124,6 @@ public class ReservationService {
         } catch (Exception e) {
             throw new RuntimeException("An error occurred while cancelling the reservation with ID: " + reservationId, e);
         }
-    }
-
-    // Get available slots for a service on a given date
-    public AvailableSlotsResponseDTO getAvailableSlots(LocalDate date, UUID serviceId) {
-        Service service = serviceService.getServiceEntityById(serviceId);
-
-        // Implement logic to fetch and calculate available slots for the service
-        // Return placeholder data for now
-        AvailableSlotsResponseDTO responseDTO = new AvailableSlotsResponseDTO();
-        return responseDTO;
     }
 
     // Mappers

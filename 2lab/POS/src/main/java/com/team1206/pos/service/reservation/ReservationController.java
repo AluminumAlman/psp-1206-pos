@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -74,14 +73,5 @@ public class ReservationController {
     public ResponseEntity<Void> cancelReservation(@PathVariable UUID reservationId) {
         reservationService.cancelReservation(reservationId);
         return ResponseEntity.ok().build();
-    }
-
-    // GET: Get available reservation slots
-    @GetMapping("/availableSlots")
-    @Operation(summary = "Get available reservation slots")
-    public ResponseEntity<AvailableSlotsResponseDTO> getAvailableSlots(
-            @RequestParam(value = "date") LocalDate date,
-            @RequestParam(value = "serviceId") UUID serviceId) {
-        return ResponseEntity.ok(reservationService.getAvailableSlots(date, serviceId));
     }
 }

@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -83,6 +84,16 @@ public class ServiceService {
             throw new RuntimeException("An error occurred while deleting the service with ID: " + serviceId, e);
         }
     }
+
+    // Get available slots for a service on a given date
+    public AvailableSlotsResponseDTO getAvailableSlots(UUID serviceId, LocalDate date) {
+
+        // Implement logic to fetch and calculate available slots for the service
+        // Return placeholder data for now
+        AvailableSlotsResponseDTO responseDTO = new AvailableSlotsResponseDTO();
+        return responseDTO;
+    }
+
 
     // Service layer methods
     public com.team1206.pos.service.service.Service getServiceEntityById(UUID serviceId) {
