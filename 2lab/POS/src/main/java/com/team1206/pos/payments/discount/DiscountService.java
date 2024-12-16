@@ -6,6 +6,7 @@ import com.team1206.pos.user.merchant.MerchantService;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -47,7 +48,17 @@ public class DiscountService {
         return discountResponseDTOS;
     }
 
-    public DiscountResponseDTO getDiscount(UUID id) throws ResourceNotFoundException {
+    public List<Discount> getValidDiscounts(LocalDateTime now) {
+        List<Discount> discounts = discountRepository.findAll();
+        List<Discount> resultDiscounts = new ArrayList<>();
+        for (Discount discount : discounts) {
+            if (discount.getIsActive() && discount.isValidFor(now))
+                resultDiscounts.add(discount);
+        }
+        return resultDiscounts;
+    }
+
+    public DiscountResponseDTO getDiscount(UUID id) {
         Discount discount = discountRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.DISCOUNT, id.toString()));
         if (!discount.getIsActive())
