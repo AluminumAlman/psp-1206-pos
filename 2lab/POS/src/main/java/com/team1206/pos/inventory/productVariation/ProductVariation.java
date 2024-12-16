@@ -35,4 +35,7 @@ public class ProductVariation {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;
 }
