@@ -62,7 +62,7 @@ public class ReservationService {
         Service service = serviceService.getServiceEntityById(requestDTO.getServiceId());
 
         User employee = userService.getUserEntityById(requestDTO.getEmployeeId());
-        verifyUserRole(employee, UserRoles.EMPLOYEE);
+        userService.verifyUserRole(employee, UserRoles.EMPLOYEE);
 
         Reservation reservation = new Reservation();
         mapRequestToReservation(requestDTO, reservation);
@@ -73,9 +73,9 @@ public class ReservationService {
 
         snsService.sendSms("dev".equalsIgnoreCase(activeProfile) ? "+37061654765" : savedReservation.getPhone(),
                 String.format("Hey, %s, Your reservation at %s for %s with %s %s is confirmed for %tF at %tR. Thank you for choosing us!",
-                savedReservation.getFirstName(), service.getMerchant().getName(), service.getName(),
-                employee.getFirstName(), employee.getLastName(),
-                savedReservation.getAppointedAt(), savedReservation.getAppointedAt()));
+                        savedReservation.getFirstName(), service.getMerchant().getName(), service.getName(),
+                        employee.getFirstName(), employee.getLastName(),
+                        savedReservation.getAppointedAt(), savedReservation.getAppointedAt()));
 
         return mapToResponseDTO(savedReservation);
     }
@@ -88,7 +88,7 @@ public class ReservationService {
         Service service = serviceService.getServiceEntityById(requestDTO.getServiceId());
 
         User employee = userService.getUserEntityById(requestDTO.getEmployeeId());
-        verifyUserRole(employee, UserRoles.EMPLOYEE);
+        userService.verifyUserRole(employee, UserRoles.EMPLOYEE);
 
         mapRequestToReservation(requestDTO, reservation);
         reservation.setService(service);
@@ -114,11 +114,15 @@ public class ReservationService {
 
     // Cancel (delete) a reservation
     public void cancelReservation(UUID reservationId) {
-        if (!reservationRepository.existsById(reservationId)) {
-            throw new ResourceNotFoundException(ResourceType.RESERVATION, reservationId.toString());
-        }
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.RESERVATION, reservationId.toString()));
+
         try {
+            String phoneNumber = reservation.getPhone();
             reservationRepository.deleteById(reservationId);
+            snsService.sendSms("dev".equalsIgnoreCase(activeProfile) ? "+37061654765" : phoneNumber,
+                    "Hey, Your reservation was successfully cancelled. Thank you for choosing us!");
+
         } catch (Exception e) {
             throw new RuntimeException("An error occurred while cancelling the reservation with ID: " + reservationId, e);
         }
@@ -132,13 +136,6 @@ public class ReservationService {
         // Return placeholder data for now
         AvailableSlotsResponseDTO responseDTO = new AvailableSlotsResponseDTO();
         return responseDTO;
-    }
-
-    // Helper methods
-    private void verifyUserRole(User user, UserRoles userRole) {
-        if (!user.getRole().equals(userRole)) {
-            throw new IllegalStateExceptionWithId("User role is invalid for this operation!", user.getId().toString());
-        }
     }
 
     // Mappers

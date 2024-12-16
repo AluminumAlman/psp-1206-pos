@@ -102,6 +102,11 @@ public class UserService {
         return mapToResponseDTO(user);
     }
 
+    public UserResponseDTO getCurrentUserInfo() {
+        User currentUser = getCurrentUser();
+        return mapToResponseDTO(currentUser);
+    }
+
     // Service layer methods
     public User getUserEntityById(UUID userId) {
         return userRepository.findById(userId)
@@ -130,26 +135,10 @@ public class UserService {
                 .orElse(null);
     }
 
-    // Mappers
-    private void setUserFieldsFromRequest(User user, UserRequestDTO request) {
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword());
-        user.setRole(request.getRole());
-    }
-
-    private UserResponseDTO mapToResponseDTO(User user) {
-        UserResponseDTO dto = new UserResponseDTO();
-        dto.setId(user.getId());
-        dto.setFirstName(user.getFirstName());
-        dto.setLastName(user.getLastName());
-        dto.setEmail(user.getEmail());
-        dto.setRole(user.getRole());
-        dto.setCreatedAt(user.getCreatedAt());
-        dto.setUpdatedAt(user.getUpdatedAt());
-        dto.setMerchantId(user.getMerchant() != null ? user.getMerchant().getId() : null);
-        return dto;
+    public void verifyUserRole(User user, UserRoles userRole) {
+        if (!user.getRole().equals(userRole)) {
+            throw new UnauthorizedActionException("User role is invalid for this operation!", "");
+        }
     }
 
     private User getCurrentUser() {
@@ -160,11 +149,6 @@ public class UserService {
 
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, email));
-    }
-
-    public UserResponseDTO getCurrentUserInfo() {
-        User currentUser = getCurrentUser(); // Already defined method in UserService
-        return mapToResponseDTO(currentUser);
     }
 
     private UserRoles getCurrentUserRole() {
@@ -190,5 +174,27 @@ public class UserService {
                 throw new UnauthorizedActionException("You do not have permission to perform this action.", "You do not have permission to modify a user from a different merchant.");
             }
         }
+    }
+
+    // Mappers
+    private void setUserFieldsFromRequest(User user, UserRequestDTO request) {
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setEmail(request.getEmail());
+        user.setPassword(request.getPassword());
+        user.setRole(request.getRole());
+    }
+
+    private UserResponseDTO mapToResponseDTO(User user) {
+        UserResponseDTO dto = new UserResponseDTO();
+        dto.setId(user.getId());
+        dto.setFirstName(user.getFirstName());
+        dto.setLastName(user.getLastName());
+        dto.setEmail(user.getEmail());
+        dto.setRole(user.getRole());
+        dto.setCreatedAt(user.getCreatedAt());
+        dto.setUpdatedAt(user.getUpdatedAt());
+        dto.setMerchantId(user.getMerchant() != null ? user.getMerchant().getId() : null);
+        return dto;
     }
 }
