@@ -15,7 +15,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
             "AND (:customerName IS NULL OR CONCAT(r.firstName, ' ', r.lastName) LIKE %:customerName%) " +
             "AND (:customerEmail IS NULL OR r.employee.email LIKE %:customerEmail%) " +
             "AND (:customerPhone IS NULL OR r.phone LIKE %:customerPhone%) " +
-            "AND (:appointedAt IS NULL OR r.appointedAt = :appointedAt)")
+            "AND (cast(:appointedAt as timestamp) IS NULL OR r.appointedAt = :appointedAt)")
     Page<Reservation> findAllWithFilters(
             @Param("serviceName") String serviceName,
             @Param("customerName") String customerName,
