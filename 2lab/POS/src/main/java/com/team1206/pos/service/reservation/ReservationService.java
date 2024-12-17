@@ -18,9 +18,6 @@ import java.util.UUID;
 
 @org.springframework.stereotype.Service
 public class ReservationService {
-    @Value("${spring.profiles.active:prod}")
-    private String activeProfile;
-
     private final ReservationRepository reservationRepository;
     private final UserService userService;
     private final ServiceService serviceService;
@@ -69,7 +66,7 @@ public class ReservationService {
 
         Reservation savedReservation = reservationRepository.save(reservation);
 
-        snsService.sendSms("dev".equalsIgnoreCase(activeProfile) ? "+37061654765" : savedReservation.getPhone(),
+        snsService.sendSms(savedReservation.getPhone(),
                 String.format("Hey, %s, Your reservation at %s for %s with %s %s is confirmed for %tF at %tR. Thank you for choosing us!",
                         savedReservation.getFirstName(), service.getMerchant().getName(), service.getName(),
                         employee.getFirstName(), employee.getLastName(),
@@ -94,7 +91,7 @@ public class ReservationService {
 
         Reservation updatedReservation = reservationRepository.save(reservation);
 
-        snsService.sendSms("dev".equalsIgnoreCase(activeProfile) ? "+37061654765" : updatedReservation.getPhone(),
+        snsService.sendSms(updatedReservation.getPhone(),
                 String.format("Hey, %s, Your reservation at %s for %s with %s %s is confirmed for %tF at %tR. Thank you for choosing us!",
                         updatedReservation.getFirstName(), service.getMerchant().getName(), service.getName(),
                         employee.getFirstName(), employee.getLastName(),
@@ -118,7 +115,7 @@ public class ReservationService {
         try {
             String phoneNumber = reservation.getPhone();
             reservationRepository.deleteById(reservationId);
-            snsService.sendSms("dev".equalsIgnoreCase(activeProfile) ? "+37061654765" : phoneNumber,
+            snsService.sendSms(phoneNumber,
                     "Hey, Your reservation was successfully cancelled. Thank you for choosing us!");
 
         } catch (Exception e) {
