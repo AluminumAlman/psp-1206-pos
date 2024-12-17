@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @RestController
@@ -31,7 +32,8 @@ public class ServiceController {
 
         if (limit < 1) {
             throw new IllegalArgumentException("Limit must be at least 1");
-        } else if (offset < 0) {
+        }
+        if (offset < 0) {
             throw new IllegalArgumentException("Offset must be at least 0");
         }
 
@@ -67,5 +69,14 @@ public class ServiceController {
     public ResponseEntity<Void> deleteService(@PathVariable UUID serviceId) {
         serviceService.deleteService(serviceId);
         return ResponseEntity.noContent().build();
+    }
+
+    // GET: Get available reservation slots
+    @GetMapping("/{serviceId}/availableSlots")
+    @Operation(summary = "Get available reservation slots for given service and given day")
+    public ResponseEntity<AvailableSlotsResponseDTO> getAvailableSlots(
+            @PathVariable UUID serviceId,
+            @RequestParam(value = "date") LocalDate date) {
+        return ResponseEntity.ok(serviceService.getAvailableSlots(serviceId, date));
     }
 }
