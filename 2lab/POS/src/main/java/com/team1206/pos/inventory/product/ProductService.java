@@ -1,6 +1,7 @@
 package com.team1206.pos.inventory.product;
 
 import com.team1206.pos.common.enums.ResourceType;
+import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.inventory.productCategory.ProductCategory;
 import com.team1206.pos.inventory.productCategory.ProductCategoryService;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -99,6 +101,22 @@ public class ProductService {
             throw new ResourceNotFoundException(ResourceType.PRODUCT, id.toString());
         }
         productRepository.deleteById(id);
+    }
+
+    public ProductResponseDTO adjustProductQuantity(UUID id, AdjustProductQuantityDTO adjustDTO) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, id.toString()));
+
+        int newQuantity = product.getQuantity() + adjustDTO.getAdjustment();
+        if (newQuantity < 0) {
+            throw new IllegalStateExceptionWithId("Product quantity cannot be less than zero", id.toString());
+        }
+
+        product.setQuantity(newQuantity);
+
+        Product updatedProduct = productRepository.save(product);
+
+        return mapToResponseDTO(updatedProduct);
     }
 
     // Service layer methods

@@ -1,7 +1,9 @@
 package com.team1206.pos.inventory.productVariation;
 
 import com.team1206.pos.common.enums.ResourceType;
+import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
+import com.team1206.pos.inventory.product.AdjustProductQuantityDTO;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.inventory.product.ProductService;
 import org.springframework.stereotype.Service;
@@ -73,6 +75,22 @@ public class ProductVariationService {
         if(!productVariationRepository.existsById(productVariationId))
             throw new ResourceNotFoundException(ResourceType.PRODUCT_VARIATION, productVariationId.toString());
         productVariationRepository.deleteById(productVariationId);
+    }
+
+    public ProductVariationResponseDTO adjustProductVariationQuantity(UUID id, AdjustProductQuantityDTO adjustDTO) {
+        ProductVariation productVariation = productVariationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, id.toString()));
+
+        int newQuantity = productVariation.getQuantity() + adjustDTO.getAdjustment();
+        if (newQuantity < 0) {
+            throw new IllegalStateExceptionWithId("Product quantity cannot be less than zero", id.toString());
+        }
+
+        productVariation.setQuantity(newQuantity);
+
+        ProductVariation updatedProductVariation = productVariationRepository.save(productVariation);
+
+        return mapToResponseDTO(updatedProductVariation);
     }
 
     // Mappers

@@ -68,4 +68,15 @@ public class ProductController {
         productService.deleteProductById(UUID.fromString(id));
         return ResponseEntity.noContent().build();
     }
+
+    @Operation(summary = "Adjust product quantity")
+    @PatchMapping("/{id}/adjust-quantity")
+    public ResponseEntity<ProductResponseDTO> adjustProductQuantity(
+            @PathVariable UUID id,
+            @Valid @RequestBody AdjustProductQuantityDTO adjustDTO) {
+        ProductResponseDTO updatedProduct = productService.adjustProductQuantity(id, adjustDTO);
+        return ResponseEntity.ok(updatedProduct);
+    }
+
+
 }
