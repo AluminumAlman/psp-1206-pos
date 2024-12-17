@@ -1,20 +1,24 @@
 package com.team1206.pos.order.orderCharge;
 
 import com.team1206.pos.common.enums.OrderChargeType;
+import com.team1206.pos.order.order.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public class OrderChargeService {
     private final OrderChargeRepository orderChargeRepository;
+    private final OrderService orderService;
 
-    public OrderChargeService(OrderChargeRepository orderChargeRepository) {
+    public OrderChargeService(
+            OrderChargeRepository orderChargeRepository,
+            OrderService orderService
+    ) {
         this.orderChargeRepository = orderChargeRepository;
+        this.orderService = orderService;
     }
 
     public Page<OrderChargeResponseDTO> getOrderCharges(String orderId, int offset, int limit) {
@@ -42,13 +46,13 @@ public class OrderChargeService {
 
     // *** Helper methods ***
 
-//    private void setOrderChargeFields(OrderCharge orderCharge, OrderChargeRequestDTO requestBody) {
-//        orderCharge.setType(OrderChargeType.valueOf(requestBody.getType()));
-//        orderCharge.setName(requestBody.getName());
-//        orderCharge.setOrderId(requestBody.getOrderId());
-//        orderCharge.setPercent(requestBody.getPercent());
-//        orderCharge.setAmount(requestBody.getAmount());
-//    }
+    private void setOrderChargeFields(OrderCharge orderCharge, OrderChargeRequestDTO requestBody) {
+        orderCharge.setType(OrderChargeType.valueOf(requestBody.getType()));
+        orderCharge.setName(requestBody.getName());
+        orderCharge.setOrderId(orderService.getOrderById(requestBody.getOrderId()));
+        orderCharge.setPercent(requestBody.getPercent());
+        orderCharge.setAmount(requestBody.getAmount());
+    }
 
     private OrderChargeResponseDTO mapToResponseDTO(OrderCharge orderCharge) {
         OrderChargeResponseDTO responseDTO = new OrderChargeResponseDTO();
