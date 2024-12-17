@@ -3,6 +3,7 @@ package com.team1206.pos.payments.transaction;
 import com.team1206.pos.common.enums.PaymentMethodType;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.common.enums.TransactionStatus;
+import com.team1206.pos.exceptions.InvalidPaymentMethod;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.order.order.OrderService;
 import org.springframework.data.domain.Page;
@@ -10,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Service
@@ -26,7 +28,7 @@ public class TransactionService {
     }
 
     // Get paged transactions
-    public Page<TransactionResponseDTO> getTransactions(int limit, int offset, String orderId) {
+    public Page<TransactionResponseDTO> getTransactions(int limit, int offset, UUID orderId) {
         Pageable pageable = PageRequest.of(offset / limit, limit);
 
         Page<Transaction> transactionPage = transactionRepository.findAllWithFilters(
@@ -37,12 +39,49 @@ public class TransactionService {
         return transactionPage.map(this::mapToResponseDTO);
     }
 
+    // Get paged transactions with filters
+    public Page<TransactionResponseDTO> getTransactions(
+            int limit,
+            int offset,
+            UUID orderId,
+            String paymentMethodType,
+            String status,
+            BigDecimal amount
+    ) {
+        checkIfOrderExists(orderId);
+
+        // Convert enum names to ordinals
+        Integer paymentMethodOrdinal =
+                (paymentMethodType != null && !paymentMethodType.isEmpty()) ? PaymentMethodType.valueOf(
+                        paymentMethodType.toUpperCase()).ordinal() : null;
+
+        Integer statusOrdinal = (status != null && !status.isEmpty()) ? TransactionStatus.valueOf(
+                status.toUpperCase()).ordinal() : null;
+
+        Pageable pageable = PageRequest.of(offset / limit, limit);
+
+        Page<Transaction> transactionPage = transactionRepository.findAllWithFilters(
+                orderId,
+                paymentMethodOrdinal,
+                statusOrdinal,
+                amount,
+                pageable
+        );
+
+        return transactionPage.map(this::mapToResponseDTO);
+    }
+
     // Create transaction
-    public TransactionResponseDTO createTransaction(TransactionRequestDTO requestDTO) {
+    public TransactionResponseDTO createTransaction(
+            UUID orderId,
+            TransactionRequestDTO requestDTO
+    ) {
+        checkIfOrderExists(orderId);
+
         Transaction transaction = new Transaction();
 
         setTransactionFieldsFromRequestDTO(transaction, requestDTO);
-        transaction.setOrder(orderService.getOrderById(requestDTO.getOrderId()));
+        transaction.setOrder(orderService.getOrderById(orderId));
 
         transaction.setStatus(TransactionStatus.PENDING);
 
@@ -51,30 +90,83 @@ public class TransactionService {
         return mapToResponseDTO(savedTransaction);
     }
 
-    // Update transaction state by ID
-    public TransactionResponseDTO updateTransaction(UUID transactionId, TransactionStatus status) {
+    // Get transaction by ID
+    public TransactionResponseDTO getTransaction(UUID orderId, UUID transactionId) {
+        checkIfOrderExists(orderId);
+
         Transaction transaction = transactionRepository.findById(transactionId)
                                                        .orElseThrow(() -> new ResourceNotFoundException(
                                                                ResourceType.TRANSACTION,
                                                                transactionId.toString()
                                                        ));
 
-        transaction.setStatus(status);
+        if (!transaction.getOrder().getId().equals(orderId)) {
+            throw new ResourceNotFoundException(ResourceType.TRANSACTION, transactionId.toString());
+        }
+
+        return mapToResponseDTO(transaction);
+    }
+
+    // Mark transaction as completed
+    public TransactionResponseDTO completeCashTransaction(UUID orderId, UUID transactionId) {
+        Transaction transaction = transactionRepository.findById(transactionId)
+                                                       .orElseThrow(() -> new ResourceNotFoundException(
+                                                               ResourceType.TRANSACTION,
+                                                               transactionId.toString()
+                                                       ));
+
+        if (!transaction.getPaymentMethod().equals(PaymentMethodType.CASH)) {
+            throw new InvalidPaymentMethod("Only cash transactions can be completed");
+        }
+
+        checkIfOrderExists(orderId);
+
+        if (!transaction.getOrder().getId().equals(orderId)) {
+            throw new ResourceNotFoundException(ResourceType.TRANSACTION, transactionId.toString());
+        }
+
+        transaction.setStatus(TransactionStatus.COMPLETED);
 
         Transaction updatedTransaction = transactionRepository.save(transaction);
 
         return mapToResponseDTO(updatedTransaction);
     }
 
+    // Refund transaction
+    public TransactionResponseDTO refundTransaction(UUID orderId, UUID transactionId) {
+        Transaction transaction = transactionRepository.findById(transactionId)
+                                                       .orElseThrow(() -> new ResourceNotFoundException(
+                                                               ResourceType.TRANSACTION,
+                                                               transactionId.toString()
+                                                       ));
+        checkIfOrderExists(orderId);
+
+        Transaction savedTransaction;
+        if (transaction.getPaymentMethod().equals(PaymentMethodType.CASH)) {
+            transaction.setStatus(TransactionStatus.REFUNDED);
+
+            savedTransaction = transactionRepository.save(transaction);
+        }
+        else {
+            throw new InvalidPaymentMethod("Currently, only cash transactions can be refunded");
+        }
+
+        return mapToResponseDTO(savedTransaction);
+    }
+
 
     // *** Helper methods ***
+
+    private void checkIfOrderExists(UUID orderId) {
+        orderService.getOrderById(orderId);
+    }
 
     private void setTransactionFieldsFromRequestDTO(
             Transaction transaction,
             TransactionRequestDTO requestDTO
     ) {
         transaction.setAmount(requestDTO.getAmount());
-        transaction.setPaymentMethod(PaymentMethodType.valueOf(requestDTO.getPaymentMethod()
+        transaction.setPaymentMethod(PaymentMethodType.valueOf(requestDTO.getPaymentMethodType()
                                                                          .toUpperCase()));
     }
 
@@ -83,7 +175,7 @@ public class TransactionService {
 
         responseDTO.setId(transaction.getId());
         responseDTO.setStatus(transaction.getStatus().name());
-        responseDTO.setPaymentMethod(transaction.getPaymentMethod().name());
+        responseDTO.setPaymentMethodType(transaction.getPaymentMethod().name());
         responseDTO.setAmount(transaction.getAmount());
         responseDTO.setOrderId(transaction.getOrder().getId());
         responseDTO.setCreatedAt(transaction.getCreatedAt());

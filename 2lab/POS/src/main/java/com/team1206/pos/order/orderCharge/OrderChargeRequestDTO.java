@@ -11,7 +11,6 @@ import java.util.UUID;
 public class OrderChargeRequestDTO {
     private String type;
     private String name;
-    private UUID orderId;
     private Integer percent;
     private BigDecimal amount;
 }

@@ -8,6 +8,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 public class OrderChargeService {
     private final OrderChargeRepository orderChargeRepository;
@@ -32,11 +34,10 @@ public class OrderChargeService {
             @Valid OrderChargeRequestDTO requestBody
     ) {
         OrderCharge orderCharge = new OrderCharge();
-//        orderCharge.setOrderId(orderId);
-//        orderCharge.setType(requestBody.getType());
-//        orderCharge.setName(requestBody.getName());
-//        orderCharge.setPercent(requestBody.getPercent());
-//        orderCharge.setAmount(requestBody.getAmount());
+
+        setOrderChargeFields(orderCharge, requestBody);
+
+        orderCharge.setOrderId(orderService.getOrderById(UUID.fromString(orderId)));
 
         OrderCharge savedOrderCharge = orderChargeRepository.save(orderCharge);
 
@@ -49,7 +50,6 @@ public class OrderChargeService {
     private void setOrderChargeFields(OrderCharge orderCharge, OrderChargeRequestDTO requestBody) {
         orderCharge.setType(OrderChargeType.valueOf(requestBody.getType()));
         orderCharge.setName(requestBody.getName());
-        orderCharge.setOrderId(orderService.getOrderById(requestBody.getOrderId()));
         orderCharge.setPercent(requestBody.getPercent());
         orderCharge.setAmount(requestBody.getAmount());
     }
