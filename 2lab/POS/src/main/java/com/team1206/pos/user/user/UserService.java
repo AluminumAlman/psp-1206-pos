@@ -141,8 +141,8 @@ public class UserService {
         }
     }
 
-    public void verifyUserRole(User user, UserRoles userRole) {
-        if (!user.getRole().equals(userRole)) {
+    public void verifyUserRole(User user, UserRoles targetUserRole) {
+        if (!user.getRole().equals(targetUserRole)) {
             throw new UnauthorizedActionException("User role is invalid for this operation!", "");
         }
     }
