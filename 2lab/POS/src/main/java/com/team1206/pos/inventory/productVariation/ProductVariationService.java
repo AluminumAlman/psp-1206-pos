@@ -26,6 +26,7 @@ public class ProductVariationService {
         ProductVariation productVariation = new ProductVariation();
         productVariation.setName(productVariationDTO.getName());
         productVariation.setPrice(productVariationDTO.getPrice());
+        productVariation.setQuantity(productVariationDTO.getQuantity());
         productVariation.setProduct(product);
         productVariation.setCreatedAt(LocalDateTime.now());
 
@@ -61,7 +62,8 @@ public class ProductVariationService {
             productVariation.setName(updateProductVariationBodyDTO.getName());
         if(updateProductVariationBodyDTO.getPrice() != null)
             productVariation.setPrice(updateProductVariationBodyDTO.getPrice());
-
+        if(updateProductVariationBodyDTO.getQuantity() != null)
+            productVariation.setQuantity(updateProductVariationBodyDTO.getQuantity());
         productVariationRepository.save(productVariation);
         return mapToResponseDTO(productVariation);
     }
@@ -79,7 +81,9 @@ public class ProductVariationService {
         responseDTO.setId(productVariation.getId());
         responseDTO.setName(productVariation.getName());
         responseDTO.setPrice(productVariation.getPrice());
+        responseDTO.setQuantity(productVariation.getQuantity());
         responseDTO.setCreatedAt(productVariation.getCreatedAt());
+        responseDTO.setUpdatedAt(productVariation.getUpdatedAt());
         return responseDTO;
     }
 }

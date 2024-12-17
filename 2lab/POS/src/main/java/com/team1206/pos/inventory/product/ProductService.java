@@ -35,6 +35,7 @@ public class ProductService {
         Product product = new Product();
         product.setName(requestDTO.getName());
         product.setPrice(requestDTO.getPrice());
+        product.setQuantity(requestDTO.getQuantity());
         product.setCategory(category);
 
         // Check for missing ChargeIds
@@ -72,6 +73,10 @@ public class ProductService {
 
         if (updateProductRequestDTO.getPrice() != null) {
             product.setPrice(updateProductRequestDTO.getPrice());
+        }
+
+        if (updateProductRequestDTO.getQuantity() != null) {
+            product.setQuantity(updateProductRequestDTO.getQuantity());
         }
 
         if (updateProductRequestDTO.getCategoryId() != null) {
@@ -132,6 +137,7 @@ public class ProductService {
         responseDTO.setId(product.getId());
         responseDTO.setName(product.getName());
         responseDTO.setPrice(product.getPrice());
+        responseDTO.setQuantity(product.getQuantity());
         responseDTO.setCategoryId(product.getCategory().getId());
 
         if (product.getVariations() != null) {
@@ -147,6 +153,7 @@ public class ProductService {
         }
 
         responseDTO.setCreatedAt(product.getCreatedAt());
+        responseDTO.setUpdatedAt(product.getUpdatedAt());
         return responseDTO;
     }
 }
