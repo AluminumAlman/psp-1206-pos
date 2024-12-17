@@ -1,6 +1,7 @@
 package com.team1206.pos.inventory.product;
 
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -13,6 +14,9 @@ public class UpdateProductRequestDTO {
 
     @Positive(message = "Price must be a positive value")
     private BigDecimal price;
+
+    @PositiveOrZero(message = "Quantity must be a non-negative value")
+    private Integer quantity;
 
     private UUID categoryId;
 

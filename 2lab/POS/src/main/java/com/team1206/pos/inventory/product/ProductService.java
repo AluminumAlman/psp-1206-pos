@@ -1,6 +1,7 @@
 package com.team1206.pos.inventory.product;
 
 import com.team1206.pos.common.enums.ResourceType;
+import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.inventory.productCategory.ProductCategory;
 import com.team1206.pos.inventory.productCategory.ProductCategoryService;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,6 +37,7 @@ public class ProductService {
         Product product = new Product();
         product.setName(requestDTO.getName());
         product.setPrice(requestDTO.getPrice());
+        product.setQuantity(requestDTO.getQuantity());
         product.setCategory(category);
 
         // Check for missing ChargeIds
@@ -74,6 +77,10 @@ public class ProductService {
             product.setPrice(updateProductRequestDTO.getPrice());
         }
 
+        if (updateProductRequestDTO.getQuantity() != null) {
+            product.setQuantity(updateProductRequestDTO.getQuantity());
+        }
+
         if (updateProductRequestDTO.getCategoryId() != null) {
             ProductCategory category = productCategoryService.getCategoryEntityById(updateProductRequestDTO.getCategoryId());
             product.setCategory(category);
@@ -94,6 +101,22 @@ public class ProductService {
             throw new ResourceNotFoundException(ResourceType.PRODUCT, id.toString());
         }
         productRepository.deleteById(id);
+    }
+
+    public ProductResponseDTO adjustProductQuantity(UUID id, AdjustProductQuantityDTO adjustDTO) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, id.toString()));
+
+        int newQuantity = product.getQuantity() + adjustDTO.getAdjustment();
+        if (newQuantity < 0) {
+            throw new IllegalStateExceptionWithId("Product quantity cannot be less than zero", id.toString());
+        }
+
+        product.setQuantity(newQuantity);
+
+        Product updatedProduct = productRepository.save(product);
+
+        return mapToResponseDTO(updatedProduct);
     }
 
     // Service layer methods
@@ -132,6 +155,7 @@ public class ProductService {
         responseDTO.setId(product.getId());
         responseDTO.setName(product.getName());
         responseDTO.setPrice(product.getPrice());
+        responseDTO.setQuantity(product.getQuantity());
         responseDTO.setCategoryId(product.getCategory().getId());
 
         if (product.getVariations() != null) {
@@ -147,6 +171,7 @@ public class ProductService {
         }
 
         responseDTO.setCreatedAt(product.getCreatedAt());
+        responseDTO.setUpdatedAt(product.getUpdatedAt());
         return responseDTO;
     }
 }

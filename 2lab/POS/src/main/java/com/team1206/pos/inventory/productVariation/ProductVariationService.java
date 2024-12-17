@@ -1,7 +1,9 @@
 package com.team1206.pos.inventory.productVariation;
 
 import com.team1206.pos.common.enums.ResourceType;
+import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
+import com.team1206.pos.inventory.product.AdjustProductQuantityDTO;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.inventory.product.ProductService;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ public class ProductVariationService {
         ProductVariation productVariation = new ProductVariation();
         productVariation.setName(productVariationDTO.getName());
         productVariation.setPrice(productVariationDTO.getPrice());
+        productVariation.setQuantity(productVariationDTO.getQuantity());
         productVariation.setProduct(product);
         productVariation.setCreatedAt(LocalDateTime.now());
 
@@ -61,7 +64,8 @@ public class ProductVariationService {
             productVariation.setName(updateProductVariationBodyDTO.getName());
         if(updateProductVariationBodyDTO.getPrice() != null)
             productVariation.setPrice(updateProductVariationBodyDTO.getPrice());
-
+        if(updateProductVariationBodyDTO.getQuantity() != null)
+            productVariation.setQuantity(updateProductVariationBodyDTO.getQuantity());
         productVariationRepository.save(productVariation);
         return mapToResponseDTO(productVariation);
     }
@@ -73,13 +77,31 @@ public class ProductVariationService {
         productVariationRepository.deleteById(productVariationId);
     }
 
+    public ProductVariationResponseDTO adjustProductVariationQuantity(UUID id, AdjustProductQuantityDTO adjustDTO) {
+        ProductVariation productVariation = productVariationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, id.toString()));
+
+        int newQuantity = productVariation.getQuantity() + adjustDTO.getAdjustment();
+        if (newQuantity < 0) {
+            throw new IllegalStateExceptionWithId("Product quantity cannot be less than zero", id.toString());
+        }
+
+        productVariation.setQuantity(newQuantity);
+
+        ProductVariation updatedProductVariation = productVariationRepository.save(productVariation);
+
+        return mapToResponseDTO(updatedProductVariation);
+    }
+
     // Mappers
     private ProductVariationResponseDTO mapToResponseDTO(ProductVariation productVariation) {
         ProductVariationResponseDTO responseDTO = new ProductVariationResponseDTO();
         responseDTO.setId(productVariation.getId());
         responseDTO.setName(productVariation.getName());
         responseDTO.setPrice(productVariation.getPrice());
+        responseDTO.setQuantity(productVariation.getQuantity());
         responseDTO.setCreatedAt(productVariation.getCreatedAt());
+        responseDTO.setUpdatedAt(productVariation.getUpdatedAt());
         return responseDTO;
     }
 }
