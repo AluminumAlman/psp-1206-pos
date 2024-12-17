@@ -15,9 +15,8 @@ public class OrderService {
     }
 
     public Order getOrderById(UUID orderId) {
-        return orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException(
-                ResourceType.ORDER,
-                orderId.toString()
+        return orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException(ResourceType.ORDER,
+                                                                                                 orderId.toString()
         ));
     }
 }
