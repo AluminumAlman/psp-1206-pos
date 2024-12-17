@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.UUID;
 import java.util.List;
 
@@ -48,6 +49,48 @@ public class Merchant {
 
     @Column(name = "postcode", length = 20, nullable = true)
     private String postcode;
+
+    @Column(name = "monday_open", nullable = true)
+    private LocalTime mondayOpen;
+
+    @Column(name = "monday_close", nullable = true)
+    private LocalTime mondayClose;
+
+    @Column(name = "tuesday_open", nullable = true)
+    private LocalTime tuesdayOpen;
+
+    @Column(name = "tuesday_close", nullable = true)
+    private LocalTime tuesdayClose;
+
+    @Column(name = "wednesday_open", nullable = true)
+    private LocalTime wednesdayOpen;
+
+    @Column(name = "wednesday_close", nullable = true)
+    private LocalTime wednesdayClose;
+
+    @Column(name = "thursday_open", nullable = true)
+    private LocalTime thursdayOpen;
+
+    @Column(name = "thursday_close", nullable = true)
+    private LocalTime thursdayClose;
+
+    @Column(name = "friday_open", nullable = true)
+    private LocalTime fridayOpen;
+
+    @Column(name = "friday_close", nullable = true)
+    private LocalTime fridayClose;
+
+    @Column(name = "saturday_open", nullable = true)
+    private LocalTime saturdayOpen;
+
+    @Column(name = "saturday_close", nullable = true)
+    private LocalTime saturdayClose;
+
+    @Column(name = "sunday_open", nullable = true)
+    private LocalTime sundayOpen;
+
+    @Column(name = "sunday_close", nullable = true)
+    private LocalTime sundayClose;
 
     @OneToMany(mappedBy = "merchant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Discount> discounts;
