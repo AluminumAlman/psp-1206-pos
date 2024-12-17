@@ -1,9 +1,7 @@
 package com.team1206.pos.authentication;
 
-import lombok.*;
+import lombok.Data;
 
-@AllArgsConstructor
-@NoArgsConstructor
 @Data
 public class LoginRequestDTO {
 
