@@ -27,6 +27,7 @@ public class TransactionService {
         this.orderService = orderService;
     }
 
+    // TODO: Check that the logged in user has access to the order
     // Get paged transactions
     public Page<TransactionResponseDTO> getTransactions(int limit, int offset, UUID orderId) {
         Pageable pageable = PageRequest.of(offset / limit, limit);
@@ -39,6 +40,7 @@ public class TransactionService {
         return transactionPage.map(this::mapToResponseDTO);
     }
 
+    // TODO: Check that the logged in user has access to the order
     // Get paged transactions with filters
     public Page<TransactionResponseDTO> getTransactions(
             int limit,
@@ -71,6 +73,7 @@ public class TransactionService {
         return transactionPage.map(this::mapToResponseDTO);
     }
 
+    // TODO: Check that the logged in user has access to the order
     // Create transaction
     public TransactionResponseDTO createTransaction(
             UUID orderId,
@@ -90,6 +93,7 @@ public class TransactionService {
         return mapToResponseDTO(savedTransaction);
     }
 
+    // TODO: Check that the logged in user has access to the order
     // Get transaction by ID
     public TransactionResponseDTO getTransaction(UUID orderId, UUID transactionId) {
         checkIfOrderExists(orderId);
@@ -107,7 +111,8 @@ public class TransactionService {
         return mapToResponseDTO(transaction);
     }
 
-    // Mark transaction as completed
+    // TODO: Check that the logged in user has access to the order
+    // Mark cash transaction as completed
     public TransactionResponseDTO completeCashTransaction(UUID orderId, UUID transactionId) {
         Transaction transaction = transactionRepository.findById(transactionId)
                                                        .orElseThrow(() -> new ResourceNotFoundException(
@@ -132,6 +137,7 @@ public class TransactionService {
         return mapToResponseDTO(updatedTransaction);
     }
 
+    // TODO: Check that the logged in user has access to the order
     // Refund transaction
     public TransactionResponseDTO refundTransaction(UUID orderId, UUID transactionId) {
         Transaction transaction = transactionRepository.findById(transactionId)

@@ -25,6 +25,7 @@ public class OrderChargeService {
         this.orderService = orderService;
     }
 
+    // TODO: Check that the logged in user has access to the order
     // Get order charges
     public Page<OrderChargeResponseDTO> getOrderCharges(UUID orderId, int offset, int limit) {
         checkIfOrderExists(orderId);
@@ -39,6 +40,7 @@ public class OrderChargeService {
         return orderCharges.map(this::mapToResponseDTO);
     }
 
+    // TODO: Check that the logged in user has access to the order
     // Create order charge
     public OrderChargeResponseDTO createOrderCharge(
             UUID orderId,
@@ -56,6 +58,8 @@ public class OrderChargeService {
         return mapToResponseDTO(savedOrderCharge);
     }
 
+    // TODO: Check that the logged in user has access to the order
+    // Update order charge
     public void deleteOrderCharge(UUID orderId, UUID chargeId) {
         checkIfOrderExists(orderId);
 
