@@ -1,6 +1,8 @@
 package com.team1206.pos.order.orderCharge;
 
 import com.team1206.pos.common.enums.OrderChargeType;
+import com.team1206.pos.common.enums.ResourceType;
+import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.order.order.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -23,32 +25,62 @@ public class OrderChargeService {
         this.orderService = orderService;
     }
 
-    public Page<OrderChargeResponseDTO> getOrderCharges(String orderId, int offset, int limit) {
+    // Get order charges
+    public Page<OrderChargeResponseDTO> getOrderCharges(UUID orderId, int offset, int limit) {
+        checkIfOrderExists(orderId);
+
         Pageable pageable = PageRequest.of(offset / limit, limit);
 
-        return orderChargeRepository.findAllWithFilters(orderId, pageable);
+        Page<OrderCharge> orderCharges = orderChargeRepository.findAllWithFilters(
+                orderId,
+                pageable
+        );
+
+        return orderCharges.map(this::mapToResponseDTO);
     }
 
+    // Create order charge
     public OrderChargeResponseDTO createOrderCharge(
-            String orderId,
+            UUID orderId,
             @Valid OrderChargeRequestDTO requestBody
     ) {
+        checkIfOrderExists(orderId);
+
         OrderCharge orderCharge = new OrderCharge();
 
         setOrderChargeFields(orderCharge, requestBody);
-
-        orderCharge.setOrderId(orderService.getOrderById(UUID.fromString(orderId)));
+        orderCharge.setOrder(orderService.getOrderById(orderId));
 
         OrderCharge savedOrderCharge = orderChargeRepository.save(orderCharge);
 
         return mapToResponseDTO(savedOrderCharge);
     }
 
+    public void deleteOrderCharge(UUID orderId, UUID chargeId) {
+        checkIfOrderExists(orderId);
+
+        OrderCharge orderCharge = orderChargeRepository.findById(chargeId)
+                                                       .orElseThrow(() -> new ResourceNotFoundException(
+                                                               ResourceType.ORDER_CHARGE,
+                                                               chargeId.toString()
+                                                       ));
+
+        if (!orderCharge.getOrder().getId().equals(orderId)) {
+            throw new ResourceNotFoundException(ResourceType.ORDER_CHARGE, chargeId.toString());
+        }
+
+        orderChargeRepository.delete(orderCharge);
+    }
+
 
     // *** Helper methods ***
 
+    private void checkIfOrderExists(UUID orderId) {
+        orderService.getOrderById(orderId);
+    }
+
     private void setOrderChargeFields(OrderCharge orderCharge, OrderChargeRequestDTO requestBody) {
-        orderCharge.setType(OrderChargeType.valueOf(requestBody.getType()));
+        orderCharge.setType(OrderChargeType.valueOf(requestBody.getType().toUpperCase()));
         orderCharge.setName(requestBody.getName());
         orderCharge.setPercent(requestBody.getPercent());
         orderCharge.setAmount(requestBody.getAmount());
@@ -56,6 +88,7 @@ public class OrderChargeService {
 
     private OrderChargeResponseDTO mapToResponseDTO(OrderCharge orderCharge) {
         OrderChargeResponseDTO responseDTO = new OrderChargeResponseDTO();
+
         responseDTO.setId(orderCharge.getId());
         responseDTO.setType(orderCharge.getType().name());
         responseDTO.setName(orderCharge.getName());
