@@ -8,6 +8,7 @@ import com.team1206.pos.inventory.productCategory.ProductCategoryService;
 import com.team1206.pos.inventory.productVariation.ProductVariation;
 import com.team1206.pos.payments.charge.ChargeRepository;
 import com.team1206.pos.payments.charge.Charge;
+import com.team1206.pos.user.user.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.PageRequest;
@@ -24,11 +25,13 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ChargeRepository chargeRepository;
     private final ProductCategoryService productCategoryService;
+    private final UserService userService;
 
-    public ProductService(ProductRepository productRepository, ChargeRepository chargeRepository, ProductCategoryService productCategoryService) {
+    public ProductService(ProductRepository productRepository, ChargeRepository chargeRepository, ProductCategoryService productCategoryService, UserService userService) {
         this.productRepository = productRepository;
         this.chargeRepository = chargeRepository;
         this.productCategoryService = productCategoryService;
+        this.userService = userService;
     }
 
 
@@ -58,8 +61,11 @@ public class ProductService {
     }
 
     public Page<ProductResponseDTO> getAllProducts(String name, BigDecimal price, UUID categoryId, int offset, int limit) {
+        UUID merchantId = userService.getMerchantIdFromLoggedInUser();
+
+
         Pageable pageable = PageRequest.of(offset / limit, limit); // Create Pageable object
-        Page<Product> productPage = productRepository.findAllWithFilters(name, price, categoryId, pageable);
+        Page<Product> productPage = productRepository.findAllWithFilters(merchantId, name, price, categoryId, pageable);
 
         // Map Page<Product> to Page<ProductResponseDTO>
         return productPage.map(this::mapToResponseDTO);

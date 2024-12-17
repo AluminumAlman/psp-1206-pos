@@ -5,6 +5,7 @@ import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.user.merchant.MerchantRepository;
+import com.team1206.pos.user.user.UserService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,10 +17,12 @@ import java.util.stream.Collectors;
 public class ProductCategoryService {
 
     private final ProductCategoryRepository productCategoryRepository;
-    private final MerchantRepository merchantRepository;
-    public ProductCategoryService(ProductCategoryRepository productCategoryrepository, MerchantRepository merchantRepository) {
+    private final MerchantRepository merchantRepository; //TODO change to service layer
+    private final UserService userService;
+    public ProductCategoryService(ProductCategoryRepository productCategoryrepository, MerchantRepository merchantRepository, UserService userService) {
         this.productCategoryRepository = productCategoryrepository;
         this.merchantRepository = merchantRepository;
+        this.userService = userService;
     }
 
 
@@ -39,7 +42,8 @@ public class ProductCategoryService {
     }
 
     public List<ProductCategoryResponseDTO> getAllProductCategories() {
-        return productCategoryRepository.findAll()
+        UUID merchantId = userService.getMerchantIdFromLoggedInUser();
+        return productCategoryRepository.findAllByMerchantId(merchantId)
                 .stream()
                 .map(this::mapToResponseDTO)
                 .collect(Collectors.toList());

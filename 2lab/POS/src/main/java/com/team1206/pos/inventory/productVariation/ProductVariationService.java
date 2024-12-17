@@ -6,6 +6,7 @@ import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.inventory.product.AdjustProductQuantityDTO;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.inventory.product.ProductService;
+import com.team1206.pos.user.user.UserService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -16,10 +17,12 @@ import java.util.UUID;
 public class ProductVariationService {
     private final ProductVariationRepository productVariationRepository;
     private final ProductService productService;
+    private final UserService userService;
 
-    public ProductVariationService(ProductVariationRepository productVariationRepository, ProductService productService) {
+    public ProductVariationService(ProductVariationRepository productVariationRepository, ProductService productService, UserService userService) {
         this.productVariationRepository = productVariationRepository;
         this.productService = productService;
+        this.userService = userService;
     }
 
     public ProductVariationResponseDTO createProductVariation(UUID productId, CreateProductVariationBodyDTO productVariationDTO) {
@@ -47,8 +50,9 @@ public class ProductVariationService {
 
     public List<ProductVariationResponseDTO> getAllProductVariations(UUID productId) {
         productService.getProductEntityById(productId); // To check whether exists
+        UUID merchantId = userService.getMerchantIdFromLoggedInUser();
 
-        List<ProductVariation> productVariations = productVariationRepository.findByProduct_Id(productId);
+        List<ProductVariation> productVariations = productVariationRepository.findAllWithFilters(productId, merchantId);
 
         return productVariations.stream()
                 .map(this::mapToResponseDTO)
