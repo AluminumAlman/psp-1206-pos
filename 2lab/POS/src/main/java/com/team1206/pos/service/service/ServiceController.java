@@ -103,6 +103,11 @@ public class ServiceController {
     public ResponseEntity<AvailableSlotsResponseDTO> getAvailableSlots(
             @PathVariable UUID serviceId,
             @RequestParam(value = "date") LocalDate date) {
-        return ResponseEntity.ok(serviceService.getAvailableSlots(serviceId, date));
+        log.info("Received get available reservation slots request: serviceId={} date={}", serviceId, date);
+
+        AvailableSlotsResponseDTO response = serviceService.getAvailableSlots(serviceId, date);
+
+        log.debug("Returning {} to get available reservation slots request (serviceId={} date={})", response, serviceId, date);
+        return ResponseEntity.ok(response);
     }
 }

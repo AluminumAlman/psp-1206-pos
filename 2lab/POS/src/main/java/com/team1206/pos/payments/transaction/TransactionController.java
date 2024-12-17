@@ -1,10 +1,12 @@
 package com.team1206.pos.payments.transaction;
 
 import io.swagger.v3.oas.annotations.Operation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/transactions")
 public class TransactionController {
@@ -21,6 +23,11 @@ public class TransactionController {
             @RequestParam(value = "offset", defaultValue = "0") int offset,
             @RequestParam(value = "orderId", required = false) String orderId
     ) {
-        return ResponseEntity.ok(transactionService.getTransactions(limit, offset, orderId));
+        log.info("Received get transactions request: limit={} offset={} orderId={}", limit, offset, orderId);
+
+        Page<TransactionResponseDTO> transactions = transactionService.getTransactions(limit, offset, orderId);
+
+        log.debug("Returning {} to get transactions request (limit={} offset={} orderId={})", transactions.stream().toList(), limit, offset, orderId);
+        return ResponseEntity.ok(transactions);
     }
 }

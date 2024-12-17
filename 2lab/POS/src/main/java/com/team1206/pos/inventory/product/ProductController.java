@@ -98,9 +98,11 @@ public class ProductController {
     public ResponseEntity<ProductResponseDTO> adjustProductQuantity(
             @PathVariable UUID id,
             @Valid @RequestBody AdjustProductQuantityDTO adjustDTO) {
+        log.info("Received adjust product quantity request: id={} {}", id, adjustDTO);
+
         ProductResponseDTO updatedProduct = productService.adjustProductQuantity(id, adjustDTO);
+
+        log.debug("Returning {} to adjust product quantity request (id={})", updatedProduct, id);
         return ResponseEntity.ok(updatedProduct);
     }
-
-
 }
