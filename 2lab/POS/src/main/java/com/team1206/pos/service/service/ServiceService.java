@@ -34,7 +34,7 @@ public class ServiceService {
         Pageable pageable = PageRequest.of(offset / limit, limit); // Convert offset and limit into Pageable
 
         // Fetch the filtered results
-        Page<com.team1206.pos.service.service.Service> servicePage = serviceRepository.findAllWithFilters(name, price, duration, pageable);
+        Page<com.team1206.pos.service.service.Service> servicePage = serviceRepository.findAllWithFilters(name, price, duration, pageable); // TODO add filter by user's merchant
 
         return servicePage.map(this::mapToResponseDTO);
     }

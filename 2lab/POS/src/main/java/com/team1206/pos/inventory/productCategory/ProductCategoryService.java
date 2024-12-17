@@ -2,6 +2,7 @@ package com.team1206.pos.inventory.productCategory;
 
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
+import com.team1206.pos.exceptions.UnauthorizedActionException;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.user.merchant.MerchantRepository;
@@ -27,8 +28,14 @@ public class ProductCategoryService {
 
 
     public ProductCategoryResponseDTO createProductCategory(CreateProductCategoryRequestDTO requestDTO) {
+        UUID merchantId = userService.getMerchantIdFromLoggedInUser();
+
         Merchant merchant = merchantRepository.findById(requestDTO.getMerchantId()) // TODO pakeisti i getMerchantEntityById is merchantService
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.MERCHANT, requestDTO.getMerchantId().toString()));
+
+        if (!merchant.getId().equals(merchantId)) {
+            throw new UnauthorizedActionException("You are not authorized to create the category for this merchant", "");
+        }
 
         ProductCategory category = mapToEntity(requestDTO, merchant);
         ProductCategory savedCategory = productCategoryRepository.save(category);
@@ -36,6 +43,12 @@ public class ProductCategoryService {
     }
 
     public ProductCategoryResponseDTO getProductCategoryById(UUID id) {
+        UUID merchantId = userService.getMerchantIdFromLoggedInUser();
+
+        if (!merchantId.equals(id)) {
+            throw new UnauthorizedActionException("You are not authorized to retrieve this category", "");
+        }
+
         ProductCategory category = productCategoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_CATEGORY, id.toString()));
         return mapToResponseDTO(category);
@@ -50,8 +63,13 @@ public class ProductCategoryService {
     }
 
     public void deleteCategoryById(UUID id) {
+        UUID merchantId = userService.getMerchantIdFromLoggedInUser();
         ProductCategory category = productCategoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_CATEGORY, id.toString()));
+
+        if (!category.getMerchant().getId().equals(merchantId)) {
+            throw new UnauthorizedActionException("You are not authorized to delete this category", "");
+        }
 
         if (!category.getProducts().isEmpty()) {
             throw new IllegalStateExceptionWithId("Cannot delete category as there are products assigned to it.", id.toString());
@@ -61,9 +79,14 @@ public class ProductCategoryService {
     }
 
     public ProductCategoryResponseDTO updateCategoryById(UUID id, UpdateProductCategoryRequestDTO requestDTO) {
+        UUID merchantId = userService.getMerchantIdFromLoggedInUser();
 
         ProductCategory category = productCategoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_CATEGORY, id.toString()));
+
+        if (!category.getMerchant().getId().equals(merchantId)) {
+            throw new UnauthorizedActionException("You are not authorized to update this category", "");
+        }
 
         category.setName(requestDTO.getName());
 
