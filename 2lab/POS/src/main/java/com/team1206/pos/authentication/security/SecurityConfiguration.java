@@ -1,6 +1,7 @@
 package com.team1206.pos.authentication.security;
 
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -18,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+@Slf4j
 @Configuration
 public class SecurityConfiguration {
     private final JWTFilter filter;
@@ -58,13 +60,12 @@ public class SecurityConfiguration {
 
                     // Match all other requests
                     .anyRequest().authenticated())
-            .exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint((request, response, authException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
-                                                                                                                                                        "Unauthorized"
-            )))
+            .exceptionHandling(exceptionHandling ->
+                    exceptionHandling.authenticationEntryPoint((request, response, authException) ->
+                        { log.info("Handling exception for {} at {}: {}", request.getMethod(), request.getRequestURL(), authException.toString()); response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized"); }))
             .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(
                     SessionCreationPolicy.STATELESS))
             .authenticationProvider(authenticationProvider())
-
             .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
