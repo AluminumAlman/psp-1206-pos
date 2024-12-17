@@ -8,7 +8,6 @@ import com.team1206.pos.service.service.Service;
 import com.team1206.pos.service.service.ServiceService;
 import com.team1206.pos.user.user.User;
 import com.team1206.pos.user.user.UserService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

@@ -10,8 +10,6 @@ import org.springframework.context.annotation.Configuration;
 public class AwsConfig {
     @Bean
     public SnsClient snsClient() {
-        System.out.println("config loaded");
-
         return SnsClient.builder()
                 .region(Region.EU_NORTH_1)
                 .build();

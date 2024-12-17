@@ -73,7 +73,7 @@ public class ServiceController {
 
     // GET: Get available reservation slots
     @GetMapping("/{serviceId}/availableSlots")
-    @Operation(summary = "Get available reservation slots for given day")
+    @Operation(summary = "Get available reservation slots for given service and given day")
     public ResponseEntity<AvailableSlotsResponseDTO> getAvailableSlots(
             @PathVariable UUID serviceId,
             @RequestParam(value = "date") LocalDate date) {
