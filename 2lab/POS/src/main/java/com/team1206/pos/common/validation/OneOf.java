@@ -1,4 +1,4 @@
-package com.team1206.pos.payments.charge.validation;
+package com.team1206.pos.common.validation;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
@@ -12,9 +12,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = OneOfValidator.class)
 public @interface OneOf {
-    String message() default "Only one of 'percent' or 'amount' must be provided";
+    String message() default "Only one of the specified fields must be provided: {fields}";
 
     Class<?>[] groups() default {};
 
     Class<? extends Payload>[] payload() default {};
+
+    String[] fields();
 }

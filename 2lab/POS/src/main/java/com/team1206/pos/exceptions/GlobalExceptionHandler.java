@@ -1,6 +1,8 @@
 package com.team1206.pos.exceptions;
 
 import io.micrometer.common.lang.NonNull;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -17,7 +19,6 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
 
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
@@ -66,6 +67,24 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         errorObject.setStatusCode(HttpStatus.BAD_REQUEST.value());
         errorObject.setMessage("Validation failed");
         errorObject.setDetails(errors); // Attach field-specific error details
+        errorObject.setPath(request.getDescription(false).replace("uri=", ""));
+        errorObject.setTimestamp(LocalDateTime.now());
+
+        return new ResponseEntity<>(errorObject, HttpStatus.BAD_REQUEST);
+    }
+
+    // Add handling for ConstraintViolationException (e.g., from @OneOf validator)
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Object> handleConstraintViolationException(ConstraintViolationException ex, WebRequest request) {
+        Map<String, String> errors = new HashMap<>();
+        for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {
+            errors.put(violation.getPropertyPath().toString(), violation.getMessage());
+        }
+
+        ErrorObject errorObject = new ErrorObject();
+        errorObject.setStatusCode(HttpStatus.BAD_REQUEST.value());
+        errorObject.setMessage("Validation failed");
+        errorObject.setDetails(errors);
         errorObject.setPath(request.getDescription(false).replace("uri=", ""));
         errorObject.setTimestamp(LocalDateTime.now());
 

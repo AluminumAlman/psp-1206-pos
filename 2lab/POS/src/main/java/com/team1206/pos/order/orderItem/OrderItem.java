@@ -25,34 +25,30 @@ public class OrderItem {
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "order", nullable = false)
+    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
     @ManyToOne
-    @JoinColumn(name = "product", nullable = true)
+    @JoinColumn(name = "product_id", nullable = true)
     private Product product;
 
     @ManyToOne
-    @JoinColumn(name = "product_variation", nullable = true)
+    @JoinColumn(name = "product_variation_id", nullable = true)
     private ProductVariation productVariation;
 
     @ManyToOne
-    @JoinColumn(name = "service", nullable = true)
+    @JoinColumn(name = "service_id", nullable = true)
     private Service service;
 
     @ManyToMany
-    @JoinTable(name = "order_items_order_charges",
-            joinColumns = @JoinColumn(name = "order_item_id"),
-            inverseJoinColumns = @JoinColumn(name = "order_charge_id"))
+    @JoinTable(name = "order_items_order_charges", joinColumns = @JoinColumn(name = "order_item_id"), inverseJoinColumns = @JoinColumn(name = "order_charge_id"))
     private List<OrderCharge> charges;
 
     @ManyToMany
-    @JoinTable(name = "order_items_discounts",
-            joinColumns = @JoinColumn(name = "order_item_id"),
-            inverseJoinColumns = @JoinColumn(name = "discount_id"))
+    @JoinTable(name = "order_items_discounts", joinColumns = @JoinColumn(name = "order_item_id"), inverseJoinColumns = @JoinColumn(name = "discount_id"))
     private List<Discount> discounts;
 
     @Column(name = "created_at", nullable = false, updatable = false)

@@ -1,5 +1,6 @@
 package com.team1206.pos.order.order;
 
+import com.team1206.pos.common.enums.OrderStatus;
 import com.team1206.pos.order.orderCharge.OrderCharge;
 import com.team1206.pos.order.orderItem.OrderItem;
 import com.team1206.pos.payments.discount.Discount;
@@ -18,13 +19,6 @@ import java.util.UUID;
 @Entity
 @Table(name = "\"order\"")
 public class Order {
-    public enum Status {
-        Open,
-        Closed,
-        Refunded,
-        Cancelled,
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", updatable = false, nullable = false)
@@ -32,7 +26,7 @@ public class Order {
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.ORDINAL)
-    private Status status;
+    private OrderStatus status;
 
     @ManyToMany
     @JoinTable(name = "orders_order_charges", joinColumns = @JoinColumn(name = "order_id"), inverseJoinColumns = @JoinColumn(name = "order_charge_id"))
@@ -45,13 +39,11 @@ public class Order {
     private List<Transaction> transactions;
 
     @ManyToOne
-    @JoinColumn(name = "merchant", nullable = false)
+    @JoinColumn(name = "merchant_id", nullable = false)
     private Merchant merchant;
 
     @ManyToMany
-    @JoinTable(name = "orders_discounts",
-            joinColumns = @JoinColumn(name = "order_id"),
-            inverseJoinColumns = @JoinColumn(name = "discount_id"))
+    @JoinTable(name = "orders_discounts", joinColumns = @JoinColumn(name = "order_id"), inverseJoinColumns = @JoinColumn(name = "discount_id"))
     private List<Discount> discounts;
 
     @Column(name = "created_at", nullable = false, updatable = false)
