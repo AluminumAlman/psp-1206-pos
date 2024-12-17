@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,7 +29,8 @@ public class ProductController {
         ProductResponseDTO createdProduct = productService.createProduct(requestDTO);
 
         log.debug("Returning {} to create product request", createdProduct);
-        return ResponseEntity.ok(createdProduct);
+        // TODO: add to response the URI to created product.
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
     }
 
     @Operation(summary = "Get all products with filters")

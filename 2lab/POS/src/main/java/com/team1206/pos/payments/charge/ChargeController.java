@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -58,7 +59,8 @@ public class ChargeController {
         ChargeResponseDTO response = chargeService.createCharge(request);
 
         log.debug("Returning {} to create charge request", response);
-        return ResponseEntity.ok(response);
+        // TODO: add to response the URI to created charge.
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/{chargeId}")

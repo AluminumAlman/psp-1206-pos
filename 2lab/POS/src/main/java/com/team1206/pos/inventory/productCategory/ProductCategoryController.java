@@ -3,6 +3,7 @@ package com.team1206.pos.inventory.productCategory;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +25,8 @@ public class ProductCategoryController {
         ProductCategoryResponseDTO productCategory = productCategoryService.createProductCategory(request);
 
         log.debug("Returning {} to create product category request", productCategory);
-        return ResponseEntity.ok(productCategory);
+        // TODO: add to response the URI to created product category.
+        return ResponseEntity.status(HttpStatus.CREATED).body(productCategory);
     }
 
     @Operation(summary = "Get all product categories")
