@@ -127,7 +127,9 @@ public class ReservationService {
         ReservationResponseDTO dto = new ReservationResponseDTO();
         dto.setId(reservation.getId());
         dto.setServiceId(reservation.getService().getId());
+        dto.setServiceName(reservation.getService().getName());
         dto.setEmployeeId(reservation.getEmployee().getId());
+        dto.setEmployeeFullName(reservation.getEmployee().getFirstName() + " " + reservation.getEmployee().getLastName());
         dto.setFirstName(reservation.getFirstName());
         dto.setLastName(reservation.getLastName());
         dto.setPhone(reservation.getPhone());
