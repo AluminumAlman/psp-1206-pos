@@ -2,6 +2,7 @@ package com.team1206.pos.order.orderCharge;
 
 import com.team1206.pos.common.enums.OrderChargeType;
 import com.team1206.pos.common.validation.OneOf;
+import com.team1206.pos.order.order.Order;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,6 +21,10 @@ public class OrderCharge {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
+
+    @ManyToOne
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order orderId;
 
     @Column(name = "type", nullable = false)
     @Enumerated(EnumType.ORDINAL)
