@@ -1,5 +1,6 @@
 package com.team1206.pos.inventory.productVariation;
 
+import com.team1206.pos.inventory.product.AdjustProductQuantityDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -89,5 +90,15 @@ public class ProductVariationController {
 
         log.debug("Returning nothing to delete product variation request (productId={} variationId={})", productId, variationId);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Adjust product variation quantity")
+    @PatchMapping("/{productId}/variations/{variationId}/adjust-quantity")
+    public ResponseEntity<ProductVariationResponseDTO> adjustProductVariationQuantity(
+            @PathVariable UUID productId,
+            @PathVariable UUID variationId,
+            @Valid @RequestBody AdjustProductQuantityDTO adjustDTO) {
+        ProductVariationResponseDTO updatedProductVariation = productVariationService.adjustProductVariationQuantity(variationId, adjustDTO);
+        return ResponseEntity.ok(updatedProductVariation);
     }
 }

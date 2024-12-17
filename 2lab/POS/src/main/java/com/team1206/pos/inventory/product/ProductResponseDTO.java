@@ -9,11 +9,13 @@ import java.math.BigDecimal;
 
 @Data
 public class ProductResponseDTO {
-    private UUID id;                // Unique identifier for the product
-    private String name;            // Product name
-    private BigDecimal price;       // Product price in smallest currency unit (e.g., cents)
-    private UUID categoryId;        // ID of the associated ProductCategory
-    private List<UUID> variationIds; // List of associated ProductVariation IDs
-    private List<UUID> chargeIds;   // List of associated Charge IDs
-    private LocalDateTime createdAt; // Timestamp when the product was created
+    private UUID id;
+    private String name;
+    private BigDecimal price;
+    private Integer quantity;
+    private UUID categoryId;
+    private List<UUID> variationIds;
+    private List<UUID> chargeIds;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

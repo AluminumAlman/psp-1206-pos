@@ -1,6 +1,7 @@
 package com.team1206.pos.inventory.inventoryLog;
 
-import com.team1206.pos.inventory.inventory.Inventory;
+import com.team1206.pos.inventory.product.Product;
+import com.team1206.pos.inventory.productVariation.ProductVariation;
 import com.team1206.pos.order.order.Order;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -19,9 +20,17 @@ public class InventoryLog {
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
+    @Column(name = "type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private LogType type;
+
     @ManyToOne
-    @JoinColumn(name = "inventory", nullable = false)
-    private Inventory inventory;
+    @JoinColumn(name = "product_id", nullable = true)
+    private Product product;
+
+    @ManyToOne
+    @JoinColumn(name = "product_variation_id", nullable = true)
+    private ProductVariation productVariation;
 
     @OneToOne
     @JoinColumn(name = "order", nullable = true)
@@ -32,4 +41,9 @@ public class InventoryLog {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    public enum LogType {
+        PRODUCT, PRODUCT_VARIATION
+    }
 }
+

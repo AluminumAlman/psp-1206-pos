@@ -7,11 +7,14 @@ public enum ResourceType {
     MERCHANT("Merchant"),
     USER("User"),
     SERVICE("Service"),
+    RESERVATION("Reservation"),
     PRODUCT_CATEGORY("Product Category"),
     PRODUCT("Product"),
     PRODUCT_VARIATION("Product Variation"),
     CHARGE("Charge"),
-    DISCOUNT("Discount");
+    DISCOUNT("Discount"),
+    ORDER("Order"),
+    TRANSACTION("Transaction");
 
     private final String displayName;
 

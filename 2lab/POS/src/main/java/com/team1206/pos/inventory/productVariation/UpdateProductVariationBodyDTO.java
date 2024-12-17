@@ -1,6 +1,7 @@
 package com.team1206.pos.inventory.productVariation;
 
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -13,4 +14,7 @@ public class UpdateProductVariationBodyDTO {
 
     @Positive(message = "Price must be a positive value")
     private BigDecimal price;
+
+    @PositiveOrZero(message = "Quantity must be a non-negative value")
+    private Integer quantity;
 }

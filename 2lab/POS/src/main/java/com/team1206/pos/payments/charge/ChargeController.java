@@ -1,6 +1,6 @@
 package com.team1206.pos.payments.charge;
 
-import com.team1206.pos.payments.charge.validation.OneOf;
+import com.team1206.pos.common.validation.OneOf;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +14,7 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @RequestMapping("/charges")
-@OneOf
+@OneOf(fields = {"percent", "amount"})
 public class ChargeController {
     private final ChargeService chargeService;
 

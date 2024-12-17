@@ -1,6 +1,7 @@
 package com.team1206.pos.service.service;
 
 import com.team1206.pos.common.enums.ResourceType;
+import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.merchant.MerchantService;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -83,7 +85,23 @@ public class ServiceService {
         }
     }
 
-    // helper methods
+    // Get available slots for a service on a given date
+    public AvailableSlotsResponseDTO getAvailableSlots(UUID serviceId, LocalDate date) {
+
+        // Implement logic to fetch and calculate available slots for the service
+        // Return placeholder data for now
+        AvailableSlotsResponseDTO responseDTO = new AvailableSlotsResponseDTO();
+        return responseDTO;
+    }
+
+
+    // Service layer methods
+    public com.team1206.pos.service.service.Service getServiceEntityById(UUID serviceId) {
+        return serviceRepository.findById(serviceId)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.SERVICE, serviceId.toString()));
+    }
+
+    // Mappers
     private ServiceResponseDTO mapToResponseDTO(com.team1206.pos.service.service.Service service) {
         ServiceResponseDTO dto = new ServiceResponseDTO();
         dto.setId(service.getId());
@@ -104,6 +122,11 @@ public class ServiceService {
         service.setDuration(requestDTO.getDuration());
 
         List<User> employees = userService.findAllById(requestDTO.getEmployeeIds());
+        employees.forEach(employee -> {
+            userService.verifyUserRole(employee, UserRoles.EMPLOYEE);
+            userService.verifyLoggedInUserBelongsToMerchant(employee.getMerchant().getId());
+        });
+        
         service.setEmployees(employees);
     }
 

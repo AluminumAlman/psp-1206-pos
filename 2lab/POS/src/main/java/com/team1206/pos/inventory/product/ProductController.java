@@ -92,4 +92,15 @@ public class ProductController {
         log.debug("Returning nothing to delete product request (id={})", id);
         return ResponseEntity.noContent().build();
     }
+
+    @Operation(summary = "Adjust product quantity")
+    @PatchMapping("/{id}/adjust-quantity")
+    public ResponseEntity<ProductResponseDTO> adjustProductQuantity(
+            @PathVariable UUID id,
+            @Valid @RequestBody AdjustProductQuantityDTO adjustDTO) {
+        ProductResponseDTO updatedProduct = productService.adjustProductQuantity(id, adjustDTO);
+        return ResponseEntity.ok(updatedProduct);
+    }
+
+
 }

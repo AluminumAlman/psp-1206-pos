@@ -1,11 +1,8 @@
 package com.team1206.pos.inventory.productVariation;
 
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 
 @Data
@@ -18,4 +15,8 @@ public class CreateProductVariationBodyDTO {
     @NotNull(message = "Price is required")
     @Positive(message = "Price must be a positive value")
     private BigDecimal price;
+
+    @NotNull(message = "Quantity is required")
+    @PositiveOrZero(message = "Quantity must be a non-negative value")
+    private Integer quantity;
 }

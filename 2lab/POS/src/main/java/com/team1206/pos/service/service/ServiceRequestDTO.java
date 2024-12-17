@@ -1,9 +1,6 @@
 package com.team1206.pos.service.service;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -17,9 +14,10 @@ public class ServiceRequestDTO {
     private String name;
 
     @NotNull(message = "Price is required.")
-    @Min(value = 0, message = "Price must be greater than or equal to 0.")
+    @DecimalMin(value = "0.01", message = "Price must be greater than 0.01")
     private BigDecimal price;
 
+    // JPA does not support Duration. Duration is amount of seconds.
     @NotNull(message = "Duration is required.")
     @Min(value = 1, message = "Duration must be greater than or equal to 1.")
     private Long duration;

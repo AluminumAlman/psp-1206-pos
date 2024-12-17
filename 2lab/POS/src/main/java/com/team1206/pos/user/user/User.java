@@ -41,7 +41,6 @@ public class User {
 
     @Column(name = "role", nullable = false, length = 40)
     @Enumerated(EnumType.STRING)
-    @NotNull(message = "A role must be assigned")
     private UserRoles role;
 
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)

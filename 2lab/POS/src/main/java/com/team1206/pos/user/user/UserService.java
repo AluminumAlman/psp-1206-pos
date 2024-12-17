@@ -3,6 +3,7 @@ package com.team1206.pos.user.user;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
+import com.team1206.pos.exceptions.UnauthorizedActionException;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.merchant.MerchantRepository;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -101,6 +102,18 @@ public class UserService {
         return mapToResponseDTO(user);
     }
 
+    public UserResponseDTO getCurrentUserInfo() {
+        User currentUser = getCurrentUser();
+        return mapToResponseDTO(currentUser);
+    }
+
+    // Service layer methods
+    public User getUserEntityById(UUID userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, userId.toString()));
+    }
+
+    // Get list of user refs from their IDs
     public List<User> findAllById(List<UUID> userIds) {
         List<User> employees = userRepository.findAllById(userIds);
 
@@ -122,6 +135,54 @@ public class UserService {
                 .orElse(null);
     }
 
+    public void verifyLoggedInUserBelongsToMerchant(UUID merchantId) {
+        if (getMerchantIdFromLoggedInUser() != merchantId && getCurrentUser().getRole() != UserRoles.SUPER_ADMIN) {
+            throw new UnauthorizedActionException("You do not have permission to perform this action.", "");
+        }
+    }
+
+    public void verifyUserRole(User user, UserRoles targetUserRole) {
+        if (!user.getRole().equals(targetUserRole)) {
+            throw new UnauthorizedActionException("User role is invalid for this operation!", "");
+        }
+    }
+
+    private User getCurrentUser() {
+        String email =
+                ((org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext()
+                        .getAuthentication()
+                        .getPrincipal()).getUsername();
+
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, email));
+    }
+
+    private UserRoles getCurrentUserRole() {
+        return getCurrentUser().getRole();
+    }
+
+    public void verifyAdminOrOwnerRole() {
+        UserRoles currentUserRole = getCurrentUserRole();
+        if (!(currentUserRole == UserRoles.SUPER_ADMIN || currentUserRole == UserRoles.MERCHANT_OWNER)) {
+            throw new UnauthorizedActionException("You do not have permission to perform this action.", "");
+        }
+    }
+
+    private void verifySameMerchantIfOwner(User targetUser) {
+        User currentUser = getCurrentUser();
+        UserRoles currentUserRole = currentUser.getRole();
+
+        if (currentUserRole == UserRoles.MERCHANT_OWNER) {
+            UUID currentMerchantId = currentUser.getMerchant() != null ? currentUser.getMerchant().getId() : null;
+            UUID targetMerchantId = targetUser.getMerchant() != null ? targetUser.getMerchant().getId() : null;
+
+            if (currentMerchantId == null || !currentMerchantId.equals(targetMerchantId)) {
+                throw new UnauthorizedActionException("You do not have permission to perform this action.", "You do not have permission to modify a user from a different merchant.");
+            }
+        }
+    }
+
+    // Mappers
     private void setUserFieldsFromRequest(User user, UserRequestDTO request) {
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
@@ -141,45 +202,5 @@ public class UserService {
         dto.setUpdatedAt(user.getUpdatedAt());
         dto.setMerchantId(user.getMerchant() != null ? user.getMerchant().getId() : null);
         return dto;
-    }
-
-    private User getCurrentUser() {
-        String email =
-                ((org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext()
-                        .getAuthentication()
-                        .getPrincipal()).getUsername();
-
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, email));
-    }
-
-    public UserResponseDTO getCurrentUserInfo() {
-        User currentUser = getCurrentUser(); // Already defined method in UserService
-        return mapToResponseDTO(currentUser);
-    }
-
-    private UserRoles getCurrentUserRole() {
-        return getCurrentUser().getRole();
-    }
-
-    public void verifyAdminOrOwnerRole() {
-        UserRoles currentUserRole = getCurrentUserRole();
-        if (!(currentUserRole == UserRoles.SUPER_ADMIN || currentUserRole == UserRoles.MERCHANT_OWNER)) {
-            throw new DataIntegrityViolationException("You do not have permission to perform this action.");
-        }
-    }
-
-    private void verifySameMerchantIfOwner(User targetUser) {
-        User currentUser = getCurrentUser();
-        UserRoles currentUserRole = currentUser.getRole();
-
-        if (currentUserRole == UserRoles.MERCHANT_OWNER) {
-            UUID currentMerchantId = currentUser.getMerchant() != null ? currentUser.getMerchant().getId() : null;
-            UUID targetMerchantId = targetUser.getMerchant() != null ? targetUser.getMerchant().getId() : null;
-
-            if (currentMerchantId == null || !currentMerchantId.equals(targetMerchantId)) {
-                throw new DataIntegrityViolationException("You do not have permission to modify a user from a different merchant.");
-            }
-        }
     }
 }
