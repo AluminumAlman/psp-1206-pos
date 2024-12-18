@@ -9,8 +9,9 @@ import java.util.UUID;
 
 public interface ProductVariationRepository extends JpaRepository<ProductVariation, UUID> {
     @Query("SELECT pv FROM ProductVariation pv " +
-            "WHERE pv.product.id = :productId AND pv.product.category.merchant.id = :merchantId")
+            "WHERE pv.product.id = :productId " +
+            "AND (:merchantId IS NULL OR pv.product.category.merchant.id = :merchantId)")
     List<ProductVariation> findAllWithFilters(@Param("productId") UUID productId,
-                                                        @Param("merchantId") UUID merchantId);
+                                              @Param("merchantId") UUID merchantId);
 
 }

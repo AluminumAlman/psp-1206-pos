@@ -51,8 +51,15 @@ public class ProductCategoryService {
 
     public List<ProductCategoryResponseDTO> getAllProductCategories() {
         UUID merchantId = userService.getMerchantIdFromLoggedInUser();
-        return productCategoryRepository.findAllByMerchantId(merchantId)
-                .stream()
+
+        List<ProductCategory> productCategories;
+        if(userService.isSuperAdmin())
+            productCategories = productCategoryRepository.findAll();
+        else
+            productCategories = productCategoryRepository.findAllByMerchantId(merchantId);
+
+
+        return productCategories.stream()
                 .map(this::mapToResponseDTO)
                 .collect(Collectors.toList());
     }

@@ -71,7 +71,12 @@ public class ProductService {
 
 
         Pageable pageable = PageRequest.of(offset / limit, limit); // Create Pageable object
-        Page<Product> productPage = productRepository.findAllWithFilters(merchantId, name, price, categoryId, pageable);
+        Page<Product> productPage;
+
+        if(userService.isSuperAdmin())
+            productPage = productRepository.findAllWithFilters(null, name, price, categoryId, pageable);
+        else
+            productPage = productRepository.findAllWithFilters(merchantId, name, price, categoryId, pageable);
 
         // Map Page<Product> to Page<ProductResponseDTO>
         return productPage.map(this::mapToResponseDTO);

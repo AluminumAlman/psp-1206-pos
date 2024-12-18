@@ -12,7 +12,7 @@ import java.util.UUID;
 public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     @Query("SELECT p FROM Product p WHERE " +
-            "p.category.merchant.id = :merchantId AND " +
+            ":merchantId IS NULL OR p.category.merchant.id = :merchantId AND " +
             "(:name IS NULL OR p.name LIKE %:name%) AND " +
             "(:price IS NULL OR p.price = :price) AND " +
             "(:categoryId IS NULL OR p.category.id = :categoryId)")

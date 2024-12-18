@@ -56,7 +56,11 @@ public class ProductVariationService {
         productService.getProductEntityById(productId); // To check whether exists
         UUID merchantId = userService.getMerchantIdFromLoggedInUser();
 
-        List<ProductVariation> productVariations = productVariationRepository.findAllWithFilters(productId, merchantId);
+        List<ProductVariation> productVariations;
+        if(userService.isSuperAdmin())
+            productVariations = productVariationRepository.findAllWithFilters(productId, null);
+        else
+            productVariations = productVariationRepository.findAllWithFilters(productId, merchantId);
 
         return productVariations.stream()
                 .map(this::mapToResponseDTO)
