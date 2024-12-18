@@ -4,14 +4,11 @@ import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.exceptions.UnauthorizedActionException;
-import com.team1206.pos.inventory.inventoryLog.InventoryLogService;
 import com.team1206.pos.inventory.product.AdjustProductQuantityDTO;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.inventory.product.ProductService;
 import com.team1206.pos.user.user.UserService;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,13 +19,11 @@ public class ProductVariationService {
     private final ProductVariationRepository productVariationRepository;
     private final ProductService productService;
     private final UserService userService;
-    private final InventoryLogService inventoryLogService;
 
-    public ProductVariationService(ProductVariationRepository productVariationRepository, ProductService productService, UserService userService, @Lazy InventoryLogService inventoryLogService) {
+    public ProductVariationService(ProductVariationRepository productVariationRepository, ProductService productService, UserService userService) {
         this.productVariationRepository = productVariationRepository;
         this.productService = productService;
         this.userService = userService;
-        this.inventoryLogService = inventoryLogService;
     }
 
     public ProductVariationResponseDTO createProductVariation(UUID productId, CreateProductVariationBodyDTO productVariationDTO) {
@@ -124,9 +119,8 @@ public class ProductVariationService {
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_VARIATION, id.toString()));
     }
 
-    // Adjust product variation quantity and create inventoryLog for orders
-    @Transactional
-    public void adjustProductVariationQuantity(UUID productVariationId, int adjustment, UUID orderId) {
+    // Adjust product variation quantity
+    public void adjustProductVariationQuantity(UUID productVariationId, int adjustment) {
         ProductVariation productVariation = productVariationRepository.findById(productVariationId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_VARIATION, productVariationId.toString()));
 
@@ -138,8 +132,6 @@ public class ProductVariationService {
         }
 
         productVariation.setQuantity(newQuantity);
-
-        inventoryLogService.createInventoryLogForProductVariation(productVariationId, adjustment, orderId);
 
         productVariationRepository.save(productVariation);
     }
