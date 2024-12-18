@@ -162,8 +162,8 @@ public class UserService {
     }
 
     public void verifyLoggedInUserBelongsToMerchant(UUID merchantId, String messageIfInvalid) {
-        // If User is assigned to a different Merchant or the super-admin didn't choose the Merchant yet
-        if ((getCurrentUser().getRole() == UserRoles.SUPER_ADMIN && merchantId == null) || getMerchantIdFromLoggedInUser() != merchantId) {
+        // If User is assigned to a different Merchant or the super-admin didn't choose the Merchant yet (or regular user, which hasn't been assigned a merchant yet)
+        if ((getCurrentUser().getRole() == UserRoles.SUPER_ADMIN && getCurrentUser().getMerchant().getId() == null) || getMerchantIdFromLoggedInUser() != merchantId) {
             throw new UnauthorizedActionException(messageIfInvalid, "");
         }
     }
