@@ -1,12 +1,19 @@
 package com.team1206.pos.service.schedule;
 
+import com.team1206.pos.common.dto.WorkHoursDTO;
 import com.team1206.pos.common.enums.ResourceType;
+import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
+import com.team1206.pos.user.merchant.Merchant;
+import com.team1206.pos.user.user.User;
+import com.team1206.pos.user.user.UserRequestDTO;
 import com.team1206.pos.user.user.UserService;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -17,6 +24,42 @@ public class ScheduleService {
     public ScheduleService(ScheduleRepository scheduleRepository, UserService userService) {
         this.scheduleRepository = scheduleRepository;
         this.userService = userService;
+    }
+
+
+    public List<Schedule> createScheduleEntities(Map<DayOfWeek, WorkHoursDTO> requestSchedule, User user) {
+        if (user.getRole() == UserRoles.EMPLOYEE) {
+            return getScheduleList(requestSchedule, user, null);
+        }
+        return null;
+    }
+
+    public List<Schedule> createScheduleEntities(Map<DayOfWeek, WorkHoursDTO> requestSchedule, Merchant merchant) {
+        return getScheduleList(requestSchedule, null, merchant);
+    }
+
+    private List<Schedule> getScheduleList(Map<DayOfWeek, WorkHoursDTO> requestSchedule, User user, Merchant merchant) {
+        List<Schedule> schedules = new ArrayList<>();
+
+        // Loop through each day of the week and create a Schedule entity if work hours are defined
+        for (Map.Entry<DayOfWeek, WorkHoursDTO> entry : requestSchedule.entrySet()) {
+            DayOfWeek dayOfWeek = entry.getKey();
+            WorkHoursDTO workHours = entry.getValue();
+
+            if (workHours != null && workHours.getStartTime() != null && workHours.getEndTime() != null) {
+                Schedule schedule = new Schedule();
+                if (user != null) {
+                    schedule.setUser(user);
+                } else if (merchant != null) {
+                    schedule.setMerchant(merchant);
+                }
+                schedule.setDayOfWeek(dayOfWeek);
+                schedule.setStartTime(workHours.getStartTime());
+                schedule.setEndTime(workHours.getEndTime());
+                schedules.add(schedule);
+            }
+        }
+        return schedules;
     }
 
     // Create a new schedule for a user or merchant

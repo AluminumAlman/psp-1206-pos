@@ -2,6 +2,7 @@ package com.team1206.pos.user.merchant;
 
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
+import com.team1206.pos.service.schedule.ScheduleService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -12,9 +13,11 @@ import java.util.stream.Collectors;
 @Service
 public class MerchantService {
     private final MerchantRepository merchantRepository;
+    private final ScheduleService scheduleService;
 
-    public MerchantService(MerchantRepository merchantRepository) {
+    public MerchantService(MerchantRepository merchantRepository, ScheduleService scheduleService) {
         this.merchantRepository = merchantRepository;
+        this.scheduleService = scheduleService;
     }
 
     // Create a new merchant
@@ -97,5 +100,6 @@ public class MerchantService {
         merchant.setCity(requestDTO.getCity());
         merchant.setCountry(requestDTO.getCountry());
         merchant.setPostcode(requestDTO.getPostcode());
+        merchant.setSchedules(scheduleService.createScheduleEntities(requestDTO.getWeeklySchedule(), merchant));
     }
 }

@@ -4,6 +4,8 @@ import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.exceptions.UnauthorizedActionException;
+import com.team1206.pos.service.schedule.Schedule;
+import com.team1206.pos.service.schedule.ScheduleService;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.merchant.MerchantRepository;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -11,18 +13,20 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.List;
-import java.util.UUID;
+import java.time.DayOfWeek;
+import java.util.*;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
     private final MerchantRepository merchantRepository;
+    private final ScheduleService scheduleService;
 
-    public UserService(UserRepository userRepository, MerchantRepository merchantRepository) {
+    public UserService(UserRepository userRepository, MerchantRepository merchantRepository, ScheduleService scheduleService) {
         this.userRepository = userRepository;
         this.merchantRepository = merchantRepository;
+        this.scheduleService = scheduleService;
     }
 
     public UserResponseDTO createUser(UserRequestDTO request) {
@@ -223,6 +227,7 @@ public class UserService {
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
         user.setRole(request.getRole());
+        user.setSchedules(scheduleService.createScheduleEntities(request.getWeeklySchedule(), user));
     }
 
     private UserResponseDTO mapToResponseDTO(User user) {

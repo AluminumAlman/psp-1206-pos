@@ -23,11 +23,11 @@ public class Schedule {
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true)
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "merchant_id", nullable = false)
+    @JoinColumn(name = "merchant_id", nullable = true)
     private Merchant merchant;
 
     @Enumerated(EnumType.STRING)
