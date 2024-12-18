@@ -11,11 +11,8 @@ import java.util.UUID;
 @Data
 public class TransactionRequestDTO {
     @NotBlank
-    private UUID orderId;
-
-    @NotBlank
     @Pattern(regexp = "^(cash|payment_card|gift_card)$", message = "paymentMethod must be either 'cash', 'payment_card' or 'gift_card'")
-    private String paymentMethod;
+    private String paymentMethodType;
 
     @NotBlank
     @DecimalMin(value = "0.01", inclusive = false, message = "Price must be greater than 0.01")
