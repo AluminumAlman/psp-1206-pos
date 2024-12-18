@@ -1,4 +1,4 @@
-package com.team1206.pos.SNS;
+package com.team1206.pos.sns;
 
 import com.team1206.pos.exceptions.SnsServiceException;
 import lombok.extern.slf4j.Slf4j;

@@ -1,6 +1,6 @@
 package com.team1206.pos.service.reservation;
 
-import com.team1206.pos.SNS.SNSService;
+import com.team1206.pos.sns.SNSService;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.ResourceNotFoundException;

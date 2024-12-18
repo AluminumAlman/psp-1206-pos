@@ -132,6 +132,7 @@ public class UserService {
         return mapToResponseDTO(currentUser);
     }
 
+    // ========================================================================= //
     // Service layer methods
     public User getUserEntityById(UUID userId) {
         return userRepository.findById(userId)
@@ -161,8 +162,8 @@ public class UserService {
     }
 
     public void verifyLoggedInUserBelongsToMerchant(UUID merchantId, String messageIfInvalid) {
-        // If User is assigned to a different Merchant or the super-admin didn't choose the Merchant yet
-        if ((getCurrentUser().getRole() == UserRoles.SUPER_ADMIN && merchantId == null) || getMerchantIdFromLoggedInUser() != merchantId) {
+        // If User is assigned to a different Merchant or the super-admin didn't choose the Merchant yet (or regular user, which hasn't been assigned a merchant yet)
+        if ((getCurrentUser().getRole() == UserRoles.SUPER_ADMIN && getCurrentUser().getMerchant().getId() == null) || getMerchantIdFromLoggedInUser() != merchantId) {
             throw new UnauthorizedActionException(messageIfInvalid, "");
         }
     }
@@ -198,6 +199,7 @@ public class UserService {
         }
     }
 
+    //Patikrina ar merchant owneris bando editint savo employee arba super_admin, kuris gali bet ka editint
     private void verifySameMerchantIfOwner(User targetUser) {
         User currentUser = getCurrentUser();
         UserRoles currentUserRole = currentUser.getRole();
@@ -212,6 +214,7 @@ public class UserService {
         }
     }
 
+    // ========================================================================= //
     // Mappers
     private void setUserFieldsFromRequest(User user, UserRequestDTO request) {
         user.setFirstName(request.getFirstName());
