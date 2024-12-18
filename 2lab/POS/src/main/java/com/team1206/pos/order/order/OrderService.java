@@ -162,8 +162,10 @@ public class OrderService {
         return orderResponseDTO;
     }
 
+    // Service layer
+
     public Order getOrderEntityById(UUID orderId){
         return orderRepository.findById(orderId)
-                              .orElseThrow(() -> new ResourceNotFoundException(ResourceType.ORDER, orderId.toString()));
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.ORDER, orderId.toString()));
     }
 }
