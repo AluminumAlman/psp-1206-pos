@@ -107,6 +107,7 @@ public class UserService {
         return mapToResponseDTO(currentUser);
     }
 
+    // ========================================================================= //
     // Service layer methods
     public User getUserEntityById(UUID userId) {
         return userRepository.findById(userId)
@@ -172,6 +173,7 @@ public class UserService {
         }
     }
 
+    //Patikrina ar merchant owneris bando editint savo employee arba super_admin, kuris gali bet ka editint
     private void verifySameMerchantIfOwner(User targetUser) {
         User currentUser = getCurrentUser();
         UserRoles currentUserRole = currentUser.getRole();
@@ -186,6 +188,7 @@ public class UserService {
         }
     }
 
+    // ========================================================================= //
     // Mappers
     private void setUserFieldsFromRequest(User user, UserRequestDTO request) {
         user.setFirstName(request.getFirstName());
