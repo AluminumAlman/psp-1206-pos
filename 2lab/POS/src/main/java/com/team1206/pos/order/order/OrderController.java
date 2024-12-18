@@ -1,10 +1,15 @@
 package com.team1206.pos.order.order;
 
 import io.swagger.v3.oas.annotations.Operation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
+@Slf4j
 @RestController
 @RequestMapping("/orders")
 public class OrderController {
@@ -23,13 +28,37 @@ public class OrderController {
             @RequestParam(value = "dateFrom", required = false) String dateFrom,
             @RequestParam(value = "dateTo", required = false) String dateTo
     ) {
-        return ResponseEntity.ok(orderService.getOrders(offset, limit, status, dateFrom, dateTo));
+        log.info("Received get orders request: limit={} offset={} status={} dateFrom={} dateTo={}",
+                limit, offset, status, dateFrom, dateTo);
+
+        Page<OrderResponseDTO> orders = orderService.getOrders(limit, offset, status, dateFrom, dateTo);
+
+        log.debug("Returning {} to get orders request (limit={} offset={} status={} dateFrom={} dateTo={})",
+                orders.stream().toList(), limit, offset, status, dateFrom, dateTo);
+        return ResponseEntity.ok(orders);
     }
 
     @PostMapping
     @Operation(summary = "Create order")
     public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody OrderRequestDTO requestDTO) {
-        return ResponseEntity.ok(orderService.createOrder(requestDTO));
+        log.info("Received create order request: {}", requestDTO);
+
+        OrderResponseDTO createdOrder = orderService.createOrder(requestDTO);
+
+        log.debug("Returning {} to create order request", createdOrder);
+        // TODO: add link to newly created order
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
+    }
+
+    @GetMapping("{orderId}")
+    @Operation(summary = "Get an order")
+    public ResponseEntity<OrderResponseDTO> getOrder(@PathVariable UUID orderId) {
+        log.info("Received get order request: orderId={}", orderId);
+
+        OrderResponseDTO response = orderService.getOrder(orderId);
+
+        log.debug("Returning {} to get order request (orderId={})", response, orderId);
+        return ResponseEntity.ok(response);
     }
 
     // TODO: Create an endpoint to get the total tax amount of an order

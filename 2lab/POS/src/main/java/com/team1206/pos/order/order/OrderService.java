@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -102,6 +103,12 @@ public class OrderService {
         return mapToResponseDTO(savedOrder);
     }
 
+    // Get order
+    public OrderResponseDTO getOrder(UUID orderId) {
+        Order order = getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to access order");
+        return mapToResponseDTO(order);
+    }
 
     // *** Helper methods ***
 

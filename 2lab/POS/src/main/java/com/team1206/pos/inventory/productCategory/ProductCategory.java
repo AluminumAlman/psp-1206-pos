@@ -1,5 +1,6 @@
 package com.team1206.pos.inventory.productCategory;
 
+import com.team1206.pos.common.enums.DiscountScope;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.payments.discount.Discount;
 import com.team1206.pos.user.merchant.Merchant;
@@ -36,4 +37,11 @@ public class ProductCategory {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    /// Gets the discounts which should affect this product category's, including the products and their variations belonging to this category, price.
+    public List<Discount> getEffectiveDiscountsFor(LocalDateTime now, DiscountScope scope) {
+        return discounts.stream()
+                .filter(discount -> discount.getScope() == scope && discount.isActiveAndValid(now))
+                .toList();
+    }
 }

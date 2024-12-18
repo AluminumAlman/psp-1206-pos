@@ -1,12 +1,12 @@
 package com.team1206.pos.service.service;
 
+import com.team1206.pos.common.enums.DiscountScope;
 import com.team1206.pos.payments.charge.Charge;
 import com.team1206.pos.payments.discount.Discount;
 import com.team1206.pos.service.reservation.Reservation;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.user.User;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.DecimalMin;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -54,4 +54,11 @@ public class Service {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    /// Gets the discounts which should affect this service's price.
+    public List<Discount> getEffectiveDiscountsFor(LocalDateTime now, DiscountScope scope) {
+        return discounts.stream()
+                .filter(discount -> discount.getScope() == scope && discount.isActiveAndValid(now))
+                .toList();
+    }
 }

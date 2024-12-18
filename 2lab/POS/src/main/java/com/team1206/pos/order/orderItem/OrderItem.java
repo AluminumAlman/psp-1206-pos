@@ -1,17 +1,17 @@
 package com.team1206.pos.order.orderItem;
 
+import com.team1206.pos.common.enums.DiscountScope;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.inventory.productVariation.ProductVariation;
 import com.team1206.pos.order.order.Order;
-import com.team1206.pos.order.orderCharge.OrderCharge;
 import com.team1206.pos.payments.discount.Discount;
 import com.team1206.pos.service.reservation.Reservation;
-import com.team1206.pos.service.service.Service;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -57,5 +57,18 @@ public class OrderItem {
     @PreUpdate
     public void setUpdatedAt() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public List<Discount> getDiscountsByItemAt(LocalDateTime now) {
+        if (reservation != null)
+            return reservation.getService().getEffectiveDiscountsFor(now, DiscountScope.ORDER_ITEM);
+
+        if (product != null)
+            return product.getEffectiveDiscountsFor(now, DiscountScope.ORDER_ITEM);
+
+        if (productVariation != null)
+            return productVariation.getEffectiveDiscountsFor(now, DiscountScope.ORDER_ITEM);
+
+        return new ArrayList<>();
     }
 }

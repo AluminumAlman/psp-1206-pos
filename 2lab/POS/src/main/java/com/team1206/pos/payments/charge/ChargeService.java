@@ -1,6 +1,5 @@
 package com.team1206.pos.payments.charge;
 
-import com.team1206.pos.common.enums.ChargeScope;
 import com.team1206.pos.common.enums.ChargeType;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
@@ -12,7 +11,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -140,7 +138,6 @@ public class ChargeService {
 
     private void setChargeFieldsFromRequestDTO(Charge charge, ChargeRequestDTO request) {
         charge.setType(ChargeType.valueOf(request.getChargeType().toUpperCase()));
-        charge.setScope(ChargeScope.valueOf(request.getChargeScope().toUpperCase()));
         charge.setName(request.getName());
         charge.setPercent(request.getPercent());
         charge.setAmount(request.getAmount());
@@ -177,7 +174,6 @@ public class ChargeService {
         ChargeResponseDTO responseDTO = new ChargeResponseDTO();
         responseDTO.setId(charge.getId());
         responseDTO.setChargeType(charge.getType().name());
-        responseDTO.setChargeScope(charge.getScope().name());
         responseDTO.setName(charge.getName());
         responseDTO.setPercent(charge.getPercent());
         responseDTO.setAmount(charge.getAmount());

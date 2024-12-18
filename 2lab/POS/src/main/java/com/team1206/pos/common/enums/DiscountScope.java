@@ -1,6 +1,6 @@
 package com.team1206.pos.common.enums;
 
-public enum ChargeScope {
+public enum DiscountScope {
     ORDER,
-    PRODUCT,
+    ORDER_ITEM,
 }

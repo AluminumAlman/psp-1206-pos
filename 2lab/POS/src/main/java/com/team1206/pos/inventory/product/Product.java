@@ -1,5 +1,6 @@
 package com.team1206.pos.inventory.product;
 
+import com.team1206.pos.common.enums.DiscountScope;
 import com.team1206.pos.inventory.productCategory.ProductCategory;
 import com.team1206.pos.inventory.productVariation.ProductVariation;
 import com.team1206.pos.payments.charge.Charge;
@@ -12,6 +13,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Getter
 @Setter
@@ -61,5 +64,14 @@ public class Product {
     @PreUpdate
     public void setUpdatedAt() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    /// Gets the discounts which should affect this product's and its variations' prices.
+    public List<Discount> getEffectiveDiscountsFor(LocalDateTime now, DiscountScope scope) {
+        Stream<Discount> discounts = category.getEffectiveDiscountsFor(now, scope).stream();
+        return Stream.concat(
+                    discounts,
+                    this.discounts.stream().filter(discount -> discount.getScope() == scope && discount.isActiveAndValid(now)))
+                .collect(Collectors.toMap(Discount::getId, p -> p, (p, q) -> p)).values().stream().toList();
     }
 }

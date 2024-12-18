@@ -1,5 +1,6 @@
 package com.team1206.pos.order.order;
 
+import com.team1206.pos.common.enums.DiscountScope;
 import com.team1206.pos.common.enums.OrderStatus;
 import com.team1206.pos.order.orderCharge.OrderCharge;
 import com.team1206.pos.order.orderItem.OrderItem;
@@ -13,6 +14,8 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Getter
 @Setter
@@ -54,5 +57,20 @@ public class Order {
     @PreUpdate
     public void setUpdatedAt() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public List<Discount> getDiscountsByItemsAt(LocalDateTime now) {
+        Stream<Discount> discountStream = Stream.empty();
+        for (OrderItem item : items) {
+            if (item.getReservation() != null)
+                discountStream = Stream.concat(discountStream, item.getReservation().getService().getEffectiveDiscountsFor(now, DiscountScope.ORDER).stream());
+
+            if (item.getProduct() != null)
+                discountStream = Stream.concat(discountStream, item.getProduct().getEffectiveDiscountsFor(now, DiscountScope.ORDER).stream());
+
+            if (item.getProductVariation() != null)
+                discountStream = Stream.concat(discountStream, item.getProductVariation().getEffectiveDiscountsFor(now, DiscountScope.ORDER).stream());
+        }
+        return discountStream.collect(Collectors.toMap(Discount::getId, p -> p, (p, q) -> p)).values().stream().toList();
     }
 }

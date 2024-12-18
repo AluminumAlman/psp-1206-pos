@@ -1,6 +1,5 @@
 package com.team1206.pos.payments.charge;
 
-import com.team1206.pos.common.enums.ChargeScope;
 import com.team1206.pos.common.enums.ChargeType;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.service.service.Service;
@@ -8,6 +7,7 @@ import com.team1206.pos.user.merchant.Merchant;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.util.Pair;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -27,10 +27,6 @@ public class Charge {
     @Column(name = "type", nullable = false)
     @Enumerated(EnumType.ORDINAL)
     private ChargeType type;
-
-    @Column(name = "scope", nullable = false)
-    @Enumerated(EnumType.ORDINAL)
-    private ChargeScope scope;
 
     @Column(name = "name", nullable = false, length = 100)
     private String name;
@@ -67,5 +63,24 @@ public class Charge {
     @PreUpdate
     public void setUpdatedAt() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    // getTotalCharge - calculates additional charges as a multiplier of the base price and a flat value from a list of charges.
+    public static Pair<BigDecimal, BigDecimal> getTotalCharge(Iterable<Charge> charges) {
+        BigDecimal totalMultiplier = BigDecimal.ZERO;
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        BigDecimal HUNDRED = new BigDecimal(100);
+
+        for (Charge charge : charges) {
+            BigDecimal amount = charge.getAmount();
+            if (amount != null)
+                totalAmount = totalAmount.add(amount);
+
+            Integer percent = charge.getPercent();
+            if (percent != null)
+                totalMultiplier = totalMultiplier.add(new BigDecimal(percent).divide(HUNDRED));
+        }
+
+        return Pair.of(totalMultiplier, totalAmount);
     }
 }

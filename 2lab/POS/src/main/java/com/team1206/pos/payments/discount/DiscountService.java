@@ -6,7 +6,6 @@ import com.team1206.pos.user.merchant.MerchantService;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -24,7 +23,7 @@ public class DiscountService {
     }
 
     @Transactional
-    public DiscountResponseDTO createDiscount(CreateDiscountRequestDTO discountRequestDTO) {
+    public DiscountResponseDTO createDiscount(DiscountRequestDTO discountRequestDTO) {
         Discount discount = new Discount();
 
         discount.setName(discountRequestDTO.getName());
@@ -32,7 +31,6 @@ public class DiscountService {
         discount.setAmount(discountRequestDTO.getAmount());
         discount.setValidFrom(discountRequestDTO.getValidFrom());
         discount.setValidUntil(discountRequestDTO.getValidUntil());
-        discount.setMerchant(merchantService.findById(discountRequestDTO.getMerchantId()));
 
         discountRepository.save(discount);
         return toResponseDTO(discount);
@@ -58,17 +56,13 @@ public class DiscountService {
     }
 
     @Transactional
-    public DiscountResponseDTO updateDiscount(UUID id, UpdateDiscountRequestDTO discountRequestDTO) {
+    public DiscountResponseDTO updateDiscount(UUID id, DiscountRequestDTO discountRequestDTO) {
         Discount discount = discountRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.DISCOUNT, id.toString()));
         if (!discount.getIsActive())
             throw new ResourceNotFoundException(ResourceType.DISCOUNT, id.toString());
 
-        discount.setName(discountRequestDTO.getName());
-        discount.setPercent(discountRequestDTO.getPercent());
-        discount.setAmount(discountRequestDTO.getAmount());
-        discount.setValidFrom(discountRequestDTO.getValidFrom());
-        discount.setValidUntil(discountRequestDTO.getValidUntil());
+        mapFromRequestDTO(discountRequestDTO, discount);
 
         discountRepository.save(discount);
         return toResponseDTO(discount);
@@ -83,6 +77,16 @@ public class DiscountService {
 
         discount.setIsActive(false);
         discountRepository.save(discount);
+    }
+
+    public Discount mapFromRequestDTO(DiscountRequestDTO discountRequestDTO, Discount discount) {
+        discount.setName(discountRequestDTO.getName());
+        discount.setPercent(discountRequestDTO.getPercent());
+        discount.setAmount(discountRequestDTO.getAmount());
+        discount.setValidFrom(discountRequestDTO.getValidFrom());
+        discount.setValidUntil(discountRequestDTO.getValidUntil());
+        discount.setScope(discountRequestDTO.getScope());
+        return discount;
     }
 
     public DiscountResponseDTO toResponseDTO(Discount discount) {
