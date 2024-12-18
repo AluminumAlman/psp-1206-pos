@@ -59,7 +59,7 @@ public class OrderService {
 //        if (merchantId == null) {
 //            merchantId = userMerchantId;
 //        }
-        userService.verifyLoggedInUserBelongsToMerchant(merchantId);
+        userService.verifyLoggedInUserBelongsToMerchant(merchantId, "You are not authorized to view these orders");
 
         OrderStatus orderStatus =
                 (status != null && !status.isEmpty()) ? OrderStatus.valueOf(status.toUpperCase()) : null;
@@ -91,7 +91,7 @@ public class OrderService {
     // Create order
     public OrderResponseDTO createOrder(OrderRequestDTO requestBody) {
         UUID merchantId = requestBody.getMerchantId();
-        userService.verifyLoggedInUserBelongsToMerchant(merchantId);
+        userService.verifyLoggedInUserBelongsToMerchant(merchantId, "You are not authorized to create an order");
 
         Order order = new Order();
 
