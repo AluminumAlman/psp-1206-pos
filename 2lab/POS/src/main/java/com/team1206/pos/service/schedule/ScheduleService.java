@@ -19,48 +19,129 @@ public class ScheduleService {
         this.userService = userService;
     }
 
-    // Create a new schedule
+    // Create a new schedule for a user or merchant
     public Schedule createSchedule(Schedule schedule) {
-        userService.verifyLoggedInUserBelongsToMerchant(schedule.getMerchant().getId(), "You are not authorized to create this schedule!");
+        // Validate that the schedule is linked to either a user or a merchant, but not both
+        if ((schedule.getUser() == null && schedule.getMerchant() == null) ||
+                (schedule.getUser() != null && schedule.getMerchant() != null)) {
+            throw new IllegalArgumentException("A schedule must be associated with either a user or a merchant, but not both.");
+        }
+
+        // If a user is linked, verify the user belongs to the logged-in user's merchant
+        if (schedule.getUser() != null) {
+            userService.verifyLoggedInUserBelongsToMerchant(schedule.getUser().getMerchant().getId(), "You are not authorized to create this schedule!");
+        }
+
         return scheduleRepository.save(schedule);
     }
 
-    //nezinau ar reikes sito metodo
-    // Retrieve a schedule by its ID
-    public Schedule getScheduleById(UUID id) {
-        Schedule schedule = scheduleRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.SCHEDULE, id.toString()));
-        userService.verifyLoggedInUserBelongsToMerchant(schedule.getMerchant().getId(), "You are not authorized to access this schedule!");
-        return schedule;
-    }
-
-    //nezinau ar reikes sito metodo
-    // Retrieve all schedules
-    public List<Schedule> getAllSchedules() {
-
-        return scheduleRepository.findAll();
-    }
-
-    // Update an existing schedule
-    public Schedule updateSchedule(UUID id, Schedule updatedSchedule) {
-        return scheduleRepository.findById(id)
+    // Update a schedule for a specific day for a user or merchant
+    public Schedule updateSchedule(UUID scheduleId, Schedule updatedSchedule) {
+        return scheduleRepository.findById(scheduleId)
                 .map(existingSchedule -> {
-                    existingSchedule.setUser(updatedSchedule.getUser());
-                    existingSchedule.setMerchant(updatedSchedule.getMerchant());
+                    // Validate association consistency
+                    if ((existingSchedule.getUser() != null && updatedSchedule.getMerchant() != null) ||
+                            (existingSchedule.getMerchant() != null && updatedSchedule.getUser() != null)) {
+                        throw new IllegalArgumentException("A schedule must be associated with either a user or a merchant, but not both.");
+                    }
+
+                    // Update fields based on the association type
+                    if (existingSchedule.getUser() != null) {
+                        existingSchedule.setUser(updatedSchedule.getUser());
+                    } else if (existingSchedule.getMerchant() != null) {
+                        existingSchedule.setMerchant(updatedSchedule.getMerchant());
+                    }
+
                     existingSchedule.setDayOfWeek(updatedSchedule.getDayOfWeek());
                     existingSchedule.setStartTime(updatedSchedule.getStartTime());
                     existingSchedule.setEndTime(updatedSchedule.getEndTime());
+
                     return scheduleRepository.save(existingSchedule);
-                }).orElseThrow(() -> new RuntimeException("Schedule not found with ID: " + id));
+                }).orElseThrow(() -> new ResourceNotFoundException(ResourceType.SCHEDULE, scheduleId.toString()));
     }
 
-    // Delete a schedule
-    public void deleteSchedule(UUID id) {
-        scheduleRepository.deleteById(id);
+    // Delete a schedule by ID
+    public void deleteSchedule(UUID scheduleId) {
+        if (!scheduleRepository.existsById(scheduleId)) {
+            throw new ResourceNotFoundException(ResourceType.SCHEDULE, scheduleId.toString());
+        }
+        scheduleRepository.deleteById(scheduleId);
     }
 
-    // Get work hours for a user from a particular merchant on a specific day
-    public List<Schedule> getWorkHours(UUID userId, UUID merchantId, DayOfWeek dayOfWeek) {
-        return scheduleRepository.findByUserIdAndMerchantIdAndDayOfWeek(userId, merchantId, dayOfWeek);
+    // Get work hours (schedule) for a specific day for a user
+    public List<Schedule> getUserScheduleByDay(UUID userId, DayOfWeek dayOfWeek) {
+        return scheduleRepository.findByUserIdAndDayOfWeek(userId, dayOfWeek);
+    }
+
+    // Get work hours (schedule) for all days for a user
+    public List<Schedule> getUserScheduleForAllDays(UUID userId) {
+        return scheduleRepository.findByUserId(userId);
+    }
+
+    // Get work hours (schedule) for a specific day for a merchant
+    public List<Schedule> getMerchantScheduleByDay(UUID merchantId, DayOfWeek dayOfWeek) {
+        return scheduleRepository.findByMerchantIdAndDayOfWeek(merchantId, dayOfWeek);
+    }
+
+    // Get work hours (schedule) for all days for a merchant
+    public List<Schedule> getMerchantScheduleForAllDays(UUID merchantId) {
+        return scheduleRepository.findByMerchantId(merchantId);
+    }
+
+    // Bulk update schedules for all days for a user
+    public List<Schedule> updateUserSchedulesForAllDays(UUID userId, List<Schedule> updatedSchedules) {
+        List<Schedule> existingSchedules = scheduleRepository.findByUserId(userId);
+        validateScheduleConsistency(existingSchedules, updatedSchedules);
+
+        for (int i = 0; i < existingSchedules.size(); i++) {
+            Schedule existingSchedule = existingSchedules.get(i);
+            Schedule updatedSchedule = updatedSchedules.get(i);
+
+            existingSchedule.setStartTime(updatedSchedule.getStartTime());
+            existingSchedule.setEndTime(updatedSchedule.getEndTime());
+            scheduleRepository.save(existingSchedule);
+        }
+        return existingSchedules;
+    }
+
+    // Bulk update schedules for all days for a merchant
+    public List<Schedule> updateMerchantSchedulesForAllDays(UUID merchantId, List<Schedule> updatedSchedules) {
+        List<Schedule> existingSchedules = scheduleRepository.findByMerchantId(merchantId);
+        validateScheduleConsistency(existingSchedules, updatedSchedules);
+
+        for (int i = 0; i < existingSchedules.size(); i++) {
+            Schedule existingSchedule = existingSchedules.get(i);
+            Schedule updatedSchedule = updatedSchedules.get(i);
+
+            existingSchedule.setStartTime(updatedSchedule.getStartTime());
+            existingSchedule.setEndTime(updatedSchedule.getEndTime());
+            scheduleRepository.save(existingSchedule);
+        }
+        return existingSchedules;
+    }
+
+    // Delete schedules for a specific day for a user
+    public void deleteUserSchedulesByDay(UUID userId, DayOfWeek dayOfWeek) {
+        List<Schedule> schedules = scheduleRepository.findByUserIdAndDayOfWeek(userId, dayOfWeek);
+        if (schedules.isEmpty()) {
+            throw new ResourceNotFoundException(ResourceType.SCHEDULE, "No schedules found for the specified user and day.");
+        }
+        scheduleRepository.deleteAll(schedules);
+    }
+
+    // Delete schedules for a specific day for a merchant
+    public void deleteMerchantSchedulesByDay(UUID merchantId, DayOfWeek dayOfWeek) {
+        List<Schedule> schedules = scheduleRepository.findByMerchantIdAndDayOfWeek(merchantId, dayOfWeek);
+        if (schedules.isEmpty()) {
+            throw new ResourceNotFoundException(ResourceType.SCHEDULE, "No schedules found for the specified merchant and day.");
+        }
+        scheduleRepository.deleteAll(schedules);
+    }
+
+    // Helper method to validate consistency of schedule updates
+    private void validateScheduleConsistency(List<Schedule> existingSchedules, List<Schedule> updatedSchedules) {
+        if (existingSchedules.size() != updatedSchedules.size()) {
+            throw new IllegalArgumentException("The number of schedules provided does not match the existing schedules.");
+        }
     }
 }
