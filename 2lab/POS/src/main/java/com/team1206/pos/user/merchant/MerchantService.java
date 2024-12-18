@@ -71,6 +71,15 @@ public class MerchantService {
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.MERCHANT, merchantId.toString()));
     }
 
+    // Get merchant entity by ID
+    public Merchant getMerchantEntityById(UUID id) {
+        return merchantRepository.findById(id)
+                                 .orElseThrow(() -> new ResourceNotFoundException(
+                                         ResourceType.MERCHANT,
+                                         id.toString()
+                                 ));
+    }
+
     // Map Merchant entity to Response DTO
     private MerchantResponseDTO mapToResponseDTO(Merchant merchant) {
         MerchantResponseDTO response = new MerchantResponseDTO();

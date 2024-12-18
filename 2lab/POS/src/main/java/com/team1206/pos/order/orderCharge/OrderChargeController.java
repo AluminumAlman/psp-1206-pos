@@ -21,8 +21,8 @@ public class OrderChargeController {
     @Operation(summary = "Get order charges")
     public ResponseEntity<Page<OrderChargeResponseDTO>> getOrderCharges(
             @PathVariable UUID orderId,
-            @RequestParam(value = "offset", defaultValue = "0") int offset,
-            @RequestParam(value = "limit", defaultValue = "20") int limit
+            @RequestParam(value = "limit", defaultValue = "20") int limit,
+            @RequestParam(value = "offset", defaultValue = "0") int offset
     ) {
         return ResponseEntity.ok(orderChargeService.getOrderCharges(orderId, offset, limit));
     }

@@ -50,22 +50,28 @@ public class TransactionService {
             String status,
             BigDecimal amount
     ) {
+        if (limit < 1) {
+            throw new IllegalArgumentException("Limit must be greater than 0");
+        }
+        if (offset < 0) {
+            throw new IllegalArgumentException("Offset must be greater than or equal to 0");
+        }
+
         checkIfOrderExists(orderId);
 
-        // Convert enum names to ordinals
-        Integer paymentMethodOrdinal =
+        PaymentMethodType paymentMethod =
                 (paymentMethodType != null && !paymentMethodType.isEmpty()) ? PaymentMethodType.valueOf(
-                        paymentMethodType.toUpperCase()).ordinal() : null;
+                        paymentMethodType.toUpperCase()) : null;
 
-        Integer statusOrdinal = (status != null && !status.isEmpty()) ? TransactionStatus.valueOf(
-                status.toUpperCase()).ordinal() : null;
+        TransactionStatus transactionStatus =
+                (status != null && !status.isEmpty()) ? TransactionStatus.valueOf(status.toUpperCase()) : null;
 
         Pageable pageable = PageRequest.of(offset / limit, limit);
 
         Page<Transaction> transactionPage = transactionRepository.findAllWithFilters(
                 orderId,
-                paymentMethodOrdinal,
-                statusOrdinal,
+                paymentMethod,
+                transactionStatus,
                 amount,
                 pageable
         );

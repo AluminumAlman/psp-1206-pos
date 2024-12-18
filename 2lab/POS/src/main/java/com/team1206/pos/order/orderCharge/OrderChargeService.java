@@ -28,6 +28,13 @@ public class OrderChargeService {
     // TODO: Check that the logged in user has access to the order
     // Get order charges
     public Page<OrderChargeResponseDTO> getOrderCharges(UUID orderId, int offset, int limit) {
+        if (limit < 1) {
+            throw new IllegalArgumentException("Limit must be greater than 0");
+        }
+        if (offset < 0) {
+            throw new IllegalArgumentException("Offset must be greater than or equal to 0");
+        }
+
         checkIfOrderExists(orderId);
 
         Pageable pageable = PageRequest.of(offset / limit, limit);
