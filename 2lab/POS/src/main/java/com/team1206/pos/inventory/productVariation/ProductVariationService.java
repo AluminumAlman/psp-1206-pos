@@ -1,9 +1,9 @@
 package com.team1206.pos.inventory.productVariation;
 
 import com.team1206.pos.common.enums.ResourceType;
+import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
-import com.team1206.pos.exceptions.UnauthorizedActionException;
 import com.team1206.pos.inventory.product.AdjustProductQuantityDTO;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.inventory.product.ProductService;
@@ -57,7 +57,7 @@ public class ProductVariationService {
         UUID merchantId = userService.getMerchantIdFromLoggedInUser();
 
         List<ProductVariation> productVariations;
-        if(userService.isSuperAdmin())
+        if(userService.isRole(UserRoles.SUPER_ADMIN))
             productVariations = productVariationRepository.findAllWithFilters(productId, null);
         else
             productVariations = productVariationRepository.findAllWithFilters(productId, merchantId);

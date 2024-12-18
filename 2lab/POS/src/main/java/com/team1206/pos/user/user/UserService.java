@@ -161,8 +161,8 @@ public class UserService {
         return getCurrentUser().getRole();
     }
 
-    public boolean isSuperAdmin() {
-        return getCurrentUserRole() == UserRoles.SUPER_ADMIN;
+    public boolean isRole(UserRoles role) {
+        return getCurrentUserRole() == role;
     }
 
     public void verifyAdminOrOwnerRole() {

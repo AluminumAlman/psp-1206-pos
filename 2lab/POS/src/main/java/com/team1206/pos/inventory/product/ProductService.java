@@ -1,9 +1,9 @@
 package com.team1206.pos.inventory.product;
 
 import com.team1206.pos.common.enums.ResourceType;
+import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
-import com.team1206.pos.exceptions.UnauthorizedActionException;
 import com.team1206.pos.inventory.productCategory.ProductCategory;
 import com.team1206.pos.inventory.productCategory.ProductCategoryService;
 import com.team1206.pos.inventory.productVariation.ProductVariation;
@@ -16,7 +16,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -73,7 +72,7 @@ public class ProductService {
         Pageable pageable = PageRequest.of(offset / limit, limit); // Create Pageable object
         Page<Product> productPage;
 
-        if(userService.isSuperAdmin())
+        if(userService.isRole(UserRoles.SUPER_ADMIN))
             productPage = productRepository.findAllWithFilters(null, name, price, categoryId, pageable);
         else
             productPage = productRepository.findAllWithFilters(merchantId, name, price, categoryId, pageable);

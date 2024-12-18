@@ -1,8 +1,8 @@
 package com.team1206.pos.inventory.productCategory;
 
 import com.team1206.pos.common.enums.ResourceType;
+import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
-import com.team1206.pos.exceptions.UnauthorizedActionException;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.user.merchant.MerchantRepository;
@@ -53,7 +53,7 @@ public class ProductCategoryService {
         UUID merchantId = userService.getMerchantIdFromLoggedInUser();
 
         List<ProductCategory> productCategories;
-        if(userService.isSuperAdmin())
+        if(userService.isRole(UserRoles.SUPER_ADMIN))
             productCategories = productCategoryRepository.findAll();
         else
             productCategories = productCategoryRepository.findAllByMerchantId(merchantId);
