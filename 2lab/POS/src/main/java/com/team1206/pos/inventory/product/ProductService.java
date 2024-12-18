@@ -1,7 +1,6 @@
 package com.team1206.pos.inventory.product;
 
 import com.team1206.pos.common.enums.ResourceType;
-import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.exceptions.UnauthorizedActionException;
@@ -12,6 +11,7 @@ import com.team1206.pos.inventory.productVariation.ProductVariation;
 import com.team1206.pos.payments.charge.ChargeRepository;
 import com.team1206.pos.payments.charge.Charge;
 import com.team1206.pos.user.user.UserService;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.PageRequest;
@@ -31,7 +31,7 @@ public class ProductService {
     private final UserService userService;
     private final InventoryLogService inventoryLogService;
 
-    public ProductService(ProductRepository productRepository, ChargeRepository chargeRepository, ProductCategoryService productCategoryService, UserService userService, InventoryLogService inventoryLogService) {
+    public ProductService(ProductRepository productRepository, ChargeRepository chargeRepository, ProductCategoryService productCategoryService, UserService userService, @Lazy InventoryLogService inventoryLogService) {
         this.productRepository = productRepository;
         this.chargeRepository = chargeRepository;
         this.productCategoryService = productCategoryService;
