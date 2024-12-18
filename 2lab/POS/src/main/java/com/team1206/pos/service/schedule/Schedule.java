@@ -1,4 +1,4 @@
-package com.team1206.pos.service.Schedule;
+package com.team1206.pos.service.schedule;
 
 import com.team1206.pos.user.user.User;
 import com.team1206.pos.user.merchant.Merchant;
