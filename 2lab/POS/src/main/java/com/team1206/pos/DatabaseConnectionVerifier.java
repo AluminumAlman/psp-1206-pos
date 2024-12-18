@@ -1,5 +1,6 @@
 package com.team1206.pos;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
@@ -8,6 +9,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+@Slf4j
 @Component
 public class DatabaseConnectionVerifier implements ApplicationListener<ApplicationReadyEvent> {
 
@@ -20,9 +22,9 @@ public class DatabaseConnectionVerifier implements ApplicationListener<Applicati
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         try (Connection _ = dataSource.getConnection()) {
-            System.out.println("Database connection is successful!");
+            log.info("Database connection is successful!");
         } catch (SQLException e) {
-            System.err.println("Failed to connect to the database: " + e.getMessage());
+            log.error("Failed to connect to the database: {}", e.toString());
         }
     }
 }

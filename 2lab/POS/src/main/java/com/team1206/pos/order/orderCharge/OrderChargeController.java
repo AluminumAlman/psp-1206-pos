@@ -2,12 +2,15 @@ package com.team1206.pos.order.orderCharge;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/order")
 public class OrderChargeController {
@@ -24,7 +27,12 @@ public class OrderChargeController {
             @RequestParam(value = "offset", defaultValue = "0") int offset,
             @RequestParam(value = "limit", defaultValue = "20") int limit
     ) {
-        return ResponseEntity.ok(orderChargeService.getOrderCharges(orderId, offset, limit));
+        log.info("Received get order charges request: orderId={} offset={} limit={}", orderId, offset, limit);
+
+        Page<OrderChargeResponseDTO> response = orderChargeService.getOrderCharges(orderId, offset, limit);
+
+        log.debug("Returning {} to get order charges request (orderId={} offset={} limit={})", response.stream().toList(), orderId, offset, limit);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("{orderId}/charges")
@@ -33,7 +41,13 @@ public class OrderChargeController {
             @PathVariable String orderId,
             @Valid @RequestBody OrderChargeRequestDTO requestBody
     ) {
-        return ResponseEntity.ok(orderChargeService.createOrderCharge(orderId, requestBody));
+        log.info("Received create order charge request: orderId={} {}", orderId, requestBody);
+
+        OrderChargeResponseDTO response = orderChargeService.createOrderCharge(orderId, requestBody);
+
+        log.debug("Returning {} to create order charge request (orderId={})", response, orderId);
+        // TODO: add to response the URI to created discount.
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
 //    @DeleteMapping("{orderId}/charges/{chargeId}")
