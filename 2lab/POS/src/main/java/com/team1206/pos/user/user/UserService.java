@@ -101,7 +101,7 @@ public class UserService {
         // Get the current user
         User currentUser = getCurrentUser();
 
-        if (!isCurrentUserRole(UserRoles.SUPER_ADMIN)) {
+        if (getCurrentUser().getRole() != UserRoles.SUPER_ADMIN) {
             throw new UnauthorizedActionException("Only super-admins can switch merchants.", "");
         }
 
@@ -173,7 +173,7 @@ public class UserService {
         }
     }
 
-    private User getCurrentUser() {
+    public User getCurrentUser() {
         String email =
                 ((org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext()
                         .getAuthentication()
@@ -183,16 +183,8 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, email));
     }
 
-    private UserRoles getCurrentUserRole() {
-        return getCurrentUser().getRole();
-    }
-
-    public boolean isCurrentUserRole(UserRoles role) {
-        return getCurrentUserRole() == role;
-    }
-
     public void verifyAdminOrOwnerRole() {
-        UserRoles currentUserRole = getCurrentUserRole();
+        UserRoles currentUserRole = getCurrentUser().getRole();
         if (!(currentUserRole == UserRoles.SUPER_ADMIN || currentUserRole == UserRoles.MERCHANT_OWNER)) {
             throw new UnauthorizedActionException("You do not have permission to perform this action.", "");
         }

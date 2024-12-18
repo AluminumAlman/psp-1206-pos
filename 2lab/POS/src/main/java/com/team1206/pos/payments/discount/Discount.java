@@ -1,5 +1,6 @@
 package com.team1206.pos.payments.discount;
 
+import com.team1206.pos.common.validation.OneOf;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.inventory.productCategory.ProductCategory;
 import com.team1206.pos.inventory.productVariation.ProductVariation;
@@ -9,6 +10,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -17,7 +19,12 @@ import java.util.UUID;
 @Setter
 @Entity
 @Table(name = "\"discount\"")
+@OneOf(fields = {"percent", "amount"})
 public class Discount {
+    public enum Scope {
+        ORDER,
+        ORDER_ITEM,
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -30,18 +37,22 @@ public class Discount {
     @Column(name = "percent", nullable = true)
     private Integer percent;
 
-    @Column(name = "amount", nullable = true)
-    private Integer amount;
+    @Column(name = "amount", nullable = true, precision = 19, scale = 2)
+    private BigDecimal amount;
 
-    @Column(name = "valid_from", nullable = true)
+    @Column(name = "valid_from", nullable = false)
     private LocalDateTime validFrom;
 
-    @Column(name = "valid_until", nullable = true)
+    @Column(name = "valid_until", nullable = false)
     private LocalDateTime validUntil;
 
     @ManyToOne
     @JoinColumn(name = "merchant_id", nullable = false)
     private Merchant merchant;
+
+    @Column(name = "scope", nullable = false)
+    @Enumerated(EnumType.ORDINAL)
+    private Scope scope;
 
     @ManyToMany
     @JoinTable(name = "discounts_services",
@@ -67,7 +78,7 @@ public class Discount {
             inverseJoinColumns = @JoinColumn(name = "product_variation_id"))
     private List<ProductVariation> productVariations;
 
-    @Column(name = "isActive")
+    @Column(name = "is_active")
     private Boolean isActive = true;
 
     @Column(name = "created_at", nullable = false, updatable = false)
