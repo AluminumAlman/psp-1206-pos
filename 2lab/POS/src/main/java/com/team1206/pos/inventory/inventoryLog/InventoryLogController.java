@@ -5,7 +5,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
+import java.util.UUID;
+
+@RestController
 @RequestMapping("/inventoryLog")
 public class InventoryLogController {
     private final InventoryLogService inventoryLogService;
@@ -19,8 +21,9 @@ public class InventoryLogController {
         return ResponseEntity.ok(response);
     }
 
-//    @GetMapping("/{id}")
-//    public ResponseEntity<InventoryLogResponseDTO> getInventoryLog(@PathVariable String id) {
-//        inventoryLogService.
-//    }
+    @GetMapping("/{id}")
+    public ResponseEntity<InventoryLogResponseDTO> getInventoryLog(@PathVariable String id) {
+        InventoryLogResponseDTO responseDTO = inventoryLogService.getInventoryLogById(UUID.fromString(id));
+        return ResponseEntity.ok(responseDTO);
+    }
 }

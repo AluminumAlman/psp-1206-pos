@@ -3,6 +3,7 @@ package com.team1206.pos.inventory.inventoryLog;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.inventory.productVariation.ProductVariation;
 import com.team1206.pos.order.order.Order;
+import com.team1206.pos.user.user.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,8 +34,12 @@ public class InventoryLog {
     private ProductVariation productVariation;
 
     @OneToOne
-    @JoinColumn(name = "order", nullable = true)
+    @JoinColumn(name = "\"order\"", nullable = true)
     private Order order;
+
+    @ManyToOne
+    @JoinColumn(name = "\"user\"", nullable = false)
+    private User user;
 
     @Column(name = "adjustment", nullable = false)
     private Integer adjustment;

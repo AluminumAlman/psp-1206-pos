@@ -12,6 +12,7 @@ public class InventoryLogResponseDTO {
     private UUID product;
     private UUID productVariation;
     private UUID order;
+    private UUID user;
     private Integer adjustment;
     private LocalDateTime createdAt;
 }
