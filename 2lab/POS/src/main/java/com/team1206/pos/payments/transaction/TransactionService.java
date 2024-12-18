@@ -25,6 +25,7 @@ public class TransactionService {
         this.orderService = orderService;
     }
 
+    // TODO filter my Merchant
     // Get paged transactions
     public Page<TransactionResponseDTO> getTransactions(int limit, int offset, String orderId) {
         Pageable pageable = PageRequest.of(offset / limit, limit);
