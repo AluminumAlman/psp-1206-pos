@@ -113,6 +113,13 @@ public class ProductVariationService {
         return mapToResponseDTO(updatedProductVariation);
     }
 
+    // Service layer
+
+    public ProductVariation getProductVariationEntityById(UUID id) {
+        return productVariationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_VARIATION, id.toString()));
+    }
+
     // Mappers
     private ProductVariationResponseDTO mapToResponseDTO(ProductVariation productVariation) {
         ProductVariationResponseDTO responseDTO = new ProductVariationResponseDTO();
