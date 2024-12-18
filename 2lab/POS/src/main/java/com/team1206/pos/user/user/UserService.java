@@ -96,6 +96,31 @@ public class UserService {
         return mapToResponseDTO(updatedUser);
     }
 
+    // Switching Merchant for super-admin
+    public UserResponseDTO switchMerchant(UUID newMerchantId) {
+        // Get the current user
+        User currentUser = getCurrentUser();
+
+        if (!isCurrentUserRole(UserRoles.SUPER_ADMIN)) {
+            throw new UnauthorizedActionException("Only super-admins can switch merchants.", "");
+        }
+
+        // If newMerchantId is null, it means logging out from the current merchant
+        if (newMerchantId == null) {
+            currentUser.setMerchant(null);
+        } else {
+            // Assign the new merchant
+            Merchant merchant = merchantRepository.findById(newMerchantId)
+                    .orElseThrow(() -> new ResourceNotFoundException(ResourceType.MERCHANT, newMerchantId.toString()));
+            currentUser.setMerchant(merchant);
+        }
+
+        // Save the changes
+        User updatedUser = userRepository.save(currentUser);
+
+        return mapToResponseDTO(updatedUser);
+    }
+
     public UserResponseDTO getUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, email));
@@ -107,6 +132,7 @@ public class UserService {
         return mapToResponseDTO(currentUser);
     }
 
+    // ========================================================================= //
     // Service layer methods
     public User getUserEntityById(UUID userId) {
         return userRepository.findById(userId)
@@ -135,9 +161,10 @@ public class UserService {
                 .orElse(null);
     }
 
-    public void verifyLoggedInUserBelongsToMerchant(UUID merchantId) {
-        if (getMerchantIdFromLoggedInUser() != merchantId && getCurrentUser().getRole() != UserRoles.SUPER_ADMIN) {
-            throw new UnauthorizedActionException("You do not have permission to perform this action.", "");
+    public void verifyLoggedInUserBelongsToMerchant(UUID merchantId, String messageIfInvalid) {
+        // If User is assigned to a different Merchant or the super-admin didn't choose the Merchant yet (or regular user, which hasn't been assigned a merchant yet)
+        if ((getCurrentUser().getRole() == UserRoles.SUPER_ADMIN && getCurrentUser().getMerchant().getId() == null) || getMerchantIdFromLoggedInUser() != merchantId) {
+            throw new UnauthorizedActionException(messageIfInvalid, "");
         }
     }
 
@@ -161,6 +188,10 @@ public class UserService {
         return getCurrentUser().getRole();
     }
 
+    public boolean isCurrentUserRole(UserRoles role) {
+        return getCurrentUserRole() == role;
+    }
+
     public void verifyAdminOrOwnerRole() {
         UserRoles currentUserRole = getCurrentUserRole();
         if (!(currentUserRole == UserRoles.SUPER_ADMIN || currentUserRole == UserRoles.MERCHANT_OWNER)) {
@@ -168,6 +199,7 @@ public class UserService {
         }
     }
 
+    //Patikrina ar merchant owneris bando editint savo employee arba super_admin, kuris gali bet ka editint
     private void verifySameMerchantIfOwner(User targetUser) {
         User currentUser = getCurrentUser();
         UserRoles currentUserRole = currentUser.getRole();
@@ -182,6 +214,7 @@ public class UserService {
         }
     }
 
+    // ========================================================================= //
     // Mappers
     private void setUserFieldsFromRequest(User user, UserRequestDTO request) {
         user.setFirstName(request.getFirstName());

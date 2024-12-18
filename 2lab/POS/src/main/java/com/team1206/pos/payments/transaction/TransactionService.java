@@ -28,6 +28,7 @@ public class TransactionService {
     }
 
     // TODO: Check that the logged in user has access to the order
+    // TODO filter my Merchant
     // Get paged transactions
     public Page<TransactionResponseDTO> getTransactions(int limit, int offset, UUID orderId) {
         Pageable pageable = PageRequest.of(offset / limit, limit);

@@ -1,6 +1,7 @@
 package com.team1206.pos.payments.transaction;
 
 import io.swagger.v3.oas.annotations.Operation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/orders")
 public class TransactionController {
@@ -37,14 +39,12 @@ public class TransactionController {
             @RequestParam(value = "status", required = false) String status,
             @RequestParam(value = "amount", required = false) BigDecimal amount
     ) {
-        return ResponseEntity.ok(transactionService.getTransactions(
-                limit,
-                offset,
-                orderId,
-                paymentMethodType,
-                status,
-                amount
-        ));
+        log.info("Received get transactions request: limit={} offset={} orderId={}", limit, offset, orderId, paymentMethodType, status, amount);
+
+        Page<TransactionResponseDTO> transactions = transactionService.getTransactions(limit, offset, orderId, paymentMethodType, status, amount);
+
+        log.debug("Returning {} to get transactions request (limit={} offset={} orderId={})", transactions.stream().toList(), limit, offset, orderId, paymentMethodType, status, amount);
+        return ResponseEntity.ok(transactions);
     }
 
     @PostMapping("/{orderId}/transactions")
