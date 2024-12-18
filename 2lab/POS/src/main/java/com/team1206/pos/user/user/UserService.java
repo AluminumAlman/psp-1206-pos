@@ -4,7 +4,6 @@ import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.exceptions.UnauthorizedActionException;
-import com.team1206.pos.service.schedule.Schedule;
 import com.team1206.pos.service.schedule.ScheduleService;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.merchant.MerchantRepository;

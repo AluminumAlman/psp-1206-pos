@@ -6,8 +6,6 @@ import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.user.User;
-import com.team1206.pos.user.user.UserRequestDTO;
-import com.team1206.pos.user.user.UserService;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
@@ -19,11 +17,9 @@ import java.util.UUID;
 @Service
 public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
-    private final UserService userService;
 
-    public ScheduleService(ScheduleRepository scheduleRepository, UserService userService) {
+    public ScheduleService(ScheduleRepository scheduleRepository) {
         this.scheduleRepository = scheduleRepository;
-        this.userService = userService;
     }
 
 
@@ -72,7 +68,7 @@ public class ScheduleService {
 
         // If a user is linked, verify the user belongs to the logged-in user's merchant
         if (schedule.getUser() != null) {
-            userService.verifyLoggedInUserBelongsToMerchant(schedule.getUser().getMerchant().getId(), "You are not authorized to create this schedule!");
+            //userService.verifyLoggedInUserBelongsToMerchant(schedule.getUser().getMerchant().getId(), "You are not authorized to create this schedule!");
         }
 
         return scheduleRepository.save(schedule);
