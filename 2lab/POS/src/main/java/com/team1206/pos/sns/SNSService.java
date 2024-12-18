@@ -1,4 +1,4 @@
-package com.team1206.pos.SNS;
+package com.team1206.pos.sns;
 
 import com.team1206.pos.exceptions.SnsServiceException;
 import org.springframework.beans.factory.annotation.Value;
