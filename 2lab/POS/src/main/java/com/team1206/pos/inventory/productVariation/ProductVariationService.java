@@ -124,9 +124,8 @@ public class ProductVariationService {
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_VARIATION, id.toString()));
     }
 
-    // Adjust product variation quantity and create inventoryLog for orders
-    @Transactional
-    public void adjustProductVariationQuantity(UUID productVariationId, int adjustment, UUID orderId) {
+    // Adjust product variation quantity
+    public void adjustProductVariationQuantity(UUID productVariationId, int adjustment) {
         ProductVariation productVariation = productVariationRepository.findById(productVariationId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_VARIATION, productVariationId.toString()));
 
@@ -138,8 +137,6 @@ public class ProductVariationService {
         }
 
         productVariation.setQuantity(newQuantity);
-
-        inventoryLogService.createInventoryLogForProductVariation(productVariationId, adjustment, orderId);
 
         productVariationRepository.save(productVariation);
     }

@@ -151,9 +151,8 @@ public class ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, id.toString()));
     }
 
-    // Adjust product quantity and create inventoryLog for orders
-    @Transactional
-    public void adjustProductQuantity(UUID productId, int adjustment, UUID orderId) {
+    // Adjust product quantity
+    public void adjustProductQuantity(UUID productId, int adjustment) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, productId.toString()));
 
@@ -163,8 +162,6 @@ public class ProductService {
         }
 
         product.setQuantity(newQuantity);
-
-        inventoryLogService.createInventoryLogForProduct(productId, adjustment, orderId);
 
         productRepository.save(product);
     }
