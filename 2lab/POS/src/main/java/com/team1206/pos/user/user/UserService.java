@@ -135,9 +135,9 @@ public class UserService {
                 .orElse(null);
     }
 
-    public void verifyLoggedInUserBelongsToMerchant(UUID merchantId) {
+    public void verifyLoggedInUserBelongsToMerchant(UUID merchantId, String messageIfInvalid) {
         if (getMerchantIdFromLoggedInUser() != merchantId && getCurrentUser().getRole() != UserRoles.SUPER_ADMIN) {
-            throw new UnauthorizedActionException("You do not have permission to perform this action.", "");
+            throw new UnauthorizedActionException(messageIfInvalid, "");
         }
     }
 
@@ -159,6 +159,10 @@ public class UserService {
 
     private UserRoles getCurrentUserRole() {
         return getCurrentUser().getRole();
+    }
+
+    public boolean isCurrentUserRole(UserRoles role) {
+        return getCurrentUserRole() == role;
     }
 
     public void verifyAdminOrOwnerRole() {
