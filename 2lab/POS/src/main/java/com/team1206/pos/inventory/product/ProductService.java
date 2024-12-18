@@ -4,6 +4,7 @@ import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
+import com.team1206.pos.exceptions.UnauthorizedActionException;
 import com.team1206.pos.inventory.productCategory.ProductCategory;
 import com.team1206.pos.inventory.productCategory.ProductCategoryService;
 import com.team1206.pos.inventory.productVariation.ProductVariation;
@@ -72,8 +73,8 @@ public class ProductService {
         Pageable pageable = PageRequest.of(offset / limit, limit); // Create Pageable object
         Page<Product> productPage;
 
-        if(userService.isCurrentUserRole(UserRoles.SUPER_ADMIN))
-            productPage = productRepository.findAllWithFilters(null, name, price, categoryId, pageable);
+        if(merchantId == null)
+            throw new UnauthorizedActionException("Super-admin has to be assigned to Merchant first", "");
         else
             productPage = productRepository.findAllWithFilters(merchantId, name, price, categoryId, pageable);
 
