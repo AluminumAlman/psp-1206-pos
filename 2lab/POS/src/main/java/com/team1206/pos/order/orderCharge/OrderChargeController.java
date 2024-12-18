@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
-@RequestMapping("/order")
+@RequestMapping("/orders")
 public class OrderChargeController {
     private final OrderChargeService orderChargeService;
 
@@ -23,9 +23,9 @@ public class OrderChargeController {
     @GetMapping("{orderId}/charges")
     @Operation(summary = "Get order charges")
     public ResponseEntity<Page<OrderChargeResponseDTO>> getOrderCharges(
-            @PathVariable String orderId,
-            @RequestParam(value = "offset", defaultValue = "0") int offset,
-            @RequestParam(value = "limit", defaultValue = "20") int limit
+            @PathVariable UUID orderId,
+            @RequestParam(value = "limit", defaultValue = "20") int limit,
+            @RequestParam(value = "offset", defaultValue = "0") int offset
     ) {
         log.info("Received get order charges request: orderId={} offset={} limit={}", orderId, offset, limit);
 
@@ -38,7 +38,7 @@ public class OrderChargeController {
     @PostMapping("{orderId}/charges")
     @Operation(summary = "Create order charge")
     public ResponseEntity<OrderChargeResponseDTO> createOrderCharge(
-            @PathVariable String orderId,
+            @PathVariable UUID orderId,
             @Valid @RequestBody OrderChargeRequestDTO requestBody
     ) {
         log.info("Received create order charge request: orderId={} {}", orderId, requestBody);
@@ -50,13 +50,13 @@ public class OrderChargeController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-//    @DeleteMapping("{orderId}/charges/{chargeId}")
-//    @Operation(summary = "Delete order charge")
-//    public ResponseEntity<Void> deleteOrderCharge(
-//            @PathVariable String orderId,
-//            @PathVariable String chargeId
-//    ) {
-//        orderChargeService.deleteOrderCharge(orderId, chargeId);
-//        return ResponseEntity.noContent().build();
-//    }
+    @DeleteMapping("{orderId}/charges/{chargeId}")
+    @Operation(summary = "Delete order charge")
+    public ResponseEntity<Void> deleteOrderCharge(
+            @PathVariable UUID orderId,
+            @PathVariable UUID chargeId
+    ) {
+        orderChargeService.deleteOrderCharge(orderId, chargeId);
+        return ResponseEntity.noContent().build();
+    }
 }

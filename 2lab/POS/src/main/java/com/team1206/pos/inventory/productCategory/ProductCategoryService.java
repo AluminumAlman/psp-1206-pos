@@ -1,12 +1,11 @@
 package com.team1206.pos.inventory.productCategory;
 
 import com.team1206.pos.common.enums.ResourceType;
-import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.exceptions.UnauthorizedActionException;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
-import com.team1206.pos.user.merchant.MerchantRepository;
+import com.team1206.pos.user.merchant.MerchantService;
 import com.team1206.pos.user.user.UserService;
 import org.springframework.stereotype.Service;
 
@@ -19,24 +18,24 @@ import java.util.stream.Collectors;
 public class ProductCategoryService {
 
     private final ProductCategoryRepository productCategoryRepository;
-    private final MerchantRepository merchantRepository; //TODO change to service layer
     private final UserService userService;
-    public ProductCategoryService(ProductCategoryRepository productCategoryrepository, MerchantRepository merchantRepository, UserService userService) {
+    private final MerchantService merchantService;
+
+    public ProductCategoryService(ProductCategoryRepository productCategoryrepository, UserService userService, MerchantService merchantService) {
         this.productCategoryRepository = productCategoryrepository;
-        this.merchantRepository = merchantRepository;
         this.userService = userService;
+        this.merchantService = merchantService;
     }
 
 
     public ProductCategoryResponseDTO createProductCategory(CreateProductCategoryRequestDTO requestDTO) {
 
-        Merchant merchant = merchantRepository.findById(requestDTO.getMerchantId()) // TODO pakeisti i getMerchantEntityById is merchantService
-                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.MERCHANT, requestDTO.getMerchantId().toString()));
+        UUID merchantId = userService.getMerchantIdFromLoggedInUser();
+        if (merchantId == null) {
+            throw new UnauthorizedActionException("Super-admin has to be assigned to Merchant first", "");
+        }
 
-        userService.verifyLoggedInUserBelongsToMerchant(merchant.getId(), "You are not authorized to create the category for this merchant");
-
-
-        ProductCategory category = mapToEntity(requestDTO, merchant);
+        ProductCategory category = mapToEntity(requestDTO, merchantService.getMerchantEntityById(merchantId));
         ProductCategory savedCategory = productCategoryRepository.save(category);
         return mapToResponseDTO(savedCategory);
     }

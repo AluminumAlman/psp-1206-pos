@@ -17,6 +17,7 @@ public class OneOfValidator implements ConstraintValidator<OneOf, Object> {
 
     @Override
     public boolean isValid(Object obj, ConstraintValidatorContext context) {
+        System.out.println("Validating object: " + obj);
         if (fields == null || fields.length < 2) {
             throw new IllegalArgumentException(
                     "At least two fields must be specified for @OneOf validation.");

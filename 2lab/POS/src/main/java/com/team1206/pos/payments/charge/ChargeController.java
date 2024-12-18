@@ -40,7 +40,7 @@ public class ChargeController {
     @GetMapping
     @Operation(summary = "Get all charges by type")
     public ResponseEntity<Page<ChargeResponseDTO>> getChargesByType(
-            @RequestParam(value = "limit", defaultValue = "10") int limit,
+            @RequestParam(value = "limit", defaultValue = "20") int limit,
             @RequestParam(value = "offset", defaultValue = "0") int offset,
             @RequestParam(value = "chargeType") String chargeType) {
         log.info("Received get all charges request: limit={} offset={} chargeType={}", limit, offset, chargeType);

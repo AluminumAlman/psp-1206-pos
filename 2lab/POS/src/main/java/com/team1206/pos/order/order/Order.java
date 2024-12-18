@@ -28,8 +28,7 @@ public class Order {
     @Enumerated(EnumType.ORDINAL)
     private OrderStatus status;
 
-    @OneToMany
-    @JoinTable(name = "orders_order_charges", joinColumns = @JoinColumn(name = "order_id"), inverseJoinColumns = @JoinColumn(name = "order_charge_id"))
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderCharge> charges;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)

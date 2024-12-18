@@ -178,7 +178,7 @@ public class UserService {
         }
     }
 
-    private User getCurrentUser() {
+    public User getCurrentUser() {
         String email =
                 ((org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext()
                         .getAuthentication()
