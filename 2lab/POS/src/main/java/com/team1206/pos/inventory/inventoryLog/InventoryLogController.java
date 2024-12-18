@@ -1,5 +1,6 @@
 package com.team1206.pos.inventory.inventoryLog;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -16,18 +17,21 @@ public class InventoryLogController {
         this.inventoryLogService = inventoryLogService;
     }
 
+    @Operation(summary = "explicitly create new inventory log")
     @PostMapping
     public ResponseEntity<InventoryLogResponseDTO> createInventoryLog(@Valid @RequestBody CreateInventoryLogRequestDTO request) {
         InventoryLogResponseDTO response = inventoryLogService.createInventoryLog(request);
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "retrieve inventory log by ID")
     @GetMapping("/{id}")
     public ResponseEntity<InventoryLogResponseDTO> getInventoryLog(@PathVariable String id) {
         InventoryLogResponseDTO responseDTO = inventoryLogService.getInventoryLogById(UUID.fromString(id));
         return ResponseEntity.ok(responseDTO);
     }
 
+    @Operation(summary = "retrieve all inventory logs with filters")
     @GetMapping
     public ResponseEntity<Page<InventoryLogResponseDTO>> getAllInventoryLogs(
         @RequestParam(value = "offset", defaultValue = "0") int offset,

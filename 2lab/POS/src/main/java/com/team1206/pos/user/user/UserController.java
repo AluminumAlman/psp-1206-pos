@@ -105,6 +105,7 @@ public class UserController {
         return ResponseEntity.ok(currentUser);
     }
 
+    @Operation(summary = "switch merchant for super-admins")
     @PatchMapping("/switch-merchant")
     public ResponseEntity<UserResponseDTO> switchMerchant(@RequestParam(required = false) UUID merchantId) {
         log.info("Received switch merchant request: merchantId={}", merchantId);
