@@ -161,7 +161,7 @@ public class UserService {
         return getCurrentUser().getRole();
     }
 
-    public boolean isRole(UserRoles role) {
+    public boolean isCurrentUserRole(UserRoles role) {
         return getCurrentUserRole() == role;
     }
 

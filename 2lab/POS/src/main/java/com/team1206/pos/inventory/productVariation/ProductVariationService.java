@@ -57,7 +57,7 @@ public class ProductVariationService {
         UUID merchantId = userService.getMerchantIdFromLoggedInUser();
 
         List<ProductVariation> productVariations;
-        if(userService.isRole(UserRoles.SUPER_ADMIN))
+        if(userService.isCurrentUserRole(UserRoles.SUPER_ADMIN))
             productVariations = productVariationRepository.findAllWithFilters(productId, null);
         else
             productVariations = productVariationRepository.findAllWithFilters(productId, merchantId);

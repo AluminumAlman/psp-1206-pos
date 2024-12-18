@@ -53,7 +53,7 @@ public class ProductCategoryService {
         UUID merchantId = userService.getMerchantIdFromLoggedInUser();
 
         List<ProductCategory> productCategories;
-        if(userService.isRole(UserRoles.SUPER_ADMIN))
+        if(userService.isCurrentUserRole(UserRoles.SUPER_ADMIN))
             productCategories = productCategoryRepository.findAll();
         else
             productCategories = productCategoryRepository.findAllByMerchantId(merchantId);

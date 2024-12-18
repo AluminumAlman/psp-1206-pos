@@ -72,7 +72,7 @@ public class ProductService {
         Pageable pageable = PageRequest.of(offset / limit, limit); // Create Pageable object
         Page<Product> productPage;
 
-        if(userService.isRole(UserRoles.SUPER_ADMIN))
+        if(userService.isCurrentUserRole(UserRoles.SUPER_ADMIN))
             productPage = productRepository.findAllWithFilters(null, name, price, categoryId, pageable);
         else
             productPage = productRepository.findAllWithFilters(merchantId, name, price, categoryId, pageable);
