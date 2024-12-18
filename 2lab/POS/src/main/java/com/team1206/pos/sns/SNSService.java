@@ -1,6 +1,7 @@
 package com.team1206.pos.sns;
 
 import com.team1206.pos.exceptions.SnsServiceException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.sns.SnsClient;
@@ -8,6 +9,7 @@ import software.amazon.awssdk.services.sns.model.PublishRequest;
 import software.amazon.awssdk.services.sns.model.PublishResponse;
 import software.amazon.awssdk.services.sns.model.SnsException;
 
+@Slf4j
 @Service
 public class SNSService {
     @Value("${spring.profiles.active:prod}")
@@ -24,17 +26,16 @@ public class SNSService {
             // Publish the message
             if (activeProfile.equals("prod")) {
                 PublishResponse response = snsClient.publish(request);
-                System.out.println("Message sent with ID: " + response.messageId());
+                log.info("Message sent with ID: {}", response.messageId());
             }
         } catch (SnsException snsException) {
             // Extract details from the AWS exception
-            System.err.println("AWS SNS Error: " + snsException.awsErrorDetails().errorMessage());
-            System.err.println("Error Code: " + snsException.awsErrorDetails().errorCode());
-            System.err.println("Service Name: " + snsException.awsErrorDetails().serviceName());
+            log.error("AWS SNS Error: {}\nAWS SNS Error Code: {}\nAWS SNS Service Name: {}",
+                    snsException.awsErrorDetails().errorMessage(), snsException.awsErrorDetails().errorCode(), snsException.awsErrorDetails().serviceName());
 
             throw new SnsServiceException("Failed to send SMS via AWS SNS", snsException);
         } catch (Exception e) {
-            System.err.println("Unexpected error while sending SMS: " + e.getMessage());
+            log.error("Unexpected error while sending SMS: {}", e.toString());
             throw new SnsServiceException("An unexpected error occurred", e);
         }
     }

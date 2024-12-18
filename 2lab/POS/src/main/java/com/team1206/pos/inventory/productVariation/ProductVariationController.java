@@ -3,12 +3,14 @@ package com.team1206.pos.inventory.productVariation;
 import com.team1206.pos.inventory.product.AdjustProductQuantityDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/products")
 public class ProductVariationController {
@@ -23,9 +25,13 @@ public class ProductVariationController {
             @PathVariable String productId,
             @Valid @RequestBody CreateProductVariationBodyDTO requestBody
     ) {
+        log.info("Received create product variation request: productId={} {}", productId, requestBody);
+
         ProductVariationResponseDTO createdVariation =
                 productVariationService.createProductVariation(UUID.fromString(productId), requestBody);
 
+        log.debug("Returning {} to create product variation request (productId={})", createdVariation, productId);
+        // TODO: add to response the URI to created product variation.
         return ResponseEntity.ok(createdVariation);
     }
 
@@ -35,10 +41,12 @@ public class ProductVariationController {
             @PathVariable String productId,
             @PathVariable String variationId
     ) {
+        log.info("Received get product variation request: productId={} variationId={}", productId, variationId);
 
         // TODO Ar verta tikrinti, ar variacija atitinka productId is url ir ar tas produktas egzistuoja
         ProductVariationResponseDTO variation = productVariationService.getProductVariationById(UUID.fromString(variationId));
 
+        log.debug("Returning {} to get product variation request (productId={} variationId={})", variation, productId, variationId);
         return ResponseEntity.ok(variation);
     }
 
@@ -47,7 +55,11 @@ public class ProductVariationController {
     public ResponseEntity<List<ProductVariationResponseDTO>> getProductVariations(
             @PathVariable String productId
     ) {
+        log.info("Received get all product variations request (productId={})", productId);
+
         List<ProductVariationResponseDTO> variations = productVariationService.getAllProductVariations(UUID.fromString(productId));
+
+        log.debug("Returning {} to get all product variations (productId={})", variations, productId);
         return ResponseEntity.ok(variations);
     }
 
@@ -58,7 +70,11 @@ public class ProductVariationController {
             @PathVariable String variationId,
             @Valid @RequestBody UpdateProductVariationBodyDTO requestBody
     ) {
+        log.info("Received update product variation request: productId={} variationId={} {}", productId, variationId, requestBody);
+
         ProductVariationResponseDTO productVariation = productVariationService.updateProductVariationById(UUID.fromString(variationId), requestBody);
+
+        log.debug("Returning {} to update product variation request (productId={} variationId={})", productVariation, productId, variationId);
         return ResponseEntity.ok(productVariation);
     }
 
@@ -68,7 +84,11 @@ public class ProductVariationController {
             @PathVariable String productId,
             @PathVariable String variationId
     ) {
+        log.info("Received delete product variation request: productId={} variationId={}", productId, variationId);
+
         productVariationService.deleteProductVariationById(UUID.fromString(variationId));
+
+        log.debug("Returning nothing to delete product variation request (productId={} variationId={})", productId, variationId);
         return ResponseEntity.noContent().build();
     }
 
