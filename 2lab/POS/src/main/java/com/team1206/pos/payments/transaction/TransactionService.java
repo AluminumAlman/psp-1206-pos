@@ -90,7 +90,7 @@ public class TransactionService {
         Transaction transaction = new Transaction();
 
         setTransactionFieldsFromRequestDTO(transaction, requestDTO);
-        transaction.setOrder(orderService.getOrderById(orderId));
+        transaction.setOrder(orderService.getOrderEntityById(orderId));
 
         transaction.setStatus(TransactionStatus.PENDING);
 
@@ -170,7 +170,7 @@ public class TransactionService {
     // *** Helper methods ***
 
     private void checkIfOrderExists(UUID orderId) {
-        orderService.getOrderById(orderId);
+        orderService.getOrderEntityById(orderId);
     }
 
     private void setTransactionFieldsFromRequestDTO(

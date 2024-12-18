@@ -38,12 +38,6 @@ public class OrderService {
         this.orderItemService = orderItemService;
     }
 
-    public Order getOrderById(UUID orderId) {
-        return orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException(ResourceType.ORDER,
-                                                                                                 orderId.toString()
-        ));
-    }
-
     // TODO: Check if the user is SUPER_ADMIN
     // Get paged orders
     public Page<OrderResponseDTO> getOrders(
@@ -166,5 +160,10 @@ public class OrderService {
         orderResponseDTO.setUpdatedAt(order.getUpdatedAt());
 
         return orderResponseDTO;
+    }
+
+    public Order getOrderEntityById(UUID orderId){
+        return orderRepository.findById(orderId)
+                              .orElseThrow(() -> new ResourceNotFoundException(ResourceType.ORDER, orderId.toString()));
     }
 }

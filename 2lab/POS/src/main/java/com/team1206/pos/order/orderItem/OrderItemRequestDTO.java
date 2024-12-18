@@ -8,10 +8,10 @@ import lombok.Data;
 import java.util.UUID;
 
 @Data
-@OneOf(fields = {"productId", "serviceId"})
+@OneOf(fields = {"productId", "reservationId"})
 public class OrderItemRequestDTO {
     private UUID productId;
-    private UUID serviceId;
+    private UUID reservationId;
 
     private UUID productVariationId;
 

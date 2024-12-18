@@ -58,7 +58,7 @@ public class OrderChargeService {
         OrderCharge orderCharge = new OrderCharge();
 
         setOrderChargeFields(orderCharge, requestBody);
-        orderCharge.setOrder(orderService.getOrderById(orderId));
+        orderCharge.setOrder(orderService.getOrderEntityById(orderId));
 
         OrderCharge savedOrderCharge = orderChargeRepository.save(orderCharge);
 
@@ -87,7 +87,7 @@ public class OrderChargeService {
     // *** Helper methods ***
 
     private void checkIfOrderExists(UUID orderId) {
-        orderService.getOrderById(orderId);
+        orderService.getOrderEntityById(orderId);
     }
 
     private void setOrderChargeFields(OrderCharge orderCharge, OrderChargeRequestDTO requestBody) {

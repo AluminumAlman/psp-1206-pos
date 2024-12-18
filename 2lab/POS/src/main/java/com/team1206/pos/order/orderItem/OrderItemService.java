@@ -9,7 +9,7 @@ import com.team1206.pos.inventory.productVariation.ProductVariationRepository;
 import com.team1206.pos.order.order.Order;
 import com.team1206.pos.order.order.OrderResponseDTO;
 import com.team1206.pos.order.order.OrderService;
-import com.team1206.pos.service.service.ServiceService;
+import com.team1206.pos.service.reservation.ReservationService;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -22,21 +22,21 @@ public class OrderItemService {
     private final OrderItemRepository orderItemRepository;
     private final ProductVariationRepository productVariationRepository;
     private final ProductService productService;
-    private final ServiceService serviceService;
     private final OrderService orderService;
+    private final ReservationService reservationService;
 
     public OrderItemService(
             OrderItemRepository orderItemRepository,
             ProductVariationRepository productVariationRepository,
             ProductService productService,
-            ServiceService serviceService,
-            @Lazy OrderService orderService
+            @Lazy OrderService orderService,
+            ReservationService reservationService
     ) {
         this.orderItemRepository = orderItemRepository;
         this.productVariationRepository = productVariationRepository;
         this.productService = productService;
-        this.serviceService = serviceService;
         this.orderService = orderService;
+        this.reservationService = reservationService;
     }
 
     // Get order items by order id
@@ -51,7 +51,7 @@ public class OrderItemService {
     // TODO: Adjust the quantity of the order item
     // Add item to order
     public OrderResponseDTO addItemToOrder(UUID orderId, OrderItemRequestDTO requestDTO) {
-        Order order = orderService.getOrderById(orderId);
+        Order order = orderService.getOrderEntityById(orderId);
         if (order.getStatus() != OrderStatus.OPEN) {
             throw new IllegalStateException("Order is not open");
         }
@@ -74,7 +74,7 @@ public class OrderItemService {
             UUID orderItemId,
             OrderItemRequestDTO requestDTO
     ) {
-        Order order = orderService.getOrderById(orderId);
+        Order order = orderService.getOrderEntityById(orderId);
         if (order.getStatus() != OrderStatus.OPEN) {
             throw new IllegalStateException("Order is not open");
         }
@@ -95,7 +95,7 @@ public class OrderItemService {
     // TODO: Adjust the quantity of the order item
     // Delete order item
     public OrderResponseDTO removeOrderItem(UUID orderId, UUID orderItemId) {
-        Order order = orderService.getOrderById(orderId);
+        Order order = orderService.getOrderEntityById(orderId);
         if (order.getStatus() != OrderStatus.OPEN) {
             throw new IllegalStateException("Order is not open");
         }
@@ -123,8 +123,12 @@ public class OrderItemService {
     }
 
     private void setOrderItemFields(OrderItem orderItem, OrderItemRequestDTO requestDTO) {
-        orderItem.setProduct(productService.getProductEntityById(requestDTO.getProductId()));
-        orderItem.setService(serviceService.getServiceEntityById(requestDTO.getServiceId()));
+        if (requestDTO.getProductId() != null) {
+            orderItem.setProduct(productService.getProductEntityById(requestDTO.getProductId()));
+        }
+        else {
+            orderItem.setReservation(reservationService.getReservationEntityById(requestDTO.getReservationId()));
+        }
         orderItem.setQuantity(requestDTO.getQuantity());
 
         UUID productVariationId = requestDTO.getProductVariationId();
@@ -143,7 +147,7 @@ public class OrderItemService {
         OrderItemResponseDTO responseDTO = new OrderItemResponseDTO();
         responseDTO.setId(orderItem.getId());
         responseDTO.setProductId(orderItem.getProduct().getId());
-        responseDTO.setReservationId(orderItem.getService().getId());
+        responseDTO.setReservationId(orderItem.getReservation().getId());
         responseDTO.setQuantity(orderItem.getQuantity());
 
         ProductVariation productVariation = orderItem.getProductVariation();
