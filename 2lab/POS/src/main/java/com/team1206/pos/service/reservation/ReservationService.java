@@ -122,6 +122,14 @@ public class ReservationService {
         }
     }
 
+    public Reservation getReservationEntityById(UUID reservationId) {
+        return reservationRepository.findById(reservationId)
+                                    .orElseThrow(() -> new ResourceNotFoundException(
+                                            ResourceType.RESERVATION,
+                                            reservationId.toString()
+                                    ));
+    }
+
     // Mappers
     private ReservationResponseDTO mapToResponseDTO(Reservation reservation) {
         ReservationResponseDTO dto = new ReservationResponseDTO();

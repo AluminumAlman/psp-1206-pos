@@ -24,7 +24,7 @@ public class OrderCharge {
 
     @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
-    private Order orderId;
+    private Order order;
 
     @Column(name = "type", nullable = false)
     @Enumerated(EnumType.ORDINAL)

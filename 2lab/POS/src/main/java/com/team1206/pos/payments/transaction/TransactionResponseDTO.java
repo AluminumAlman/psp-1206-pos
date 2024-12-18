@@ -10,7 +10,7 @@ import java.util.UUID;
 public class TransactionResponseDTO {
     private UUID id;
     private String status;
-    private String paymentMethod;
+    private String paymentMethodType;
     private BigDecimal amount;
     private UUID orderId;
     private LocalDateTime createdAt;

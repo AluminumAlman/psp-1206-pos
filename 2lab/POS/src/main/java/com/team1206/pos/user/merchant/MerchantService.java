@@ -73,12 +73,15 @@ public class MerchantService {
 
     // Service layer
 
-    public Merchant getMerchantEntityById(UUID merchantId) {
-        return merchantRepository.findById(merchantId)
-                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.MERCHANT, merchantId.toString()));
+    // Get merchant entity by ID
+    public Merchant getMerchantEntityById(UUID id) {
+        return merchantRepository.findById(id)
+                                 .orElseThrow(() -> new ResourceNotFoundException(
+                                         ResourceType.MERCHANT,
+                                         id.toString()
+                                 ));
     }
 
-    // Mappers
     // Map Merchant entity to Response DTO
     private MerchantResponseDTO mapToResponseDTO(Merchant merchant) {
         MerchantResponseDTO response = new MerchantResponseDTO();

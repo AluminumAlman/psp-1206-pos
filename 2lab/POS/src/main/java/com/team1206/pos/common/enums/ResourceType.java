@@ -15,7 +15,9 @@ public enum ResourceType {
     CHARGE("Charge"),
     DISCOUNT("Discount"),
     ORDER("Order"),
-    TRANSACTION("Transaction");
+    ORDER_CHARGE("Order Charge"),
+    TRANSACTION("Transaction"),
+    ORDER_ITEM("Order Item");
 
     private final String displayName;
 

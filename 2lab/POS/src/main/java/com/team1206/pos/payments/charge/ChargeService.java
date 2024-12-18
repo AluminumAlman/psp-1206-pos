@@ -30,6 +30,7 @@ public class ChargeService {
         this.merchantService = merchantService;
     }
 
+    // TODO: Check that the logged in user has access to the order
     // Get charges by merchantId paginated
     public Page<ChargeResponseDTO> getCharges(int limit, int offset, UUID merchantId) {
         Pageable pageable = PageRequest.of(offset / limit, limit);
@@ -39,6 +40,7 @@ public class ChargeService {
         return chargePage.map(this::mapToResponseDTO);
     }
 
+    // TODO: Check that the logged in user has access to the order
     // Get charges by chargeType paginated
     public Page<ChargeResponseDTO> getCharges(int limit, int offset, String chargeType) {
         Pageable pageable = PageRequest.of(offset / limit, limit);
@@ -50,6 +52,7 @@ public class ChargeService {
         return chargePage.map(this::mapToResponseDTO);
     }
 
+    // TODO: Check that the logged in user has access to the order
     // Create charge
     public ChargeResponseDTO createCharge(ChargeRequestDTO request) {
         Merchant merchant = merchantService.findById(request.getMerchantId());
@@ -60,6 +63,7 @@ public class ChargeService {
         return mapToResponseDTO(savedCharge);
     }
 
+    // TODO: Check that the logged in user has access to the order
     // Retrieve charge by ID
     public ChargeResponseDTO getChargeById(UUID chargeId) {
         Charge charge =
@@ -70,6 +74,7 @@ public class ChargeService {
         return mapToResponseDTO(charge);
     }
 
+    // TODO: Check that the logged in user has access to the order
     // Update charge by ID
     public ChargeResponseDTO updateCharge(UUID chargeId, ChargeRequestDTO request) {
         Charge charge =
@@ -87,6 +92,7 @@ public class ChargeService {
         return mapToResponseDTO(updatedCharge);
     }
 
+    // TODO: Check that the logged in user has access to the order
     // Deactivate charge by ID
     public void deactivateCharge(UUID chargeId) {
         Charge charge =
@@ -99,6 +105,7 @@ public class ChargeService {
         chargeRepository.save(charge);
     }
 
+    // TODO: Check that the logged in user has access to the order
     // Reactivate charge by ID
     public ChargeResponseDTO reactivateCharge(UUID chargeId) {
         Charge charge =
