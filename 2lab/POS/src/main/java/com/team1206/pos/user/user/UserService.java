@@ -96,6 +96,31 @@ public class UserService {
         return mapToResponseDTO(updatedUser);
     }
 
+    // Switching Merchant for super-admin
+    public UserResponseDTO switchMerchant(UUID newMerchantId) {
+        // Get the current user
+        User currentUser = getCurrentUser();
+
+        if (!isCurrentUserRole(UserRoles.SUPER_ADMIN)) {
+            throw new UnauthorizedActionException("Only super-admins can switch merchants.", "");
+        }
+
+        // If newMerchantId is null, it means logging out from the current merchant
+        if (newMerchantId == null) {
+            currentUser.setMerchant(null);
+        } else {
+            // Assign the new merchant
+            Merchant merchant = merchantRepository.findById(newMerchantId)
+                    .orElseThrow(() -> new ResourceNotFoundException(ResourceType.MERCHANT, newMerchantId.toString()));
+            currentUser.setMerchant(merchant);
+        }
+
+        // Save the changes
+        User updatedUser = userRepository.save(currentUser);
+
+        return mapToResponseDTO(updatedUser);
+    }
+
     public UserResponseDTO getUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, email));
@@ -136,7 +161,8 @@ public class UserService {
     }
 
     public void verifyLoggedInUserBelongsToMerchant(UUID merchantId, String messageIfInvalid) {
-        if (getMerchantIdFromLoggedInUser() != merchantId && getCurrentUser().getRole() != UserRoles.SUPER_ADMIN) {
+        // If User is assigned to a different Merchant or the super-admin didn't choose the Merchant yet
+        if ((getCurrentUser().getRole() == UserRoles.SUPER_ADMIN && merchantId == null) || getMerchantIdFromLoggedInUser() != merchantId) {
             throw new UnauthorizedActionException(messageIfInvalid, "");
         }
     }
