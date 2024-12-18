@@ -37,12 +37,9 @@ public class ProductService {
 
 
     public ProductResponseDTO createProduct(CreateProductRequestDTO requestDTO) {
-        UUID merchantId = userService.getMerchantIdFromLoggedInUser();
         ProductCategory category = productCategoryService.getCategoryEntityById(requestDTO.getCategoryId());
 
-        if (!category.getMerchant().getId().equals(merchantId)) {
-            throw new UnauthorizedActionException("You are not authorized to create products in this category", "");
-        }
+        userService.verifyLoggedInUserBelongsToMerchant(category.getMerchant().getId(), "You are not authorized to create products in this category");
 
         Product product = new Product();
         product.setName(requestDTO.getName());
@@ -62,14 +59,10 @@ public class ProductService {
     }
 
     public ProductResponseDTO getProductById(UUID id) {
-        UUID merchantId = userService.getMerchantIdFromLoggedInUser();
-
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, id.toString()));
 
-        if (!product.getCategory().getMerchant().getId().equals(merchantId)) {
-            throw new UnauthorizedActionException("You are not authorized to retrieve this product", "");
-        }
+        userService.verifyLoggedInUserBelongsToMerchant(product.getCategory().getMerchant().getId(), "You are not authorized to retrieve this product");
         return mapToResponseDTO(product);
     }
 
@@ -85,14 +78,9 @@ public class ProductService {
     }
 
     public ProductResponseDTO updateProductById(UUID id, UpdateProductRequestDTO updateProductRequestDTO) {
-        UUID merchantId = userService.getMerchantIdFromLoggedInUser();
-
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, id.toString()));
-
-        if (!product.getCategory().getMerchant().getId().equals(merchantId)) {
-            throw new UnauthorizedActionException("You are not authorized to update this product", "");
-        }
+        userService.verifyLoggedInUserBelongsToMerchant(product.getCategory().getMerchant().getId(), "You are not authorized to update this product");
 
         if (updateProductRequestDTO.getName() != null && !updateProductRequestDTO.getName().isBlank()) {
             product.setName(updateProductRequestDTO.getName());
@@ -122,27 +110,19 @@ public class ProductService {
     }
 
     public void deleteProductById(UUID id) {
-        UUID merchantId = userService.getMerchantIdFromLoggedInUser();
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, id.toString()));
 
-
-        if (product.getCategory().getMerchant().getId().equals(merchantId)) {
-            throw new UnauthorizedActionException("You are not authorized to delete this product", "");
-        }
+        userService.verifyLoggedInUserBelongsToMerchant(product.getCategory().getMerchant().getId(), "You are not authorized to delete this product");
 
         productRepository.deleteById(id);
     }
 
     public ProductResponseDTO adjustProductQuantity(UUID id, AdjustProductQuantityDTO adjustDTO) {
-        UUID merchantId = userService.getMerchantIdFromLoggedInUser();
-
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, id.toString()));
 
-        if (!product.getCategory().getMerchant().getId().equals(merchantId)) {
-            throw new UnauthorizedActionException("You are not authorized to adjust this product quantity", "");
-        }
+        userService.verifyLoggedInUserBelongsToMerchant(product.getCategory().getMerchant().getId(), "You are not authorized to adjust this product quantity");
 
         int newQuantity = product.getQuantity() + adjustDTO.getAdjustment();
         if (newQuantity < 0) {

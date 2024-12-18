@@ -27,13 +27,9 @@ public class ProductVariationService {
     }
 
     public ProductVariationResponseDTO createProductVariation(UUID productId, CreateProductVariationBodyDTO productVariationDTO) {
-        UUID merchantId = userService.getMerchantIdFromLoggedInUser();
-
         Product product = productService.getProductEntityById(productId);
 
-        if(!product.getCategory().getMerchant().getId().equals(merchantId)){
-            throw new UnauthorizedActionException("You are not authorized to create product variation for this product", "");
-        }
+        userService.verifyLoggedInUserBelongsToMerchant(product.getCategory().getMerchant().getId(), "You are not authorized to create product variation for this product");
 
         ProductVariation productVariation = new ProductVariation();
         productVariation.setName(productVariationDTO.getName());
@@ -48,13 +44,10 @@ public class ProductVariationService {
 
     public ProductVariationResponseDTO getProductVariationById (UUID productVariationId)
     {
-        UUID merchantId = userService.getMerchantIdFromLoggedInUser();
         ProductVariation productVariation = productVariationRepository.findById(productVariationId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_VARIATION, productVariationId.toString()));
 
-        if(!productVariation.getProduct().getCategory().getMerchant().getId().equals(merchantId)){
-            throw new UnauthorizedActionException("You are not authorized to retrieve this product variation", "");
-        }
+        userService.verifyLoggedInUserBelongsToMerchant(productVariation.getProduct().getCategory().getMerchant().getId(), "You are not authorized to retrieve this product variation");
 
         return mapToResponseDTO(productVariation);
     }
@@ -72,14 +65,10 @@ public class ProductVariationService {
 
     public ProductVariationResponseDTO updateProductVariationById (UUID productVariationId, UpdateProductVariationBodyDTO updateProductVariationBodyDTO)
     {
-        UUID merchantId = userService.getMerchantIdFromLoggedInUser();
-
         ProductVariation productVariation = productVariationRepository.findById(productVariationId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_VARIATION, productVariationId.toString()));
 
-        if(!productVariation.getProduct().getCategory().getMerchant().getId().equals(merchantId)){
-            throw new UnauthorizedActionException("You are not authorized to update this product variation", "");
-        }
+        userService.verifyLoggedInUserBelongsToMerchant(productVariation.getProduct().getCategory().getMerchant().getId(), "You are not authorized to update this product variation");
 
         if(updateProductVariationBodyDTO.getName() != null && !updateProductVariationBodyDTO.getName().isBlank())
             productVariation.setName(updateProductVariationBodyDTO.getName());
@@ -93,25 +82,19 @@ public class ProductVariationService {
 
     public void deleteProductVariationById(UUID productVariationId)
     {
-        UUID merchantId = userService.getMerchantIdFromLoggedInUser();
         ProductVariation productVariation = productVariationRepository.findById(productVariationId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_VARIATION, productVariationId.toString()));
 
-        if(!productVariation.getProduct().getCategory().getMerchant().getId().equals(merchantId)){
-            throw new UnauthorizedActionException("You are not authorized to delete this product variation", "");
-        }
+        userService.verifyLoggedInUserBelongsToMerchant(productVariation.getProduct().getCategory().getMerchant().getId(), "You are not authorized to delete this product variation");
 
         productVariationRepository.deleteById(productVariationId);
     }
 
     public ProductVariationResponseDTO adjustProductVariationQuantity(UUID id, AdjustProductQuantityDTO adjustDTO) {
-        UUID merchantId = userService.getMerchantIdFromLoggedInUser();
         ProductVariation productVariation = productVariationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, id.toString()));
 
-        if(!productVariation.getProduct().getCategory().getMerchant().getId().equals(merchantId)){
-            throw new UnauthorizedActionException("You are not authorized to adjust this product variation quantity", "");
-        }
+        userService.verifyLoggedInUserBelongsToMerchant(productVariation.getProduct().getCategory().getMerchant().getId(), "You are not authorized to adjust this product variation quantity");
 
         int newQuantity = productVariation.getQuantity() + adjustDTO.getAdjustment();
         if (newQuantity < 0) {

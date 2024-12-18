@@ -124,7 +124,7 @@ public class ServiceService {
         List<User> employees = userService.findAllById(requestDTO.getEmployeeIds());
         employees.forEach(employee -> {
             userService.verifyUserRole(employee, UserRoles.EMPLOYEE);
-            userService.verifyLoggedInUserBelongsToMerchant(employee.getMerchant().getId());
+            userService.verifyLoggedInUserBelongsToMerchant(employee.getMerchant().getId(), "You do not have permission to perform this action");
         });
         
         service.setEmployees(employees);
