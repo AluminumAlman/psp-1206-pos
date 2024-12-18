@@ -4,19 +4,16 @@ import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.exceptions.UnauthorizedActionException;
-import com.team1206.pos.inventory.inventoryLog.InventoryLogService;
 import com.team1206.pos.inventory.productCategory.ProductCategory;
 import com.team1206.pos.inventory.productCategory.ProductCategoryService;
 import com.team1206.pos.inventory.productVariation.ProductVariation;
 import com.team1206.pos.payments.charge.ChargeRepository;
 import com.team1206.pos.payments.charge.Charge;
 import com.team1206.pos.user.user.UserService;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -29,14 +26,12 @@ public class ProductService {
     private final ChargeRepository chargeRepository;
     private final ProductCategoryService productCategoryService;
     private final UserService userService;
-    private final InventoryLogService inventoryLogService;
 
-    public ProductService(ProductRepository productRepository, ChargeRepository chargeRepository, ProductCategoryService productCategoryService, UserService userService, @Lazy InventoryLogService inventoryLogService) {
+    public ProductService(ProductRepository productRepository, ChargeRepository chargeRepository, ProductCategoryService productCategoryService, UserService userService) {
         this.productRepository = productRepository;
         this.chargeRepository = chargeRepository;
         this.productCategoryService = productCategoryService;
         this.userService = userService;
-        this.inventoryLogService = inventoryLogService;
     }
 
 
