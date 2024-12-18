@@ -1,7 +1,6 @@
 package com.team1206.pos.inventory.productVariation;
 
 import com.team1206.pos.common.enums.ResourceType;
-import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.exceptions.UnauthorizedActionException;
@@ -10,6 +9,7 @@ import com.team1206.pos.inventory.product.AdjustProductQuantityDTO;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.inventory.product.ProductService;
 import com.team1206.pos.user.user.UserService;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +24,7 @@ public class ProductVariationService {
     private final UserService userService;
     private final InventoryLogService inventoryLogService;
 
-    public ProductVariationService(ProductVariationRepository productVariationRepository, ProductService productService, UserService userService, InventoryLogService inventoryLogService) {
+    public ProductVariationService(ProductVariationRepository productVariationRepository, ProductService productService, UserService userService, @Lazy InventoryLogService inventoryLogService) {
         this.productVariationRepository = productVariationRepository;
         this.productService = productService;
         this.userService = userService;

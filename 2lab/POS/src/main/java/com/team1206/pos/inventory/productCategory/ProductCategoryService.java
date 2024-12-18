@@ -1,12 +1,10 @@
 package com.team1206.pos.inventory.productCategory;
 
 import com.team1206.pos.common.enums.ResourceType;
-import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.exceptions.UnauthorizedActionException;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
-import com.team1206.pos.user.merchant.MerchantRepository;
 import com.team1206.pos.user.merchant.MerchantService;
 import com.team1206.pos.user.user.UserService;
 import org.springframework.stereotype.Service;
@@ -33,8 +31,9 @@ public class ProductCategoryService {
     public ProductCategoryResponseDTO createProductCategory(CreateProductCategoryRequestDTO requestDTO) {
 
         UUID merchantId = userService.getMerchantIdFromLoggedInUser();
-
-        userService.verifyLoggedInUserBelongsToMerchant(merchantId, "You are not authorized to create the category for this merchant");
+        if (merchantId == null) {
+            throw new UnauthorizedActionException("Super-admin has to be assigned to Merchant first", "");
+        }
 
         ProductCategory category = mapToEntity(requestDTO, merchantService.getMerchantEntityById(merchantId));
         ProductCategory savedCategory = productCategoryRepository.save(category);
