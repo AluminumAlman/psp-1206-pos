@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Login.css';
+import '../styles/Login.css';
 
 export const Login = () => {
     const [showDialog, setShowDialog] = useState(false);
@@ -16,7 +16,43 @@ export const Login = () => {
     // Clear JWT token when the component is first rendered
     useEffect(() => {
         localStorage.removeItem('jwt-token');
+        localStorage.removeItem('user-role');
     }, []);
+
+    // Function to fetch role after login
+    const fetchUserRoleAndNavigate = async (token) => {
+        try {
+            const response = await fetch('http://localhost:8080/users/me', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch user role');
+            }
+
+            const userData = await response.json();
+            const role = userData.role;
+
+            localStorage.setItem('user-role', role);
+
+            // Redirect based on user role
+            if (role === 'SUPER_ADMIN') {
+                navigate('/admin-home');
+            } else if (role === 'MERCHANT_OWNER') {
+                navigate('/owner-home');
+            } else if (role === 'EMPLOYEE') {
+                navigate('/employee-home');
+            } else {
+                setErrorMessage('Unknown role. Please contact admin.');
+            }
+        } catch (error) {
+            setErrorMessage('An error occurred while fetching user data.');
+            console.error('Error fetching role:', error);
+        }
+    };
 
     // Function to handle login form submission
     const handleLoginSubmit = async (e) => {
@@ -40,8 +76,13 @@ export const Login = () => {
             }
 
             const data = await response.json();
-            localStorage.setItem('jwt-token', data['jwt-token']);
-            navigate('/home'); // Navigate to the home page
+            const jwtToken = data['jwt-token'];
+
+            // Store JWT token
+            localStorage.setItem('jwt-token', jwtToken);
+
+            // Fetch role and navigate
+            await fetchUserRoleAndNavigate(jwtToken);
         } catch (error) {
             setErrorMessage('An error occurred. Please try again.');
             console.error('Login error:', error);
@@ -71,7 +112,7 @@ export const Login = () => {
                     lastName: surname,
                     email,
                     password,
-                    role: 'EMPLOYEE', // You can change this based on requirements
+                    role: 'EMPLOYEE', // Default role
                 }),
             });
 
@@ -90,7 +131,6 @@ export const Login = () => {
         }
     };
 
-    // Switch between login and registration forms
     const switchForm = (type) => {
         setFormType(type);
         setShowDialog(true);

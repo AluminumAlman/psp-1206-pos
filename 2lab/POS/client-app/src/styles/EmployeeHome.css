@@ -1,0 +1,51 @@
+.employee-content {
+    flex-direction: column;
+    width: 100%;
+    margin-left: 20px;
+}
+
+.employee-services-section {
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    padding: 20px;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.employee-services-section h2 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.employee-services-section select,
+.employee-services-section input[type="text"],
+.employee-services-section input[type="datetime-local"] {
+    width: 100%;
+    padding: 8px;
+    margin: 8px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.employee-services-section button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #61dafb;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.employee-services-section button:hover {
+    background-color: #21a1f1;
+}
+
+.employee-services-section h3 {
+    font-size: 20px;
+    margin-top: 30px;
+    margin-bottom: 10px;
+    color: #333;
+}
