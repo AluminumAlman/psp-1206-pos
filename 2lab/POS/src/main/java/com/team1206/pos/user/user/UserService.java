@@ -102,7 +102,7 @@ public class UserService {
         User currentUser = getCurrentUser();
 
         if (!isCurrentUserRole(UserRoles.SUPER_ADMIN)) {
-            throw new UnauthorizedActionException("Only super-admins can switch merchants.", "");
+            throw new UnauthorizedActionException("Only super-admins can switch merchants.");
         }
 
         // If newMerchantId is null, it means logging out from the current merchant
@@ -161,16 +161,17 @@ public class UserService {
                 .orElse(null);
     }
 
+    // MAIN VALIDATION METHOD
     public void verifyLoggedInUserBelongsToMerchant(UUID merchantId, String messageIfInvalid) {
         // If User is assigned to a different Merchant or the super-admin didn't choose the Merchant yet (or regular user, which hasn't been assigned a merchant yet)
         if ((getCurrentUser().getRole() == UserRoles.SUPER_ADMIN && getCurrentUser().getMerchant().getId() == null) || getMerchantIdFromLoggedInUser() != merchantId) {
-            throw new UnauthorizedActionException(messageIfInvalid, "");
+            throw new UnauthorizedActionException(messageIfInvalid);
         }
     }
 
     public void verifyUserRole(User user, UserRoles targetUserRole) {
         if (!user.getRole().equals(targetUserRole)) {
-            throw new UnauthorizedActionException("User role is invalid for this operation!", "");
+            throw new UnauthorizedActionException("User role is invalid for this operation!");
         }
     }
 
@@ -195,7 +196,7 @@ public class UserService {
     public void verifyAdminOrOwnerRole() {
         UserRoles currentUserRole = getCurrentUserRole();
         if (!(currentUserRole == UserRoles.SUPER_ADMIN || currentUserRole == UserRoles.MERCHANT_OWNER)) {
-            throw new UnauthorizedActionException("You do not have permission to perform this action.", "");
+            throw new UnauthorizedActionException("You do not have permission to perform this action.");
         }
     }
 
@@ -209,7 +210,7 @@ public class UserService {
             UUID targetMerchantId = targetUser.getMerchant() != null ? targetUser.getMerchant().getId() : null;
 
             if (currentMerchantId == null || !currentMerchantId.equals(targetMerchantId)) {
-                throw new UnauthorizedActionException("You do not have permission to perform this action.", "You do not have permission to modify a user from a different merchant.");
+                throw new UnauthorizedActionException("You do not have permission to perform this action.");
             }
         }
     }

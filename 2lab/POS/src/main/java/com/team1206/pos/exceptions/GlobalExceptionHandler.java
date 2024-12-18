@@ -103,11 +103,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         errorObject.setPath(request.getDescription(false).replace("uri=", ""));
         errorObject.setTimestamp(LocalDateTime.now());
 
-        // Optional: Include the specific action the user attempted
-        if ("dev".equalsIgnoreCase(activeProfile)) {
-            errorObject.setDetails(Collections.singletonMap("attemptedAction", ex.getAction()));
-        }
-
         return new ResponseEntity<>(errorObject, HttpStatus.FORBIDDEN);
     }
 

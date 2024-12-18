@@ -59,7 +59,7 @@ public class ProductVariationService {
 
         List<ProductVariation> productVariations;
         if(merchantId == null)
-            throw new UnauthorizedActionException("Super-admin has to be assigned to Merchant first", "");
+            throw new UnauthorizedActionException("Super-admin has to be assigned to Merchant first");
         else
             productVariations = productVariationRepository.findAllWithFilters(productId, merchantId);
 

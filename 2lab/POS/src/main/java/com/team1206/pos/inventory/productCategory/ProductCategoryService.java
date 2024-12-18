@@ -55,7 +55,7 @@ public class ProductCategoryService {
 
         List<ProductCategory> productCategories;
         if(merchantId == null)
-            throw new UnauthorizedActionException("Super-admin has to be assigned to Merchant first", "");
+            throw new UnauthorizedActionException("Super-admin has to be assigned to Merchant first");
         else
             productCategories = productCategoryRepository.findAllByMerchantId(merchantId);
 

@@ -74,7 +74,7 @@ public class ProductService {
         Page<Product> productPage;
 
         if(merchantId == null)
-            throw new UnauthorizedActionException("Super-admin has to be assigned to Merchant first", "");
+            throw new UnauthorizedActionException("Super-admin has to be assigned to Merchant first");
         else
             productPage = productRepository.findAllWithFilters(merchantId, name, price, categoryId, pageable);
 

@@ -25,6 +25,7 @@ public class ScheduleService {
         return scheduleRepository.save(schedule);
     }
 
+    //nezinau ar reikes sito metodo
     // Retrieve a schedule by its ID
     public Schedule getScheduleById(UUID id) {
         Schedule schedule = scheduleRepository.findById(id)
@@ -33,8 +34,10 @@ public class ScheduleService {
         return schedule;
     }
 
+    //nezinau ar reikes sito metodo
     // Retrieve all schedules
     public List<Schedule> getAllSchedules() {
+
         return scheduleRepository.findAll();
     }
 
