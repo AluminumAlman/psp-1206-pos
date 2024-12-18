@@ -4,6 +4,7 @@ import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
+import com.team1206.pos.exceptions.UnauthorizedActionException;
 import com.team1206.pos.inventory.product.AdjustProductQuantityDTO;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.inventory.product.ProductService;
@@ -57,8 +58,8 @@ public class ProductVariationService {
         UUID merchantId = userService.getMerchantIdFromLoggedInUser();
 
         List<ProductVariation> productVariations;
-        if(userService.isCurrentUserRole(UserRoles.SUPER_ADMIN))
-            productVariations = productVariationRepository.findAllWithFilters(productId, null);
+        if(merchantId == null)
+            throw new UnauthorizedActionException("Super-admin has to be assigned to Merchant first", "");
         else
             productVariations = productVariationRepository.findAllWithFilters(productId, merchantId);
 

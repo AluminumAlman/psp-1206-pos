@@ -73,4 +73,10 @@ public class UserController {
         return ResponseEntity.ok(currentUser);
     }
 
+    @PatchMapping("/switch-merchant")
+    public ResponseEntity<UserResponseDTO> switchMerchant(@RequestParam(required = false) UUID merchantId) {
+        UserResponseDTO updatedUser = userService.switchMerchant(merchantId);
+        return ResponseEntity.ok(updatedUser);
+    }
+
 }
