@@ -1,17 +1,22 @@
 package com.team1206.pos.order.orderCharge;
 
 import com.team1206.pos.common.enums.OrderChargeType;
+import com.team1206.pos.common.enums.OrderStatus;
 import com.team1206.pos.common.enums.ResourceType;
+import com.team1206.pos.exceptions.IllegalRequestException;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
+import com.team1206.pos.exceptions.UnauthorizedActionException;
 import com.team1206.pos.order.order.Order;
 import com.team1206.pos.order.order.OrderService;
+import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.user.UserService;
-import jakarta.validation.Valid;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -30,7 +35,7 @@ public class OrderChargeService {
     }
 
     // Get order charges
-    public Page<OrderChargeResponseDTO> getOrderCharges(UUID orderId, int offset, int limit) {
+    public Page<OrderChargeResponseDTO> getOrderCharges(int offset, int limit) {
         if (limit < 1) {
             throw new IllegalArgumentException("Limit must be greater than 0");
         }
@@ -38,57 +43,92 @@ public class OrderChargeService {
             throw new IllegalArgumentException("Offset must be greater than or equal to 0");
         }
 
-        Order order = orderService.getOrderEntityById(orderId);
-        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to retrieve order charges");
+        UUID merchantId = userService.getMerchantIdFromLoggedInUser();
 
         Pageable pageable = PageRequest.of(offset / limit, limit);
 
-        Page<OrderCharge> orderCharges = orderChargeRepository.findAllWithFilters(
-                orderId,
+        Page<OrderCharge> orderCharges = null; orderChargeRepository.findAllByMerchantId(
+                merchantId,
                 pageable
         );
 
         return orderCharges.map(this::mapToResponseDTO);
     }
 
+    public List<OrderChargeResponseDTO> getOrderChargesFromOrder(UUID orderId) {
+        Order order = orderService.getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to view charges from this order");
+
+        List<OrderCharge> orderCharges = orderChargeRepository.findAllByOrderId(orderId);
+
+        return orderCharges.stream().map(this::mapToResponseDTO).toList();
+    }
+
     // Create order charge
     public OrderChargeResponseDTO createOrderCharge(
-            UUID orderId,
-            @Valid OrderChargeRequestDTO requestBody
+            OrderChargeRequestDTO requestBody
     ) {
-        Order order = orderService.getOrderEntityById(orderId);
-        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to add charges to this order");
+        Merchant merchant = userService.getCurrentUser().getMerchant();
+        if (merchant == null)
+            throw new UnauthorizedActionException("Super-admin has to be logged in to create order charge");
 
         OrderCharge orderCharge = new OrderCharge();
 
         setOrderChargeFields(orderCharge, requestBody);
-        orderCharge.setOrder(orderService.getOrderEntityById(orderId));
-
+        orderCharge.setMerchant(merchant);
         OrderCharge savedOrderCharge = orderChargeRepository.save(orderCharge);
 
         return mapToResponseDTO(savedOrderCharge);
     }
 
-    // Update order charge
-    public void deleteOrderCharge(UUID orderId, UUID chargeId) {
+    @Transactional
+    public void addOrderChargeToOrder(UUID chargeId, UUID orderId) {
+        OrderCharge orderCharge = getOrderChargeEntityById(chargeId);
+        userService.verifyLoggedInUserBelongsToMerchant(orderCharge.getMerchant().getId(),
+                "You are not authorized to add order charge to this order");
+
         Order order = orderService.getOrderEntityById(orderId);
-        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to delete charges from this order");
+        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(),
+                "You are not authorized to add order charge to this order");
 
-        OrderCharge orderCharge = orderChargeRepository.findById(chargeId)
-                                                       .orElseThrow(() -> new ResourceNotFoundException(
-                                                               ResourceType.ORDER_CHARGE,
-                                                               chargeId.toString()
-                                                       ));
+        if (order.getStatus() != OrderStatus.OPEN)
+            throw new IllegalRequestException("Order has to be open to add order charge");
 
-        if (!orderCharge.getOrder().getId().equals(orderId)) {
-            throw new ResourceNotFoundException(ResourceType.ORDER_CHARGE, chargeId.toString());
-        }
+        if (orderCharge.getOrders().contains(order))
+            throw new IllegalRequestException("Order charge has already been added to this order");
 
-        orderChargeRepository.delete(orderCharge);
+        orderCharge.getOrders().add(order);
+        orderChargeRepository.save(orderCharge);
     }
 
+    @Transactional
+    public void removeOrderChargeFromOrder(UUID chargeId, UUID orderId) {
+        OrderCharge orderCharge = getOrderChargeEntityById(chargeId);
+        userService.verifyLoggedInUserBelongsToMerchant(orderCharge.getMerchant().getId(),
+                "You are not authorized to add order charge to this order");
+
+        Order order = orderService.getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(),
+                "You are not authorized to add order charge to this order");
+
+        if (order.getStatus() != OrderStatus.OPEN)
+            throw new IllegalRequestException("Order has to be open to add order charge");
+
+        if (!orderCharge.getOrders().remove(order))
+            throw new IllegalRequestException("Order charge has already been added to this order");
+
+        orderChargeRepository.save(orderCharge);
+    }
 
     // *** Helper methods ***
+    public OrderCharge getOrderChargeEntityById(UUID orderChargeId) {
+        OrderCharge orderCharge = orderChargeRepository.findById(orderChargeId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        ResourceType.ORDER_CHARGE,
+                        orderChargeId.toString()));
+
+        return orderCharge;
+    }
 
     private void setOrderChargeFields(OrderCharge orderCharge, OrderChargeRequestDTO requestBody) {
         orderCharge.setType(OrderChargeType.valueOf(requestBody.getType().toUpperCase()));
