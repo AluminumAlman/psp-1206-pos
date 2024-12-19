@@ -235,10 +235,9 @@ public class ChargeService {
     // *** Helper methods ***
 
     public Charge getChargeEntityById(UUID chargeId) {
-        Charge charge =  chargeRepository.findById(chargeId).orElseThrow(() -> new ResourceNotFoundException(
+        return chargeRepository.findById(chargeId).orElseThrow(() -> new ResourceNotFoundException(
                 ResourceType.CHARGE,
                 chargeId.toString()));
-        return charge;
     }
 
     public ResponseEntity<Page<ChargeResponseDTO>> handleGetChargesRequest(
