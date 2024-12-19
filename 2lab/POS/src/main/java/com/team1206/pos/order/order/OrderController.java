@@ -66,7 +66,7 @@ public class OrderController {
     public ResponseEntity<BigDecimal> getTotal(@PathVariable UUID orderId) {
         log.debug("Received get total amount request: orderId={}", orderId);
 
-        BigDecimal total = orderService.calculateTotalAmount(orderId);
+        BigDecimal total = orderService.calculateTotalProductAndServicePrice(orderId);
 
         log.debug("Returning {} to get total amount request (orderId={})", total, orderId);
         return ResponseEntity.ok(total);
@@ -86,8 +86,4 @@ public class OrderController {
         log.debug("Returning {} to set order tip request (orderId={})", response, orderId);
         return ResponseEntity.ok(response);
     }
-
-    // TODO: Create an endpoint to get the total tax amount of an order
-
-    // TODO: Create an endpoint to get the total discount amount of an order
 }

@@ -14,6 +14,7 @@ import com.team1206.pos.order.order.OrderResponseDTO;
 import com.team1206.pos.order.order.OrderService;
 import com.team1206.pos.service.reservation.Reservation;
 import com.team1206.pos.service.reservation.ReservationService;
+import com.team1206.pos.service.service.ServiceService;
 import com.team1206.pos.user.user.UserService;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ public class OrderItemService {
     private final ReservationService reservationService;
     private final UserService userService;
     private final ProductVariationService productVariationService;
+    private final ServiceService serviceService;
 
     public OrderItemService(
             OrderItemRepository orderItemRepository,
@@ -40,8 +42,8 @@ public class OrderItemService {
             @Lazy OrderService orderService,
             ReservationService reservationService,
             UserService userService,
-            ProductVariationService productVariationService
-    ) {
+            ProductVariationService productVariationService,
+            ServiceService serviceService) {
         this.orderItemRepository = orderItemRepository;
         this.productVariationRepository = productVariationRepository;
         this.productService = productService;
@@ -49,6 +51,7 @@ public class OrderItemService {
         this.reservationService = reservationService;
         this.userService = userService;
         this.productVariationService = productVariationService;
+        this.serviceService = serviceService;
     }
 
     // Get order items by order id
@@ -190,17 +193,15 @@ public class OrderItemService {
 
     public BigDecimal getTotalPrice(OrderItem orderItem) {
         if (orderItem.getProductVariation() != null) {
-            return orderItem.getProductVariation()
-                            .getPrice()
-                            .multiply(BigDecimal.valueOf(orderItem.getQuantity()));
+            return productVariationService.getFinalPrice(orderItem.getProductVariation().getId())
+                    .multiply(BigDecimal.valueOf(orderItem.getQuantity()));
         }
         else if (orderItem.getProduct() != null) {
-            return orderItem.getProduct()
-                            .getPrice()
+            return productService.getFinalPrice(orderItem.getProduct().getId())
                             .multiply(BigDecimal.valueOf(orderItem.getQuantity()));
         }
         else if (orderItem.getReservation() != null) {
-            return orderItem.getReservation().getService().getPrice();
+            return serviceService.getFinalPrice(orderItem.getReservation().getService().getId());
         }
 
         return BigDecimal.ZERO;

@@ -1,5 +1,6 @@
 package com.team1206.pos.inventory.product;
 
+import com.team1206.pos.common.enums.ChargeType;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
@@ -7,11 +8,9 @@ import com.team1206.pos.exceptions.UnauthorizedActionException;
 import com.team1206.pos.inventory.productCategory.ProductCategory;
 import com.team1206.pos.inventory.productCategory.ProductCategoryService;
 import com.team1206.pos.inventory.productVariation.ProductVariation;
-import com.team1206.pos.payments.charge.ChargeRepository;
 import com.team1206.pos.payments.charge.Charge;
 import com.team1206.pos.payments.charge.ChargeService;
 import com.team1206.pos.user.user.UserService;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.PageRequest;
@@ -161,6 +160,26 @@ public class ProductService {
         product.setQuantity(newQuantity);
 
         productRepository.save(product);
+    }
+
+    public BigDecimal getFinalPrice(UUID productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, productId.toString()));
+
+        BigDecimal finalProductPrice = product.getPrice();
+
+        if (product.getCharges() != null) {
+            for (Charge charge : product.getCharges()) {
+                if (charge.getType() == ChargeType.TAX) {
+                    BigDecimal multiplier = BigDecimal.valueOf(100 + charge.getPercent())
+                            .divide(BigDecimal.valueOf(100));
+                    finalProductPrice = finalProductPrice.multiply(multiplier);
+                } else if(charge.getType() == ChargeType.SERVICE)
+                    finalProductPrice = finalProductPrice.subtract(charge.getAmount());
+            }
+        }
+
+        return finalProductPrice;
     }
 
     // Helpers
