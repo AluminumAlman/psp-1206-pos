@@ -11,11 +11,13 @@ import com.team1206.pos.payments.discount.Discount;
 import com.team1206.pos.payments.transaction.Transaction;
 import com.team1206.pos.user.merchant.MerchantService;
 import com.team1206.pos.user.user.UserService;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -131,6 +133,18 @@ public class OrderService {
         order.getItems().forEach(orderItemService::deleteOrderItem);
 
         orderRepository.delete(order);
+    }
+
+    @Transactional
+    public OrderResponseDTO setTip(UUID orderId, BigDecimal tipAmount) {
+        Order order = getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(
+                order.getMerchant().getId(),
+                "You are not authorized to set tip");
+
+        order.setTip(tipAmount);
+        orderRepository.save(order);
+        return mapToResponseDTO(order);
     }
 
     // *** Helper methods ***
