@@ -1,5 +1,6 @@
 package com.team1206.pos.service.reservation;
 
+import com.team1206.pos.service.service.AvailableSlotsResponseDTO;
 import com.team1206.pos.sns.SNSService;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.common.enums.UserRoles;
@@ -53,13 +54,33 @@ public class ReservationService {
         return reservationsPage.map(this::mapToResponseDTO);
     }
 
-    // Create a reservation
     public ReservationResponseDTO createReservation(ReservationRequestDTO requestDTO) {
         Service service = serviceService.getServiceEntityById(requestDTO.getServiceId());
 
         User employee = userService.getUserEntityById(requestDTO.getEmployeeId());
         userService.verifyUserRole(employee, UserRoles.EMPLOYEE);
 
+        // Fetch available slots for the employee and service
+        validateReservationDateTime(requestDTO.getAppointedAt());
+        LocalDate appointmentDate = requestDTO.getAppointedAt().toLocalDate();
+        AvailableSlotsResponseDTO availableSlots = serviceService.getAvailableSlots(
+                requestDTO.getServiceId(),
+                appointmentDate,
+                requestDTO.getEmployeeId()
+        );
+
+        // Validate that the requested time fits into one of the available slots
+        LocalDateTime requestedStartTime = requestDTO.getAppointedAt();
+        LocalDateTime requestedEndTime = requestedStartTime.plusSeconds(service.getDuration());
+        boolean fitsIntoSlot = availableSlots.getItems().stream().anyMatch(slot ->
+                !requestedStartTime.isBefore(slot.getStartTime()) && !requestedEndTime.isAfter(slot.getEndTime())
+        );
+
+        if (!fitsIntoSlot) {
+            throw new IllegalArgumentException("The requested time slot is not available.");
+        }
+
+        // Proceed with reservation creation if the time slot is valid
         Reservation reservation = new Reservation();
         mapRequestToReservation(requestDTO, reservation);
         reservation.setService(service);
@@ -142,6 +163,12 @@ public class ReservationService {
                                             ResourceType.RESERVATION,
                                             reservationId.toString()
                                     ));
+    }
+
+    private void validateReservationDateTime (LocalDateTime time) {
+        if (!time.isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException("The reservation start time must not be in the past.");
+        }
     }
 
     // Mappers
