@@ -62,7 +62,7 @@ public class UserService {
         return users.stream().map(this::mapToResponseDTO).toList();
     }
 
-    public UserResponseDTO updateUser(UUID userId, UserRequestDTO request) {
+    public UserResponseDTO updateUser(UUID userId, UserUpdateRequestDTO request) {
         verifyAdminOrOwnerRole();
         User targetUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, userId.toString()));
@@ -74,7 +74,7 @@ public class UserService {
             }
         }
 
-        setUserFieldsFromRequest(targetUser, request);
+        setUserUpdateFieldsFromRequest(targetUser, request);
         User updatedUser = userRepository.save(targetUser);
         return mapToResponseDTO(updatedUser);
     }
@@ -226,6 +226,14 @@ public class UserService {
         user.setLastName(request.getLastName());
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
+        user.setRole(request.getRole());
+        user.setSchedules(scheduleService.createScheduleEntities(request.getSchedule(), user));
+    }
+
+    private void setUserUpdateFieldsFromRequest(User user, UserUpdateRequestDTO request) {
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setEmail(request.getEmail());
         user.setRole(request.getRole());
         user.setSchedules(scheduleService.createScheduleEntities(request.getSchedule(), user));
     }
