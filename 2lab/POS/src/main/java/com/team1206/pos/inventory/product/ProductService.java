@@ -1,5 +1,6 @@
 package com.team1206.pos.inventory.product;
 
+import com.team1206.pos.common.enums.ChargeType;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
@@ -15,6 +16,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -144,6 +147,33 @@ public class ProductService {
         product.setQuantity(newQuantity);
 
         productRepository.save(product);
+    }
+
+    public BigDecimal getFinalPrice(UUID productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, productId.toString()));
+
+        BigDecimal finalProductPrice = product.getPrice();
+
+        if (product.getCharges() != null) {
+            List<Charge> sortedCharges = product.getCharges().stream()
+                    .sorted((c1, c2) -> c1.getType() == ChargeType.TAX ? -1 : 1)
+                    .toList();
+
+            for (Charge charge : sortedCharges) {
+                if (charge.getType() == ChargeType.TAX && charge.getPercent() != null) {
+                    BigDecimal multiplier = BigDecimal.valueOf(100 + charge.getPercent())
+                            .divide(BigDecimal.valueOf(100));
+                    finalProductPrice = finalProductPrice.multiply(multiplier);
+                } else if(charge.getType() == ChargeType.SERVICE && charge.getAmount() != null)
+                    finalProductPrice = finalProductPrice.add(charge.getAmount());
+            }
+        }
+
+        finalProductPrice = finalProductPrice.setScale(2, RoundingMode.HALF_UP);
+
+
+        return finalProductPrice;
     }
 
     // Helpers
