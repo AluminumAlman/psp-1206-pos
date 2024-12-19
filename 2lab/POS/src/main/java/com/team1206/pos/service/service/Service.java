@@ -6,7 +6,6 @@ import com.team1206.pos.service.reservation.Reservation;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.user.User;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.DecimalMin;
 import lombok.Getter;
 import lombok.Setter;
 
