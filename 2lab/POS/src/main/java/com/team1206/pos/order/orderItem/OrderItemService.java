@@ -1,5 +1,6 @@
 package com.team1206.pos.order.orderItem;
 
+import com.team1206.pos.common.enums.DiscountScope;
 import com.team1206.pos.common.enums.OrderStatus;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.IllegalRequestException;
@@ -12,12 +13,16 @@ import com.team1206.pos.inventory.productVariation.ProductVariationService;
 import com.team1206.pos.order.order.Order;
 import com.team1206.pos.order.order.OrderResponseDTO;
 import com.team1206.pos.order.order.OrderService;
+import com.team1206.pos.payments.discount.Discount;
 import com.team1206.pos.service.reservation.Reservation;
 import com.team1206.pos.service.reservation.ReservationService;
+import com.team1206.pos.service.service.ServiceService;
 import com.team1206.pos.user.user.UserService;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -31,6 +36,7 @@ public class OrderItemService {
     private final ReservationService reservationService;
     private final UserService userService;
     private final ProductVariationService productVariationService;
+    private final ServiceService serviceService;
 
     public OrderItemService(
             OrderItemRepository orderItemRepository,
@@ -39,7 +45,8 @@ public class OrderItemService {
             @Lazy OrderService orderService,
             ReservationService reservationService,
             UserService userService,
-            ProductVariationService productVariationService
+            ProductVariationService productVariationService,
+            ServiceService serviceService
     ) {
         this.orderItemRepository = orderItemRepository;
         this.productVariationRepository = productVariationRepository;
@@ -48,6 +55,7 @@ public class OrderItemService {
         this.reservationService = reservationService;
         this.userService = userService;
         this.productVariationService = productVariationService;
+        this.serviceService = serviceService;
     }
 
     // Get order items by order id
@@ -217,6 +225,22 @@ public class OrderItemService {
         return orderItemRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(ResourceType.ORDER_ITEM,
                                                                                                 id.toString()
         ));
+    }
+
+    public List<Discount> getDiscountsByItemAt(OrderItem item, LocalDateTime now) {
+        Reservation reservation = item.getReservation();
+        if (reservation != null)
+            return serviceService.getEffectiveDiscountsFor(reservation.getService(), now, DiscountScope.ORDER_ITEM);
+
+        Product product = item.getProduct();
+        if (product != null)
+            return productService.getEffectiveDiscountsFor(product, now, DiscountScope.ORDER_ITEM);
+
+        ProductVariation productVariation = item.getProductVariation();
+        if (productVariation != null)
+            return productVariationService.getEffectiveDiscountsFor(productVariation, now, DiscountScope.ORDER_ITEM);
+
+        return new ArrayList<>();
     }
 
     private void setOrderItemFields(OrderItem orderItem, CreateOrderItemRequestDTO requestDTO) {

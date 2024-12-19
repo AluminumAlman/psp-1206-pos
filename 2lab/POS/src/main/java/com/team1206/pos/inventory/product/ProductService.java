@@ -1,5 +1,6 @@
 package com.team1206.pos.inventory.product;
 
+import com.team1206.pos.common.enums.DiscountScope;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
@@ -10,6 +11,7 @@ import com.team1206.pos.inventory.productVariation.ProductVariation;
 import com.team1206.pos.payments.charge.ChargeRepository;
 import com.team1206.pos.payments.charge.Charge;
 import com.team1206.pos.payments.charge.ChargeService;
+import com.team1206.pos.payments.discount.Discount;
 import com.team1206.pos.user.user.UserService;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -18,8 +20,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class ProductService {
@@ -184,6 +189,14 @@ public class ProductService {
         }
 
         return charges;
+    }
+
+    public List<Discount> getEffectiveDiscountsFor(Product product, LocalDateTime now, DiscountScope scope) {
+        Stream<Discount> discounts = productCategoryService.getEffectiveDiscountsFor(product.getCategory(), now, scope).stream();
+        return Stream.concat(
+                        discounts,
+                        product.getDiscounts().stream().filter(discount -> discount.getScope() == scope && discount.isActiveAndValid(now)))
+                .collect(Collectors.toMap(Discount::getId, p -> p, (p, q) -> p)).values().stream().toList();
     }
 
 

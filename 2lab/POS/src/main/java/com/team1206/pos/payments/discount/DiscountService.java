@@ -9,8 +9,10 @@ import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -29,7 +31,7 @@ public class DiscountService {
     @Transactional
     public DiscountResponseDTO createDiscount(DiscountRequestDTO discountRequestDTO) {
         if (userService.getCurrentUser().getMerchant() == null)
-            throw new UnauthorizedActionException("Super-admin has to be assigned to Merchant first", "");
+            throw new UnauthorizedActionException("Super-admin has to be assigned to Merchant first");
 
         Discount discount = mapFromRequestDTO(discountRequestDTO, new Discount());
         discountRepository.save(discount);
@@ -46,7 +48,7 @@ public class DiscountService {
 
         Merchant userMerchant = userService.getCurrentUser().getMerchant();
         if (userMerchant.getId() == null)
-            throw new UnauthorizedActionException("Super-admin has to be assigned to Merchant first", "");
+            throw new UnauthorizedActionException("Super-admin has to be assigned to Merchant first");
 
         Pageable pageable = PageRequest.of(offset / limit, limit);
         Page<Discount> discounts = discountRepository.findAllWithFilters(
@@ -111,5 +113,23 @@ public class DiscountService {
         response.setCreatedAt(discount.getCreatedAt());
         response.setUpdatedAt(discount.getUpdatedAt());
         return response;
+    }
+
+    public Pair<BigDecimal, BigDecimal> getTotalDiscountFromList(Iterable<Discount> discounts) {
+        BigDecimal totalMultiplier = BigDecimal.ONE;
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        BigDecimal HUNDRED = new BigDecimal(100);
+
+        for (Discount discount : discounts) {
+            BigDecimal amount = discount.getAmount();
+            if (amount != null)
+                totalAmount = totalAmount.add(amount);
+
+            Integer percent = discount.getPercent();
+            if (percent != null)
+                totalMultiplier = totalMultiplier.multiply(BigDecimal.ONE.subtract(new BigDecimal(percent).divide(HUNDRED)));
+        }
+
+        return Pair.of(totalMultiplier, totalAmount);
     }
 }

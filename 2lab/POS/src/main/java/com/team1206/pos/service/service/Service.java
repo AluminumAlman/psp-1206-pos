@@ -55,11 +55,4 @@ public class Service {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
-
-    /// Gets the discounts which should affect this service's price.
-    public List<Discount> getEffectiveDiscountsFor(LocalDateTime now, DiscountScope scope) {
-        return discounts.stream()
-                .filter(discount -> discount.getScope() == scope && discount.isActiveAndValid(now))
-                .toList();
-    }
 }

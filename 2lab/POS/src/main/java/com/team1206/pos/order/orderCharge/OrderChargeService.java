@@ -10,8 +10,10 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Service
@@ -109,5 +111,24 @@ public class OrderChargeService {
         responseDTO.setUpdatedAt(orderCharge.getUpdatedAt());
 
         return responseDTO;
+    }
+
+
+    public Pair<BigDecimal, BigDecimal> getTotalOrderChargeFromList(Iterable<OrderCharge> charges) {
+        BigDecimal totalMultiplier = BigDecimal.ZERO;
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        BigDecimal HUNDRED = new BigDecimal(100);
+
+        for (OrderCharge charge : charges) {
+            BigDecimal amount = charge.getAmount();
+            if (amount != null)
+                totalAmount = totalAmount.add(amount);
+
+            Integer percent = charge.getPercent();
+            if (percent != null)
+                totalMultiplier = totalMultiplier.add(new BigDecimal(percent).divide(HUNDRED));
+        }
+
+        return Pair.of(totalMultiplier, totalAmount);
     }
 }

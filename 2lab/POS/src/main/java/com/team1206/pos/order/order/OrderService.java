@@ -1,14 +1,18 @@
 package com.team1206.pos.order.order;
 
+import com.team1206.pos.common.enums.DiscountScope;
 import com.team1206.pos.common.enums.OrderStatus;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.exceptions.UnauthorizedActionException;
+import com.team1206.pos.inventory.product.ProductService;
+import com.team1206.pos.inventory.productVariation.ProductVariationService;
 import com.team1206.pos.order.orderCharge.OrderCharge;
 import com.team1206.pos.order.orderItem.OrderItem;
 import com.team1206.pos.order.orderItem.OrderItemService;
 import com.team1206.pos.payments.discount.Discount;
 import com.team1206.pos.payments.transaction.Transaction;
+import com.team1206.pos.service.service.ServiceService;
 import com.team1206.pos.user.merchant.MerchantService;
 import com.team1206.pos.user.user.UserService;
 import org.springframework.data.domain.Page;
@@ -20,6 +24,8 @@ import java.time.LocalDateTime;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class OrderService {
@@ -27,17 +33,23 @@ public class OrderService {
     private final UserService userService;
     private final MerchantService merchantService;
     private final OrderItemService orderItemService;
+    private final ProductService productService;
+    private final ServiceService serviceService;
+    private final ProductVariationService productVariationService;
 
     public OrderService(
             OrderRepository orderRepository,
             UserService userService,
             MerchantService merchantService,
-            OrderItemService orderItemService
-    ) {
+            OrderItemService orderItemService,
+            ProductService productService, ServiceService serviceService, ProductVariationService productVariationService) {
         this.orderRepository = orderRepository;
         this.userService = userService;
         this.merchantService = merchantService;
         this.orderItemService = orderItemService;
+        this.productService = productService;
+        this.serviceService = serviceService;
+        this.productVariationService = productVariationService;
     }
 
     // Get paged orders
@@ -139,6 +151,33 @@ public class OrderService {
                                                 .toList();
 
         order.setItems(orderItems);
+    }
+
+    public List<Discount> getDiscountsByOrderItemsAt(Order order, LocalDateTime now) {
+        Stream<Discount> discountStream = Stream.empty();
+        for (OrderItem item : order.getItems()) {
+            if (item.getReservation() != null)
+                discountStream = Stream.concat(discountStream, serviceService.getEffectiveDiscountsFor(
+                            item.getReservation().getService(),
+                            now,
+                            DiscountScope.ORDER)
+                        .stream());
+
+            if (item.getProduct() != null)
+                discountStream = Stream.concat(discountStream, productService.getEffectiveDiscountsFor(
+                            item.getProduct(),
+                            now,
+                            DiscountScope.ORDER)
+                        .stream());
+
+            if (item.getProductVariation() != null)
+                discountStream = Stream.concat(discountStream, productVariationService.getEffectiveDiscountsFor(
+                            item.getProductVariation(),
+                            now,
+                            DiscountScope.ORDER)
+                        .stream());
+        }
+        return discountStream.collect(Collectors.toMap(Discount::getId, p -> p, (p, q) -> p)).values().stream().toList();
     }
 
     public OrderResponseDTO mapToResponseDTO(Order order) {

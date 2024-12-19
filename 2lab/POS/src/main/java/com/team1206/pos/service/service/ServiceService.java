@@ -1,8 +1,10 @@
 package com.team1206.pos.service.service;
 
+import com.team1206.pos.common.enums.DiscountScope;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
+import com.team1206.pos.payments.discount.Discount;
 import com.team1206.pos.service.reservation.Reservation;
 import com.team1206.pos.service.reservation.ReservationService;
 import com.team1206.pos.service.schedule.Schedule;
@@ -158,6 +160,12 @@ public class ServiceService {
     public com.team1206.pos.service.service.Service getServiceEntityById(UUID serviceId) {
         return serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.SERVICE, serviceId.toString()));
+    }
+
+    public List<Discount> getEffectiveDiscountsFor(com.team1206.pos.service.service.Service service, LocalDateTime now, DiscountScope scope) {
+        return service.getDiscounts().stream()
+                .filter(discount -> discount.getScope() == scope && discount.isActiveAndValid(now))
+                .toList();
     }
 
     // Mappers

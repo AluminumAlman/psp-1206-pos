@@ -53,13 +53,4 @@ public class ProductVariation {
     public void setUpdatedAt() {
         this.updatedAt = LocalDateTime.now();
     }
-
-    /// Gets the discounts which should affect this product variation's price.
-    public List<Discount> getEffectiveDiscountsFor(LocalDateTime now, DiscountScope scope) {
-        Stream<Discount> discounts = product.getEffectiveDiscountsFor(now, scope).stream();
-        return Stream.concat(
-                    discounts,
-                    this.discounts.stream().filter(discount -> discount.getScope() == scope && discount.isActiveAndValid(now)))
-                .collect(Collectors.toMap(Discount::getId, p -> p, (p, q) -> p)).values().stream().toList();
-    }
 }

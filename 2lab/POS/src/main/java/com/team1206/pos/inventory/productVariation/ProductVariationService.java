@@ -1,5 +1,6 @@
 package com.team1206.pos.inventory.productVariation;
 
+import com.team1206.pos.common.enums.DiscountScope;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
@@ -7,6 +8,7 @@ import com.team1206.pos.exceptions.UnauthorizedActionException;
 import com.team1206.pos.inventory.product.AdjustProductQuantityDTO;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.inventory.product.ProductService;
+import com.team1206.pos.payments.discount.Discount;
 import com.team1206.pos.user.user.UserService;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -14,6 +16,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class ProductVariationService {
@@ -135,6 +139,14 @@ public class ProductVariationService {
         productVariation.setQuantity(newQuantity);
 
         productVariationRepository.save(productVariation);
+    }
+
+    public List<Discount> getEffectiveDiscountsFor(ProductVariation variation, LocalDateTime now, DiscountScope scope) {
+        Stream<Discount> discounts = productService.getEffectiveDiscountsFor(variation.getProduct(), now, scope).stream();
+        return Stream.concat(
+                        discounts,
+                        variation.getDiscounts().stream().filter(discount -> discount.getScope() == scope && discount.isActiveAndValid(now)))
+                .collect(Collectors.toMap(Discount::getId, p -> p, (p, q) -> p)).values().stream().toList();
     }
 
     // Mappers

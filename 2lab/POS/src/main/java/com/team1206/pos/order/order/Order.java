@@ -58,19 +58,4 @@ public class Order {
     public void setUpdatedAt() {
         this.updatedAt = LocalDateTime.now();
     }
-
-    public List<Discount> getDiscountsByItemsAt(LocalDateTime now) {
-        Stream<Discount> discountStream = Stream.empty();
-        for (OrderItem item : items) {
-            if (item.getReservation() != null)
-                discountStream = Stream.concat(discountStream, item.getReservation().getService().getEffectiveDiscountsFor(now, DiscountScope.ORDER).stream());
-
-            if (item.getProduct() != null)
-                discountStream = Stream.concat(discountStream, item.getProduct().getEffectiveDiscountsFor(now, DiscountScope.ORDER).stream());
-
-            if (item.getProductVariation() != null)
-                discountStream = Stream.concat(discountStream, item.getProductVariation().getEffectiveDiscountsFor(now, DiscountScope.ORDER).stream());
-        }
-        return discountStream.collect(Collectors.toMap(Discount::getId, p -> p, (p, q) -> p)).values().stream().toList();
-    }
 }

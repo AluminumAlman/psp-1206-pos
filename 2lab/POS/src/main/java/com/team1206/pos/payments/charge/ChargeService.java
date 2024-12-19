@@ -12,8 +12,10 @@ import com.team1206.pos.user.user.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.util.Pair;
 import org.springframework.http.ResponseEntity;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -206,5 +208,23 @@ public class ChargeService {
                                       .map(Service::getId)
                                       .toArray(UUID[]::new));
         return responseDTO;
+    }
+
+    public Pair<BigDecimal, BigDecimal> getTotalChargeFromList(Iterable<Charge> charges) {
+        BigDecimal totalMultiplier = BigDecimal.ZERO;
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        BigDecimal HUNDRED = new BigDecimal(100);
+
+        for (Charge charge : charges) {
+            BigDecimal amount = charge.getAmount();
+            if (amount != null)
+                totalAmount = totalAmount.add(amount);
+
+            Integer percent = charge.getPercent();
+            if (percent != null)
+                totalMultiplier = totalMultiplier.add(new BigDecimal(percent).divide(HUNDRED));
+        }
+
+        return Pair.of(totalMultiplier, totalAmount);
     }
 }

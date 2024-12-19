@@ -95,23 +95,4 @@ public class Discount {
     public boolean isActiveAndValid(LocalDateTime now) {
         return isActive && isValidFor(now);
     }
-
-    /// getTotalDiscount - calculates the multiplier and flat reduction to a price based on a list of discounts.
-    public static Pair<BigDecimal, BigDecimal> getTotalDiscount(Iterable<Discount> discounts) {
-        BigDecimal totalMultiplier = BigDecimal.ONE;
-        BigDecimal totalAmount = BigDecimal.ZERO;
-        BigDecimal HUNDRED = new BigDecimal(100);
-
-        for (Discount discount : discounts) {
-            BigDecimal amount = discount.getAmount();
-            if (amount != null)
-                totalAmount = totalAmount.add(amount);
-
-            Integer percent = discount.getPercent();
-            if (percent != null)
-                totalMultiplier = totalMultiplier.multiply(BigDecimal.ONE.subtract(new BigDecimal(percent).divide(HUNDRED)));
-        }
-
-        return Pair.of(totalMultiplier, totalAmount);
-    }
 }

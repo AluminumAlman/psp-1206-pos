@@ -64,23 +64,4 @@ public class Charge {
     public void setUpdatedAt() {
         this.updatedAt = LocalDateTime.now();
     }
-
-    // getTotalCharge - calculates additional charges as a multiplier of the base price and a flat value from a list of charges.
-    public static Pair<BigDecimal, BigDecimal> getTotalCharge(Iterable<Charge> charges) {
-        BigDecimal totalMultiplier = BigDecimal.ZERO;
-        BigDecimal totalAmount = BigDecimal.ZERO;
-        BigDecimal HUNDRED = new BigDecimal(100);
-
-        for (Charge charge : charges) {
-            BigDecimal amount = charge.getAmount();
-            if (amount != null)
-                totalAmount = totalAmount.add(amount);
-
-            Integer percent = charge.getPercent();
-            if (percent != null)
-                totalMultiplier = totalMultiplier.add(new BigDecimal(percent).divide(HUNDRED));
-        }
-
-        return Pair.of(totalMultiplier, totalAmount);
-    }
 }

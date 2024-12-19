@@ -58,17 +58,4 @@ public class OrderItem {
     public void setUpdatedAt() {
         this.updatedAt = LocalDateTime.now();
     }
-
-    public List<Discount> getDiscountsByItemAt(LocalDateTime now) {
-        if (reservation != null)
-            return reservation.getService().getEffectiveDiscountsFor(now, DiscountScope.ORDER_ITEM);
-
-        if (product != null)
-            return product.getEffectiveDiscountsFor(now, DiscountScope.ORDER_ITEM);
-
-        if (productVariation != null)
-            return productVariation.getEffectiveDiscountsFor(now, DiscountScope.ORDER_ITEM);
-
-        return new ArrayList<>();
-    }
 }

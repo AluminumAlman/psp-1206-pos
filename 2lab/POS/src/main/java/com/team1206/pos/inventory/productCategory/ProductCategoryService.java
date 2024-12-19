@@ -1,14 +1,17 @@
 package com.team1206.pos.inventory.productCategory;
 
+import com.team1206.pos.common.enums.DiscountScope;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.exceptions.UnauthorizedActionException;
+import com.team1206.pos.payments.discount.Discount;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.user.merchant.MerchantService;
 import com.team1206.pos.user.user.UserService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -96,6 +99,12 @@ public class ProductCategoryService {
     public ProductCategory getCategoryEntityById(UUID id) {
         return productCategoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_CATEGORY, id.toString()));
+    }
+
+    public List<Discount> getEffectiveDiscountsFor(ProductCategory category, LocalDateTime now, DiscountScope scope) {
+        return category.getDiscounts().stream()
+                .filter(discount -> discount.getScope() == scope && discount.isActiveAndValid(now))
+                .toList();
     }
 
 
