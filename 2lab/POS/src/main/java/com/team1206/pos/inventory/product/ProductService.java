@@ -176,30 +176,6 @@ public class ProductService {
         return finalProductPrice;
     }
 
-    // Helpers
-    /*private List<Charge> validateAndFetchCharges(List<UUID> chargeIds) {
-        if (chargeIds == null || chargeIds.isEmpty()) {
-            return List.of(); // Return an empty list if no charges are provided
-        }
-
-        List<Charge> charges = chargeService.getAllEntitiesById(chargeIds);
-        List<UUID> foundChargeIds = charges.stream()
-                .map(Charge::getId)
-                .toList();
-
-        // Find any missing Charge IDs
-        List<UUID> missingChargeIds = chargeIds.stream()
-                .filter(id -> !foundChargeIds.contains(id))
-                .toList();
-
-        if (!missingChargeIds.isEmpty()) {
-            throw new ResourceNotFoundException(ResourceType.CHARGE, missingChargeIds.toString()); // TODO patestuoti kai bus Charges
-        }
-
-        return charges;
-    }*/
-
-
     // Mappers
     private ProductResponseDTO mapToResponseDTO(Product product) {
         ProductResponseDTO responseDTO = new ProductResponseDTO();
