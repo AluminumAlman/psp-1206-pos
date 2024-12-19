@@ -46,7 +46,7 @@ public class OrderChargeController {
         OrderChargeResponseDTO response = orderChargeService.createOrderCharge(orderId, requestBody);
 
         log.debug("Returning {} to create order charge request (orderId={})", response, orderId);
-        // TODO: add to response the URI to created discount.
+        
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

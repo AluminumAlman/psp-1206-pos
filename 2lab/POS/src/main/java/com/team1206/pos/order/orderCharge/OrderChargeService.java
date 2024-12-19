@@ -22,8 +22,8 @@ public class OrderChargeService {
 
     public OrderChargeService(
             OrderChargeRepository orderChargeRepository,
-            OrderService orderService, UserService userService
-    ) {
+            OrderService orderService,
+            UserService userService) {
         this.orderChargeRepository = orderChargeRepository;
         this.orderService = orderService;
         this.userService = userService;
@@ -31,15 +31,15 @@ public class OrderChargeService {
 
     // Get order charges
     public Page<OrderChargeResponseDTO> getOrderCharges(UUID orderId, int offset, int limit) {
-        Order order = orderService.getOrderEntityById(orderId);
-        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to view charges for this order");
-
         if (limit < 1) {
             throw new IllegalArgumentException("Limit must be greater than 0");
         }
         if (offset < 0) {
             throw new IllegalArgumentException("Offset must be greater than or equal to 0");
         }
+
+        Order order = orderService.getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to retrieve order charges");
 
         Pageable pageable = PageRequest.of(offset / limit, limit);
 
