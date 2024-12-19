@@ -3,7 +3,6 @@ package com.team1206.pos.order.orderCharge;
 import com.team1206.pos.common.enums.OrderChargeType;
 import com.team1206.pos.common.enums.OrderStatus;
 import com.team1206.pos.common.enums.ResourceType;
-import com.team1206.pos.exceptions.IllegalRequestException;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.exceptions.UnauthorizedActionException;
 import com.team1206.pos.order.order.Order;
@@ -90,13 +89,13 @@ public class OrderChargeService {
 
         Order order = orderService.getOrderEntityById(orderId);
         if (merchantId != order.getMerchant().getId())
-            throw new IllegalRequestException("Order and order charge merchants differ");
+            throw new IllegalArgumentException("Order and order charge merchants differ");
 
         if (order.getStatus() != OrderStatus.OPEN)
-            throw new IllegalRequestException("Order has to be open to add order charges");
+            throw new IllegalArgumentException("Order has to be open to add order charges");
 
         if (orderCharge.getOrders().contains(order))
-            throw new IllegalRequestException("Order charge is already applied to this order");
+            throw new IllegalArgumentException("Order charge is already applied to this order");
 
         orderCharge.getOrders().add(order);
         orderChargeRepository.save(orderCharge);
@@ -111,25 +110,23 @@ public class OrderChargeService {
 
         Order order = orderService.getOrderEntityById(orderId);
         if (merchantId != order.getMerchant().getId())
-            throw new IllegalRequestException("Order and order charge merchants differ");
+            throw new IllegalArgumentException("Order and order charge merchants differ");
 
         if (order.getStatus() != OrderStatus.OPEN)
-            throw new IllegalRequestException("Order has to be open to remove order charges");
+            throw new IllegalArgumentException("Order has to be open to remove order charges");
 
         if (!orderCharge.getOrders().remove(order))
-            throw new IllegalRequestException("Order charge is not applied to order");
+            throw new IllegalArgumentException("Order charge is not applied to order");
 
         orderChargeRepository.save(orderCharge);
     }
 
     // *** Helper methods ***
     public OrderCharge getOrderChargeEntityById(UUID orderChargeId) {
-        OrderCharge orderCharge = orderChargeRepository.findById(orderChargeId)
+        return orderChargeRepository.findById(orderChargeId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         ResourceType.ORDER_CHARGE,
                         orderChargeId.toString()));
-
-        return orderCharge;
     }
 
     private void setOrderChargeFields(OrderCharge orderCharge, OrderChargeRequestDTO requestBody) {

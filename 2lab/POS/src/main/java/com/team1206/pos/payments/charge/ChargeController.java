@@ -22,29 +22,17 @@ public class ChargeController {
         this.chargeService = chargeService;
     }
 
-    @GetMapping("/charges/merchant")
-    @Operation(summary = "Get all charges by merchant ID")
-    public ResponseEntity<Page<ChargeResponseDTO>> getChargesByMerchant(
-            @RequestParam(value = "limit", defaultValue = "10") int limit,
-            @RequestParam(value = "offset", defaultValue = "0") int offset) {
-        log.info("Received get all charges request: limit={} offset={}", limit, offset);
-
-        ResponseEntity<Page<ChargeResponseDTO>> response = chargeService.handleGetChargesRequest(limit, offset, () -> chargeService.getCharges(limit, offset));
-
-        log.debug("Returning {} to get all charges request (limit={} offset={})",
-                response.getBody().stream().toList(), limit, offset);
-        return response;
-    }
-
     @GetMapping("/charges")
     @Operation(summary = "Get all charges by type")
     public ResponseEntity<Page<ChargeResponseDTO>> getChargesByType(
             @RequestParam(value = "limit", defaultValue = "20") int limit,
             @RequestParam(value = "offset", defaultValue = "0") int offset,
-            @RequestParam(value = "chargeType") String chargeType) {
+            @RequestParam(value = "chargeType", required = false) String chargeType) {
         log.info("Received get all charges request: limit={} offset={} chargeType={}", limit, offset, chargeType);
 
-        ResponseEntity<Page<ChargeResponseDTO>> response = chargeService.handleGetChargesRequest(limit, offset, () -> chargeService.getCharges(limit, offset, chargeType));
+        ResponseEntity<Page<ChargeResponseDTO>> response = chargeType != null
+                ? chargeService.handleGetChargesRequest(limit, offset, () -> chargeService.getCharges(limit, offset, chargeType))
+                : chargeService.handleGetChargesRequest(limit, offset, () -> chargeService.getCharges(limit, offset));
 
         log.debug("Returning {} to get all charges request (limit={} offset={} chargeType={})", response.getBody().stream().toList(), limit, offset, chargeType);
         return response;
@@ -109,7 +97,7 @@ public class ChargeController {
     }
 
 
-    @GetMapping("products/{productId}/charges")
+    @GetMapping("/products/{productId}/charges")
     @Operation(summary = "Get a product's charges")
     public ResponseEntity<List<ChargeResponseDTO>> getChargesByProduct(@PathVariable UUID productId) {
         log.info("Received get product charges request: productId={}", productId);
@@ -120,7 +108,7 @@ public class ChargeController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("products/{productId}/charges/{chargeId}")
+    @PostMapping("/products/{productId}/charges/{chargeId}")
     @Operation(summary = "Add charge to product")
     public ResponseEntity<Void> addChargeToProduct(@PathVariable UUID productId, @PathVariable UUID chargeId) {
         log.info("Received add product charge request: productId={} chargeId={}", productId, chargeId);

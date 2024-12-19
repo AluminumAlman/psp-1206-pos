@@ -150,10 +150,10 @@ public class ChargeService {
 
         Charge charge = getChargeEntityById(chargeId);
         if (merchantId != charge.getMerchant().getId())
-            throw new IllegalRequestException("Product and charge merchants differ");
+            throw new IllegalArgumentException("Product and charge merchants differ");
 
         if (charge.getProducts().contains(product))
-            throw new IllegalRequestException("Charge is already applied to product");
+            throw new IllegalArgumentException("Charge is already applied to product");
 
         charge.getProducts().add(product);
         chargeRepository.save(charge);
@@ -170,10 +170,10 @@ public class ChargeService {
 
         Charge charge = getChargeEntityById(chargeId);
         if (merchantId != charge.getMerchant().getId())
-            throw new IllegalRequestException("Product and charge merchants differ");
+            throw new IllegalArgumentException("Product and charge merchants differ");
 
         if (!charge.getProducts().remove(product))
-            throw new IllegalRequestException("Charge is not applied to product");
+            throw new IllegalArgumentException("Charge is not applied to product");
 
         chargeRepository.save(charge);
     }
@@ -199,10 +199,10 @@ public class ChargeService {
 
         Charge charge = getChargeEntityById(chargeId);
         if (merchantId != charge.getMerchant().getId())
-            throw new IllegalRequestException("Service and charge merchants differ");
+            throw new IllegalArgumentException("Service and charge merchants differ");
 
         if (charge.getProducts().contains(service))
-            throw new IllegalRequestException("Charge is already applied to service");
+            throw new IllegalArgumentException("Charge is already applied to service");
 
         charge.getServices().add(service);
         chargeRepository.save(charge);
@@ -219,10 +219,10 @@ public class ChargeService {
 
         Charge charge = getChargeEntityById(chargeId);
         if (merchantId != charge.getMerchant().getId())
-            throw new IllegalRequestException("Service and charge merchants differ");
+            throw new IllegalArgumentException("Service and charge merchants differ");
 
         if (!charge.getServices().remove(service))
-            throw new IllegalRequestException("Charge is not applied to service");
+            throw new IllegalArgumentException("Charge is not applied to service");
 
         chargeRepository.save(charge);
     }
