@@ -6,7 +6,6 @@ import com.team1206.pos.service.reservation.Reservation;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.user.User;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.DecimalMin;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -32,6 +31,7 @@ public class Service {
     @Column(name = "price", nullable = false, precision = 19, scale = 2)
     private BigDecimal price;
 
+    // JPA does not support Duration. Duration is amount of seconds.
     @Column(name = "duration", nullable = false)
     private Long duration;
 

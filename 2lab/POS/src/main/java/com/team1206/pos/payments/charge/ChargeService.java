@@ -14,7 +14,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,7 +38,7 @@ public class ChargeService {
         Pageable pageable = PageRequest.of(offset / limit, limit);
         UUID merchantId = userService.getMerchantIdFromLoggedInUser();
         if(merchantId == null)
-            throw new UnauthorizedActionException("User is not assigned to Merchant", "");
+            throw new UnauthorizedActionException("User is not assigned to Merchant");
         Page<Charge> chargePage = chargeRepository.findAllWithFilters(merchantId, pageable);
 
         return chargePage.map(this::mapToResponseDTO);
@@ -50,7 +49,7 @@ public class ChargeService {
         Pageable pageable = PageRequest.of(offset / limit, limit);
         UUID merchantId = userService.getMerchantIdFromLoggedInUser();
         if(merchantId == null)
-            throw new UnauthorizedActionException("User is not assigned to Merchant", "");
+            throw new UnauthorizedActionException("User is not assigned to Merchant");
 
         Page<Charge> chargePage = chargeRepository.findAllWithFilters(
                 ChargeType.valueOf(chargeType.toUpperCase()),
@@ -64,7 +63,7 @@ public class ChargeService {
     public ChargeResponseDTO createCharge(ChargeRequestDTO request) {
         UUID merchantId = userService.getMerchantIdFromLoggedInUser();
         if(merchantId == null)
-            throw new UnauthorizedActionException("User is not assigned to Merchant", "");
+            throw new UnauthorizedActionException("User is not assigned to Merchant");
         Merchant merchant = merchantService.getMerchantEntityById(merchantId);
 
         Charge charge = mapToEntity(request, merchant);

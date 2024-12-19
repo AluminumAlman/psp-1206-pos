@@ -24,7 +24,4 @@ public class ServiceRequestDTO {
 
     @NotNull(message = "List of employees is required.")
     private List<UUID> employeeIds;
-
-    @NotNull(message = "Merchant ID is required.")
-    private UUID merchantId;
 }

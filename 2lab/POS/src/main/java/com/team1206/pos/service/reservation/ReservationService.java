@@ -12,7 +12,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @org.springframework.stereotype.Service
@@ -121,6 +123,22 @@ public class ReservationService {
             throw new RuntimeException("An error occurred while cancelling the reservation with ID: " + reservationId, e);
         }
     }
+
+    public List<Reservation> findReservationsByEmployeeAndDate(UUID userId, LocalDate date) {
+        // Convert the LocalDate to LocalDateTime for start and end of the day
+        LocalDateTime startOfDay = date.atStartOfDay();  // 00:00:00 of the given date
+        LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();  // 00:00:00 of the next day
+
+        // Call the repository method to fetch reservations for the given date
+        List<Reservation> reservations = reservationRepository.findReservationsByEmployeeAndDate(userId, startOfDay, endOfDay);
+
+        if (reservations == null || reservations.isEmpty()) {
+            throw new ResourceNotFoundException(ResourceType.RESERVATION, "userId: " + userId + " on " + date);
+        }
+
+        return reservations;
+    }
+
 
     public Reservation getReservationEntityById(UUID reservationId) {
         return reservationRepository.findById(reservationId)

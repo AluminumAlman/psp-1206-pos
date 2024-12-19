@@ -2,9 +2,9 @@ package com.team1206.pos.user.user;
 
 import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.service.reservation.Reservation;
+import com.team1206.pos.service.schedule.Schedule;
 import com.team1206.pos.user.merchant.Merchant;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -42,6 +42,9 @@ public class User {
     @Column(name = "role", nullable = false, length = 40)
     @Enumerated(EnumType.STRING)
     private UserRoles role;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Schedule> schedules;
 
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reservation> reservations;
