@@ -2,6 +2,7 @@ package com.team1206.pos.order.order;
 
 import com.team1206.pos.common.enums.OrderStatus;
 import com.team1206.pos.common.enums.ResourceType;
+import com.team1206.pos.exceptions.IllegalRequestException;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.exceptions.UnauthorizedActionException;
 import com.team1206.pos.order.orderCharge.OrderCharge;
@@ -138,9 +139,13 @@ public class OrderService {
     @Transactional
     public OrderResponseDTO setTip(UUID orderId, BigDecimal tipAmount) {
         Order order = getOrderEntityById(orderId);
+
         userService.verifyLoggedInUserBelongsToMerchant(
                 order.getMerchant().getId(),
                 "You are not authorized to set tip");
+
+        if (order.getStatus() != OrderStatus.OPEN)
+            throw new IllegalRequestException("Order has to be open to set tip");
 
         order.setTip(tipAmount);
         orderRepository.save(order);
