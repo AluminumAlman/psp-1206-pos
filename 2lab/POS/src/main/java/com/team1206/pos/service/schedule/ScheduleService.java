@@ -22,9 +22,19 @@ public class ScheduleService {
     // Create schedule for user
     public List<Schedule> createScheduleEntities(Map<DayOfWeek, WorkHoursDTO> requestSchedule, User user) {
         if (user.getRole() == UserRoles.EMPLOYEE) {
+            Merchant merchant = user.getMerchant();
+            if (merchant == null || merchant.getId() == null) {
+                throw new IllegalArgumentException("User must belong to a merchant.");
+            }
+
+            // Fetch and validate against merchant's schedule
+            List<Schedule> merchantSchedule = getMerchantSchedule(merchant.getId());
+            validateUserScheduleAgainstMerchantSchedule(requestSchedule, merchantSchedule);
+
             return getScheduleList(requestSchedule, user, null);
         }
-        return null;
+
+        throw new IllegalArgumentException("Schedules can only be created for employees.");
     }
 
     // Create schedule for merchant
@@ -104,107 +114,48 @@ public class ScheduleService {
         return schedules;
     }
 
+    // Get work hours (schedule) for all days for a merchant
+    private List<Schedule> getMerchantSchedule(UUID merchantId) {
+        List<Schedule> merchantSchedules = scheduleRepository.findByMerchantId(merchantId);
+        if (merchantSchedules == null || merchantSchedules.isEmpty()) {
+            throw new IllegalArgumentException("A merchant must have a schedule assigned.");
+        }
+        return merchantSchedules;
+    }
+
+    private void validateUserScheduleAgainstMerchantSchedule(
+            Map<DayOfWeek, WorkHoursDTO> userSchedule,
+            List<Schedule> merchantSchedules) {
+
+        Map<DayOfWeek, Schedule> merchantScheduleMap = new HashMap<>();
+        for (Schedule schedule : merchantSchedules) {
+            merchantScheduleMap.put(schedule.getDayOfWeek(), schedule);
+        }
+
+        for (Map.Entry<DayOfWeek, WorkHoursDTO> entry : userSchedule.entrySet()) {
+            DayOfWeek dayOfWeek = entry.getKey();
+            WorkHoursDTO userWorkHours = entry.getValue();
+
+            Schedule merchantSchedule = merchantScheduleMap.get(dayOfWeek);
+
+            // If the merchant does not work on this day, the user cannot either
+            if (merchantSchedule == null || merchantSchedule.getStartTime() == null || merchantSchedule.getEndTime() == null) {
+                throw new IllegalArgumentException("User's schedule cannot include day: " + dayOfWeek +
+                        " because the merchant does not operate on this day.");
+            }
+
+            // Validate start and end times
+            if (userWorkHours.getStartTime().isBefore(merchantSchedule.getStartTime()) ||
+                    userWorkHours.getEndTime().isAfter(merchantSchedule.getEndTime())) {
+                throw new IllegalArgumentException("User's schedule on " + dayOfWeek +
+                        " exceeds the merchant's operating hours.");
+            }
+        }
+    }
 
     // TODO like metodai tikriausiai nereikalingi bus, kol kas palieku
     // Get work hours (schedule) for all days for a user
     public List<Schedule> getUserScheduleForAllDays(UUID userId) {
         return scheduleRepository.findByUserId(userId);
     }
-
-    // Get work hours (schedule) for all days for a merchant
-    public List<Schedule> getMerchantScheduleForAllDays(UUID merchantId) {
-        return scheduleRepository.findByMerchantId(merchantId);
-    }
-
-    /*
-    // Delete a schedule by ID
-    public void deleteSchedule(UUID scheduleId) {
-        if (!scheduleRepository.existsById(scheduleId)) {
-            throw new ResourceNotFoundException(ResourceType.SCHEDULE, scheduleId.toString());
-        }
-        scheduleRepository.deleteById(scheduleId);
-    }
-
-    // Update a schedule for a specific day for a user or merchant
-    public Schedule updateSchedule(UUID scheduleId, Schedule updatedSchedule) {
-        return scheduleRepository.findById(scheduleId)
-                .map(existingSchedule -> {
-                    // Validate association consistency
-                    if ((existingSchedule.getUser() != null && updatedSchedule.getMerchant() != null) ||
-                            (existingSchedule.getMerchant() != null && updatedSchedule.getUser() != null)) {
-                        throw new IllegalArgumentException("A schedule must be associated with either a user or a merchant, but not both.");
-                    }
-
-                    // Update fields based on the association type
-                    if (existingSchedule.getUser() != null) {
-                        existingSchedule.setUser(updatedSchedule.getUser());
-                    } else if (existingSchedule.getMerchant() != null) {
-                        existingSchedule.setMerchant(updatedSchedule.getMerchant());
-                    }
-
-                    existingSchedule.setDayOfWeek(updatedSchedule.getDayOfWeek());
-                    existingSchedule.setStartTime(updatedSchedule.getStartTime());
-                    existingSchedule.setEndTime(updatedSchedule.getEndTime());
-
-                    return scheduleRepository.save(existingSchedule);
-                }).orElseThrow(() -> new ResourceNotFoundException(ResourceType.SCHEDULE, scheduleId.toString()));
-    }
-
-    // Bulk update schedules for all days for a user
-    public List<Schedule> updateUserSchedulesForAllDays(UUID userId, List<Schedule> updatedSchedules) {
-        List<Schedule> existingSchedules = scheduleRepository.findByUserId(userId);
-        validateScheduleConsistency(existingSchedules, updatedSchedules);
-
-        for (int i = 0; i < existingSchedules.size(); i++) {
-            Schedule existingSchedule = existingSchedules.get(i);
-            Schedule updatedSchedule = updatedSchedules.get(i);
-
-            existingSchedule.setStartTime(updatedSchedule.getStartTime());
-            existingSchedule.setEndTime(updatedSchedule.getEndTime());
-            scheduleRepository.save(existingSchedule);
-        }
-        return existingSchedules;
-    }
-
-    // Bulk update schedules for all days for a merchant
-    public List<Schedule> updateMerchantSchedulesForAllDays(UUID merchantId, List<Schedule> updatedSchedules) {
-        List<Schedule> existingSchedules = scheduleRepository.findByMerchantId(merchantId);
-        validateScheduleConsistency(existingSchedules, updatedSchedules);
-
-        for (int i = 0; i < existingSchedules.size(); i++) {
-            Schedule existingSchedule = existingSchedules.get(i);
-            Schedule updatedSchedule = updatedSchedules.get(i);
-
-            existingSchedule.setStartTime(updatedSchedule.getStartTime());
-            existingSchedule.setEndTime(updatedSchedule.getEndTime());
-            scheduleRepository.save(existingSchedule);
-        }
-        return existingSchedules;
-    }
-
-    // Delete schedules for a specific day for a user
-    public void deleteUserSchedulesByDay(UUID userId, DayOfWeek dayOfWeek) {
-        List<Schedule> schedules = scheduleRepository.findByUserIdAndDayOfWeek(userId, dayOfWeek);
-        if (schedules.isEmpty()) {
-            throw new ResourceNotFoundException(ResourceType.SCHEDULE, "No schedules found for the specified user and day.");
-        }
-        scheduleRepository.deleteAll(schedules);
-    }
-
-    // Delete schedules for a specific day for a merchant
-    public void deleteMerchantSchedulesByDay(UUID merchantId, DayOfWeek dayOfWeek) {
-        List<Schedule> schedules = scheduleRepository.findByMerchantIdAndDayOfWeek(merchantId, dayOfWeek);
-        if (schedules.isEmpty()) {
-            throw new ResourceNotFoundException(ResourceType.SCHEDULE, "No schedules found for the specified merchant and day.");
-        }
-        scheduleRepository.deleteAll(schedules);
-    }
-
-    // Helper method to validate consistency of schedule updates
-    private void validateScheduleConsistency(List<Schedule> existingSchedules, List<Schedule> updatedSchedules) {
-        if (existingSchedules.size() != updatedSchedules.size()) {
-            throw new IllegalArgumentException("The number of schedules provided does not match the existing schedules.");
-        }
-    }
-    */
 }
