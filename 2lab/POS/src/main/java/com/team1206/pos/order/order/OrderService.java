@@ -88,11 +88,11 @@ public class OrderService {
 
     // Create order
     public OrderResponseDTO createOrder(OrderRequestDTO requestBody) {
-        UUID merchantId = requestBody.getMerchantId();
-        userService.verifyLoggedInUserBelongsToMerchant(merchantId, "You are not authorized to create an order");
+        UUID userMerchantId = userService.getMerchantIdFromLoggedInUser();
 
         Order order = new Order();
 
+        order.setMerchant(merchantService.getMerchantEntityById(userMerchantId));
         setOrderFields(order, requestBody);
 
         Order savedOrder = orderRepository.save(order);
@@ -155,15 +155,20 @@ public class OrderService {
     }
 
     private void setOrderFields(Order order, OrderRequestDTO requestBody) {
-        order.setMerchant(merchantService.getMerchantEntityById(requestBody.getMerchantId()));
         order.setStatus(OrderStatus.OPEN);
 
-        List<OrderItem> orderItems = requestBody.getOrderItems()
-                                                .stream()
-                                                .map(orderItemService::getOrderItemEntityById)
-                                                .toList();
+        // if orderItems is empty, set items to empty list
+        if (requestBody.getOrderItems() == null) {
+            order.setItems(List.of());
+        }
+        else {
 
-        order.setItems(orderItems);
+            List<OrderItem> orderItems = requestBody.getOrderItems()
+                                                    .stream()
+                                                    .map(orderItemService::getOrderItemEntityById)
+                                                    .toList();
+            order.setItems(orderItems);
+        }
     }
 
     public OrderResponseDTO mapToResponseDTO(Order order) {
@@ -172,19 +177,39 @@ public class OrderService {
         orderResponseDTO.setId(order.getId());
         orderResponseDTO.setStatus(String.valueOf(order.getStatus()));
 
-        List<UUID> orderCharges = order.getCharges().stream().map(OrderCharge::getId).toList();
-        orderResponseDTO.setCharges(orderCharges);
+        if (order.getCharges() == null) {
+            orderResponseDTO.setCharges(List.of());
+        }
+        else {
+            List<UUID> orderCharges = order.getCharges().stream().map(OrderCharge::getId).toList();
+            orderResponseDTO.setCharges(orderCharges);
+        }
 
-        List<UUID> orderItems = order.getItems().stream().map(OrderItem::getId).toList();
-        orderResponseDTO.setItems(orderItems);
+        if (order.getItems() == null) {
+            orderResponseDTO.setItems(List.of());
+        }
+        else {
+            List<UUID> orderItems = order.getItems().stream().map(OrderItem::getId).toList();
+            orderResponseDTO.setItems(orderItems);
+        }
 
-        List<UUID> transactions = order.getTransactions().stream().map(Transaction::getId).toList();
+        if (order.getTransactions() == null) {
+            orderResponseDTO.setTransactions(List.of());
+        }
+        else {
+            List<UUID> transactions = order.getTransactions().stream().map(Transaction::getId).toList();
+            orderResponseDTO.setTransactions(transactions);
+        }
 
-        orderResponseDTO.setTransactions(transactions);
         orderResponseDTO.setMerchantId(order.getMerchant().getId());
 
-        List<UUID> discounts = order.getDiscounts().stream().map(Discount::getId).toList();
-        orderResponseDTO.setDiscounts(discounts);
+        if (order.getDiscounts() == null) {
+            orderResponseDTO.setDiscounts(List.of());
+        }
+        else {
+            List<UUID> discounts = order.getDiscounts().stream().map(Discount::getId).toList();
+            orderResponseDTO.setDiscounts(discounts);
+        }
 
         orderResponseDTO.setCreatedAt(order.getCreatedAt());
         orderResponseDTO.setUpdatedAt(order.getUpdatedAt());
