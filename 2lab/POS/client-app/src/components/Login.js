@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Login.css';
+import '../styles/Login.css';
 
 export const Login = () => {
     const [showDialog, setShowDialog] = useState(false);
@@ -10,15 +10,48 @@ export const Login = () => {
     const [name, setName] = useState('');
     const [surname, setSurname] = useState('');
     const [repeatPassword, setRepeatPassword] = useState('');
+    const [isJoiningBusiness, setIsJoiningBusiness] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const navigate = useNavigate();
 
-    // Clear JWT token when the component is first rendered
     useEffect(() => {
         localStorage.removeItem('jwt-token');
+        localStorage.removeItem('user-role');
     }, []);
 
-    // Function to handle login form submission
+    const fetchUserRoleAndNavigate = async (token) => {
+        try {
+            const response = await fetch('http://localhost:8080/users/me', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch user role');
+            }
+
+            const userData = await response.json();
+            const role = userData.role;
+
+            localStorage.setItem('user-role', role);
+
+            if (role === 'SUPER_ADMIN') {
+                navigate('/admin-home');
+            } else if (role === 'MERCHANT_OWNER') {
+                navigate('/owner-home');
+            } else if (role === 'EMPLOYEE') {
+                navigate('/employee-home');
+            } else {
+                setErrorMessage('Unknown role. Please contact admin.');
+            }
+        } catch (error) {
+            setErrorMessage('An error occurred while fetching user data.');
+            console.error('Error fetching role:', error);
+        }
+    };
+
     const handleLoginSubmit = async (e) => {
         e.preventDefault();
         setErrorMessage('');
@@ -29,7 +62,7 @@ export const Login = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                credentials: 'include', // Includes cookies
+                credentials: 'include',
                 body: JSON.stringify({ email, password }),
             });
 
@@ -40,39 +73,42 @@ export const Login = () => {
             }
 
             const data = await response.json();
-            localStorage.setItem('jwt-token', data['jwt-token']);
-            navigate('/home'); // Navigate to the home page
+            const jwtToken = data['jwt-token'];
+
+            localStorage.setItem('jwt-token', jwtToken);
+
+            await fetchUserRoleAndNavigate(jwtToken);
         } catch (error) {
             setErrorMessage('An error occurred. Please try again.');
             console.error('Login error:', error);
         }
     };
 
-    // Function to handle registration form submission
     const handleRegisterSubmit = async (e) => {
         e.preventDefault();
         setErrorMessage('');
 
-        // Password matching validation
         if (password !== repeatPassword) {
             setErrorMessage('Passwords do not match.');
             return;
         }
 
         try {
+            const body = {
+                firstName: name,
+                lastName: surname,
+                email,
+                password,
+                role: isJoiningBusiness ? 'EMPLOYEE' : 'MERCHANT_OWNER',
+            };
+
             const response = await fetch('http://localhost:8080/auth/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                credentials: 'include', // Includes cookies
-                body: JSON.stringify({
-                    firstName: name,
-                    lastName: surname,
-                    email,
-                    password,
-                    role: 'EMPLOYEE', // You can change this based on requirements
-                }),
+                credentials: 'include',
+                body: JSON.stringify(body),
             });
 
             if (!response.ok) {
@@ -83,14 +119,13 @@ export const Login = () => {
 
             const data = await response.json();
             localStorage.setItem('jwt-token', data['jwt-token']);
-            setFormType('login'); // Switch to login after successful registration
+            setFormType('login');
         } catch (error) {
             setErrorMessage('An error occurred. Please try again.');
             console.error('Registration error:', error);
         }
     };
 
-    // Switch between login and registration forms
     const switchForm = (type) => {
         setFormType(type);
         setShowDialog(true);
@@ -167,6 +202,16 @@ export const Login = () => {
                                     onChange={(e) => setRepeatPassword(e.target.value)}
                                     required
                                 />
+                                <div className="role-selection">
+                                    <label>
+                                        <input
+                                            type="checkbox"
+                                            checked={isJoiningBusiness}
+                                            onChange={(e) => setIsJoiningBusiness(e.target.checked)}
+                                        />
+                                        Join a business as an employee
+                                    </label>
+                                </div>
                                 <button className="submit-button" type="submit">Register</button>
                                 <p className="register-link">
                                     Already a user? <span onClick={() => switchForm('login')}>Login here</span>
