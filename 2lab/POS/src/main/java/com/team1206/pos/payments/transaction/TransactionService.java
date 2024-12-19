@@ -128,7 +128,10 @@ public class TransactionService {
         Transaction savedTransaction = transactionRepository.save(transaction);
 
         BigDecimal totalPaid = getTotalPaidByOrder(orderId);
-        if(totalPaid >= )
+
+        // Atkomentuot kai bus orderService.toPay
+//        if(totalPaid >= orderService.toPay(orderId))
+//            orderService.closeOrder(orderId);
 
         return mapToResponseDTO(savedTransaction);
     }
