@@ -57,7 +57,7 @@ public class OrderService {
         UUID merchantId = userService.getMerchantIdFromLoggedInUser();
 
         if(merchantId == null)
-            throw new UnauthorizedActionException("Super-admin has to be assigned to Merchant first", "");
+            throw new UnauthorizedActionException("Super-admin has to be assigned to Merchant first");
 
         OrderStatus orderStatus =
                 (status != null && !status.isEmpty()) ? OrderStatus.valueOf(status.toUpperCase()) : null;
