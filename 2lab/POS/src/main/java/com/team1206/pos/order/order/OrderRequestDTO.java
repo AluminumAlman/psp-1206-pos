@@ -9,9 +9,5 @@ import java.util.UUID;
 
 @Data
 public class OrderRequestDTO {
-    @NotBlank
-    @Valid
-    private UUID merchantId;
-
     private List<UUID> orderItems;
 }

@@ -18,6 +18,7 @@ import com.team1206.pos.user.user.UserService;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -157,8 +158,54 @@ public class OrderItemService {
         return orderService.mapToResponseDTO(updatedOrder);
     }
 
+    // Cancel order item
+    public void cancelOrderItem(UUID orderId, UUID orderItemId) {
+        Order order = orderService.getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(
+                order.getMerchant().getId(),
+                "You are not authorized to cancel items in this order"
+        );
+
+        if (order.getStatus() != OrderStatus.OPEN) {
+            throw new IllegalStateException("Order is not open");
+        }
+
+        OrderItem orderItem = getOrderItemEntityById(orderItemId);
+        if (!orderItem.getOrder().getId().equals(orderId)) {
+            throw new ResourceNotFoundException(ResourceType.ORDER_ITEM, orderItemId.toString());
+        }
+
+        adjustQuantityOrderItemRemove(orderItem);
+
+        orderItem.setQuantity(0);
+        orderItemRepository.save(orderItem);
+    }
+
 
     // *** Helper methods ***
+
+    public void deleteOrderItem(OrderItem orderItem) {
+        orderItemRepository.delete(orderItem);
+    }
+
+    public BigDecimal getTotalPrice(OrderItem orderItem) {
+        if (orderItem.getProductVariation() != null) {
+            return orderItem.getProductVariation()
+                            .getPrice()
+                            .multiply(BigDecimal.valueOf(orderItem.getQuantity()));
+        }
+        else if (orderItem.getProduct() != null) {
+            return orderItem.getProduct()
+                            .getPrice()
+                            .multiply(BigDecimal.valueOf(orderItem.getQuantity()));
+        }
+        else if (orderItem.getReservation() != null) {
+            return orderItem.getReservation().getService().getPrice();
+        }
+
+        return BigDecimal.ZERO;
+
+    }
 
     private void checkCreateRequestDTO(CreateOrderItemRequestDTO requestDTO) {
         if (requestDTO.getQuantity() <= 0) {

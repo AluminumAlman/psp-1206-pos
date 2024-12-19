@@ -10,6 +10,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -28,7 +29,7 @@ public class Order {
     @Enumerated(EnumType.ORDINAL)
     private OrderStatus status;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToMany(mappedBy = "orders", cascade = CascadeType.ALL)
     private List<OrderCharge> charges;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -44,6 +45,9 @@ public class Order {
     @ManyToMany
     @JoinTable(name = "orders_discounts", joinColumns = @JoinColumn(name = "order_id"), inverseJoinColumns = @JoinColumn(name = "discount_id"))
     private List<Discount> discounts;
+
+    @Column(name = "tip", nullable =  false, precision = 19, scale = 2)
+    private BigDecimal tip = BigDecimal.ZERO;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
