@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -101,6 +102,9 @@ public class ServiceService {
 
     // Get available slots for a service on a given date
     public AvailableSlotsResponseDTO getAvailableSlots(UUID serviceId, LocalDate date, UUID userId) {
+        if (!date.isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("The date must not be in the past");
+        }
         // Get the day of the week for the given date
         DayOfWeek dayOfWeek = date.getDayOfWeek();
 
@@ -112,15 +116,27 @@ public class ServiceService {
 
         // Get service duration (in seconds) from the service entity
         com.team1206.pos.service.service.Service service = getServiceEntityById(serviceId);
-        Long serviceDurationInSeconds = service.getDuration();  // Service duration in seconds (as long)
+        Long serviceDurationInSeconds = service.getDuration();  // Service duration in seconds
 
         // Fetch existing reservations for the given date and employee
         List<Reservation> existingReservations = reservationService.findReservationsByEmployeeAndDate(userId, date);
 
+        // If there are no reservations, consider all slots within the schedule as available
+        existingReservations = (existingReservations == null) ? List.of() : existingReservations;
+
         // Iterate through each schedule (employee's work time)
         for (Schedule schedule : schedules) {
+            if (schedule.getStartTime() == null || schedule.getEndTime() == null) {
+                throw new IllegalArgumentException("This employee is not working today!");
+            }
             // Convert LocalTime to LocalDateTime based on the given date
-            LocalDateTime scheduleStartTime = LocalDateTime.of(date, schedule.getStartTime());
+            LocalDateTime scheduleStartTime;
+            if (date.isEqual(LocalDate.now())) {
+                scheduleStartTime = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
+            } else {
+                scheduleStartTime = LocalDateTime.of(date, schedule.getStartTime());
+            }
+
             LocalDateTime scheduleEndTime = LocalDateTime.of(date, schedule.getEndTime());
 
             // Calculate the available slots based on the service duration
