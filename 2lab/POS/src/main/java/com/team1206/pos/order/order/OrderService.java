@@ -101,6 +101,38 @@ public class OrderService {
     }
 
 
+    // Cancel order
+    public OrderResponseDTO cancelOrder(UUID orderId) {
+        Order order = getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(
+                order.getMerchant().getId(),
+                "You are not authorized to cancel order"
+        );
+        if (order.getStatus() != OrderStatus.OPEN) {
+            throw new IllegalStateException("Order has to be open to be cancelled");
+        }
+
+        order.getItems().forEach(item -> orderItemService.cancelOrderItem(orderId, item.getId()));
+
+        order.setStatus(OrderStatus.CANCELLED);
+        Order updatedOrder = orderRepository.save(order);
+
+        return mapToResponseDTO(updatedOrder);
+    }
+
+    // Delete order
+    public void deleteOrder(UUID orderId) {
+        Order order = getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(
+                order.getMerchant().getId(),
+                "You are not authorized to delete order"
+        );
+
+        order.getItems().forEach(orderItemService::deleteOrderItem);
+
+        orderRepository.delete(order);
+    }
+
     // *** Helper methods ***
 
     public Order addOrderItemToOrder(Order order, OrderItem orderItem) {

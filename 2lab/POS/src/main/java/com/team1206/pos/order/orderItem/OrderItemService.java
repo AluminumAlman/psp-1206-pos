@@ -157,8 +157,35 @@ public class OrderItemService {
         return orderService.mapToResponseDTO(updatedOrder);
     }
 
+    // Cancel order item
+    public void cancelOrderItem(UUID orderId, UUID orderItemId) {
+        Order order = orderService.getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(
+                order.getMerchant().getId(),
+                "You are not authorized to cancel items in this order"
+        );
+
+        if (order.getStatus() != OrderStatus.OPEN) {
+            throw new IllegalStateException("Order is not open");
+        }
+
+        OrderItem orderItem = getOrderItemEntityById(orderItemId);
+        if (!orderItem.getOrder().getId().equals(orderId)) {
+            throw new ResourceNotFoundException(ResourceType.ORDER_ITEM, orderItemId.toString());
+        }
+
+        adjustQuantityOrderItemRemove(orderItem);
+
+        orderItem.setQuantity(0);
+        orderItemRepository.save(orderItem);
+    }
+
 
     // *** Helper methods ***
+
+    public void deleteOrderItem(OrderItem orderItem) {
+        orderItemRepository.delete(orderItem);
+    }
 
     private void checkCreateRequestDTO(CreateOrderItemRequestDTO requestDTO) {
         if (requestDTO.getQuantity() <= 0) {

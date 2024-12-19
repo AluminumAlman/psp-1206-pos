@@ -1,10 +1,14 @@
 package com.team1206.pos.order.order;
 
 import io.swagger.v3.oas.annotations.Operation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
+@Slf4j
 @RestController
 @RequestMapping("/orders")
 public class OrderController {
@@ -30,6 +34,28 @@ public class OrderController {
     @Operation(summary = "Create order")
     public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody OrderRequestDTO requestDTO) {
         return ResponseEntity.ok(orderService.createOrder(requestDTO));
+    }
+
+    @PostMapping("{orderId}/cancel")
+    @Operation(summary = "Cancel an order")
+    public ResponseEntity<OrderResponseDTO> cancelOrder(@PathVariable UUID orderId) {
+        log.info("Received cancel order request: orderId={}", orderId);
+
+        OrderResponseDTO response = orderService.cancelOrder(orderId);
+
+        log.debug("Returning {} to cancel order request (orderId={})", response, orderId);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("{orderId}")
+    @Operation(summary = "Delete an order")
+    public ResponseEntity<Void> deleteOrder(@PathVariable UUID orderId) {
+        log.info("Received delete order request: orderId={}", orderId);
+
+        orderService.deleteOrder(orderId);
+
+        log.debug("Returning 204 NO CONTENT to delete order request (orderId={})", orderId);
+        return ResponseEntity.noContent().build();
     }
 
     // TODO: Create an endpoint to get the total tax amount of an order
