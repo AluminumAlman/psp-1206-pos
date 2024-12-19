@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Slf4j
@@ -56,6 +57,12 @@ public class OrderController {
 
         log.debug("Returning 204 NO CONTENT to delete order request (orderId={})", orderId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("{orderId}/totalPrice")
+    @Operation(summary = "Get the total amount of an order")
+    public ResponseEntity<BigDecimal> getTotal(@PathVariable UUID orderId) {
+        return ResponseEntity.ok(orderService.calculateTotalAmount(orderId));
     }
 
     // TODO: Create an endpoint to get the total tax amount of an order

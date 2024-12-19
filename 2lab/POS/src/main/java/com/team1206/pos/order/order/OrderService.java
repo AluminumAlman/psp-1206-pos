@@ -16,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -152,6 +153,16 @@ public class OrderService {
         order.getItems().removeIf(item -> item.getId().equals(orderItem.getId()));
 
         return orderRepository.save(order);
+    }
+
+    public BigDecimal calculateTotalAmount(UUID orderId) {
+        Order order = getOrderEntityById(orderId);
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        for (OrderItem item : order.getItems()) {
+            totalAmount = totalAmount.add(orderItemService.getTotalPrice(item));
+        }
+
+        return totalAmount;
     }
 
     private void setOrderFields(Order order, OrderRequestDTO requestBody) {
