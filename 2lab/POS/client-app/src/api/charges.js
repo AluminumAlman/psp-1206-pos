@@ -1,6 +1,6 @@
 const BASE = 'http://localhost:8080';
 
-export async function getChargesByType(token, {limit=10, offset=0, chargeType}) {
+export async function getChargesByType(token, {limit=20, offset=0, chargeType}) {
     const params = new URLSearchParams({ limit, offset, chargeType });
     const res = await fetch(`${BASE}/charges?${params}`, {
         headers: { 'Authorization': `Bearer ${token}` }

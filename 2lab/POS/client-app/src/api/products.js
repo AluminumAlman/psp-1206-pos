@@ -122,7 +122,7 @@ export async function createProductVariation(token, productId, data) {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+            'Content-Type':'application/json'
         },
         body: JSON.stringify(data)
     });
@@ -163,6 +163,36 @@ export async function adjustProductVariationQuantity(token, productId, variation
             'Content-Type':'application/json'
         },
         body: JSON.stringify({ adjustment })
+    });
+    return res.json();
+}
+
+// Inventory Logs
+export async function createInventoryLog(token, data) {
+    const res = await fetch(`${BASE}/inventoryLog`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type':'application/json'
+        },
+        body: JSON.stringify(data)
+    });
+    return res.json();
+}
+
+export async function getInventoryLog(token, id) {
+    const res = await fetch(`${BASE}/inventoryLog/${id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return res.json();
+}
+
+export async function getAllInventoryLogs(token, {offset=0, limit=20}={}) {
+    // As per the given controller, filter is passed in request body (which is unusual for GET).
+    // We'll call it without filter, just offset and limit.
+    const params = new URLSearchParams({ offset, limit });
+    const res = await fetch(`${BASE}/inventoryLog?${params}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
     });
     return res.json();
 }
