@@ -55,6 +55,7 @@ public class ReservationService {
     }
 
     public ReservationResponseDTO createReservation(ReservationRequestDTO requestDTO) {
+        validateReservationServiceId(requestDTO.getServiceId());
         Service service = serviceService.getServiceEntityById(requestDTO.getServiceId());
 
         User employee = userService.getUserEntityById(requestDTO.getEmployeeId());
@@ -99,6 +100,7 @@ public class ReservationService {
 
     // Update a reservation
     public ReservationResponseDTO updateReservation(UUID reservationId, ReservationRequestDTO requestDTO) {
+        validateReservationServiceId(requestDTO.getServiceId());
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.RESERVATION, reservationId.toString()));
 
@@ -190,11 +192,22 @@ public class ReservationService {
                                     ));
     }
 
+    // Helpers
     private void validateReservationDateTime (LocalDateTime time) {
         if (!time.isAfter(LocalDateTime.now())) {
             throw new IllegalArgumentException("The reservation start time must not be in the past.");
         }
     }
+
+    private void validateReservationServiceId(UUID serviceId) {
+        boolean isServiceBelongingToMerchant = serviceService.getServiceEntityById(serviceId).getMerchant().getId()
+                .equals(userService.getMerchantIdFromLoggedInUser());
+        // Throw an exception if the service does not belong to the current user's merchant
+        if (!isServiceBelongingToMerchant) {
+            throw new IllegalArgumentException("The provided service does not belong to your merchant.");
+        }
+    }
+
 
     // Mappers
     private ReservationResponseDTO mapToResponseDTO(Reservation reservation) {
