@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -20,18 +21,30 @@ public class OrderChargeController {
         this.orderChargeService = orderChargeService;
     }
 
-    @GetMapping("{orderId}/charges")
-    @Operation(summary = "Get order charges")
+    @GetMapping("/charges")
+    @Operation(summary = "Get all order charges from an order")
     public ResponseEntity<Page<OrderChargeResponseDTO>> getOrderCharges(
-            @PathVariable UUID orderId,
             @RequestParam(value = "limit", defaultValue = "20") int limit,
             @RequestParam(value = "offset", defaultValue = "0") int offset
     ) {
-        log.info("Received get order charges request: orderId={} offset={} limit={}", orderId, offset, limit);
+        log.info("Received get order charges request: offset={} limit={}", offset, limit);
 
-        Page<OrderChargeResponseDTO> response = orderChargeService.getOrderCharges(orderId, offset, limit);
+        Page<OrderChargeResponseDTO> response = orderChargeService.getOrderCharges(offset, limit);
 
-        log.debug("Returning {} to get order charges request (orderId={} offset={} limit={})", response.stream().toList(), orderId, offset, limit);
+        log.debug("Returning {} to get order charges request (offset={} limit={})", response.stream().toList(), offset, limit);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("{orderId}/charges")
+    @Operation(summary = "Get all order charges from an order")
+    public ResponseEntity<List<OrderChargeResponseDTO>> getOrderChargesFromOrder(
+            @PathVariable String orderId
+    ) {
+        log.info("Received get order charges from order request: orderId={}", orderId);
+
+        List<OrderChargeResponseDTO> response = orderChargeService.getOrderChargesFromOrder(UUID.fromString(orderId));
+
+        log.debug("Returning {} to get order charges request (orderId={})", response.stream().toList(), orderId);
         return ResponseEntity.ok(response);
     }
 
@@ -46,15 +59,5 @@ public class OrderChargeController {
 
         log.debug("Returning {} to create order charge request", response);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    @DeleteMapping("{orderId}/charges/{chargeId}")
-    @Operation(summary = "Delete order charge")
-    public ResponseEntity<Void> deleteOrderCharge(
-            @PathVariable UUID orderId,
-            @PathVariable UUID chargeId
-    ) {
-        orderChargeService.deleteOrderCharge(orderId, chargeId);
-        return ResponseEntity.noContent().build();
     }
 }

@@ -6,10 +6,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface OrderChargeRepository extends JpaRepository<OrderCharge, UUID> {
 
-    //@Query("SELECT oc FROM OrderCharge oc WHERE oc.order.id = :orderId")
-    //Page<OrderCharge> findAllWithFilters(@Param("orderId") UUID orderId, Pageable pageable);
+    @Query("SELECT oc FROM OrderCharge oc WHERE oc.merchant.id = :merchantId")
+    Page<OrderCharge> findAllByMerchantId(@Param("merchantId") UUID merchantId, Pageable pageable);
+
+    @Query("SELECT oc FROM OrderCharge oc JOIN oc.orders o WHERE o.id = :orderId")
+    List<OrderCharge> findAllByOrderId(@Param("orderId") UUID orderId);
 }
