@@ -79,16 +79,6 @@ public class OrderChargeService {
         return mapToResponseDTO(savedOrderCharge);
     }
 
-    // Update order charge
-    public void deleteOrderCharge(UUID chargeId) {
-        OrderCharge orderCharge = orderChargeRepository.findById(chargeId)
-                        .orElseThrow(() -> new ResourceNotFoundException(ResourceType.ORDER_CHARGE, chargeId.toString()));
-
-        userService.verifyLoggedInUserBelongsToMerchant(orderCharge.getMerchant().getId(), "You are not authorized to delete this charge");
-
-        orderChargeRepository.delete(orderCharge);
-    }
-
 
     // *** Helper methods ***
 

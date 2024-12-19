@@ -60,13 +60,4 @@ public class OrderChargeController {
         log.debug("Returning {} to create order charge request", response);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-
-    @DeleteMapping("/charges/{chargeId}")
-    @Operation(summary = "Delete order charge")
-    public ResponseEntity<Void> deleteOrderCharge(
-            @PathVariable UUID chargeId
-    ) {
-        orderChargeService.deleteOrderCharge(chargeId);
-        return ResponseEntity.noContent().build();
-    }
 }
