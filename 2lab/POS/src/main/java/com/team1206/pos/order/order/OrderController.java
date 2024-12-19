@@ -34,8 +34,8 @@ public class OrderController {
 
     @PostMapping
     @Operation(summary = "Create order")
-    public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody OrderRequestDTO requestDTO) {
-        return ResponseEntity.ok(orderService.createOrder(requestDTO));
+    public ResponseEntity<OrderResponseDTO> createOrder() {
+        return ResponseEntity.ok(orderService.createOrder());
     }
 
     @PostMapping("{orderId}/cancel")
