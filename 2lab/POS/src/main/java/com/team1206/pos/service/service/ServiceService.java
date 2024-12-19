@@ -98,8 +98,8 @@ public class ServiceService {
         // Fetch employee's schedule for the given day
         List<Schedule> schedules = scheduleService.getUserScheduleByDay(userId, dayOfWeek);
 
-        // List to hold the available slots
-        List<AvailableSlotsResponseDTO.Slot> availableSlots = new ArrayList<>();
+        // Create the response DTO
+        AvailableSlotsResponseDTO responseDTO = new AvailableSlotsResponseDTO();
 
         // Get service duration (in minutes) from the service entity
         com.team1206.pos.service.service.Service service = getServiceEntityById(serviceId);
@@ -118,16 +118,14 @@ public class ServiceService {
                 AvailableSlotsResponseDTO.Slot slot = new AvailableSlotsResponseDTO.Slot();
                 slot.setStartTime(slotStartTime);
                 slot.setEndTime(slotEndTime);
-                availableSlots.add(slot);
+                responseDTO.getItems().add(slot);  // Directly add to the list in the DTO
 
                 // Move to the next available time slot
                 slotStartTime = slotEndTime;
             }
         }
 
-        // Create and return the response DTO
-        AvailableSlotsResponseDTO responseDTO = new AvailableSlotsResponseDTO();
-        responseDTO.setItems(availableSlots);
+        // Return the response DTO with the available slots
         return responseDTO;
     }
 
