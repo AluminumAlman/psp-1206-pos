@@ -275,6 +275,9 @@ public class OrderItemService {
         else if (orderItem.getProduct() != null) {
             productService.adjustProductQuantity(orderItem.getProduct().getId(), orderItem.getQuantity());
         }
+        else if (orderItem.getReservation() != null) {
+            reservationService.cancelReservation(orderItem.getReservation().getId());
+        }
     }
 
     // Get order item by id

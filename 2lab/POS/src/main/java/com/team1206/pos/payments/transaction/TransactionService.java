@@ -129,9 +129,9 @@ public class TransactionService {
 
         BigDecimal totalPaid = getTotalPaidByOrder(orderId);
 
-        // Atkomentuot kai bus orderService.toPay
-//        if(totalPaid >= orderService.toPay(orderId))
-//            orderService.closeOrder(orderId);
+        // Uzdaro Order jei uzmoketa suma >= reikiamos
+        if(totalPaid.compareTo(orderService.calculateFinalCheckoutAmount(orderId)) >= 0)
+            orderService.closeOrder(orderId);
 
         return mapToResponseDTO(savedTransaction);
     }
