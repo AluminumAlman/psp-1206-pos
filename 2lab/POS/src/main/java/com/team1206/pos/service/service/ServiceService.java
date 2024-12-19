@@ -68,9 +68,7 @@ public class ServiceService {
 
     // Get service by ID
     public ServiceResponseDTO getServiceById(UUID serviceId) {
-        com.team1206.pos.service.service.Service service = serviceRepository.findById(serviceId)
-                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.SERVICE, serviceId.toString()));
-        return mapToResponseDTO(service);
+        return mapToResponseDTO(getServiceEntityById(serviceId));
     }
 
     // Delete service by ID

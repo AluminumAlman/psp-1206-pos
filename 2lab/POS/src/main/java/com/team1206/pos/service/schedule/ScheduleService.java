@@ -51,15 +51,18 @@ public class ScheduleService {
             }
             daysProcessed.add(dayOfWeek);
 
-            // Validate work hours
-            if (workHours == null || workHours.getStartTime() == null || workHours.getEndTime() == null) {
-                throw new IllegalArgumentException("Work hours must be provided for day: " + dayOfWeek);
-            }
-            if (workHours.getEndTime().isBefore(workHours.getStartTime()) || workHours.getEndTime().equals(workHours.getStartTime())) {
-                throw new IllegalArgumentException("End time must be later than start time for day: " + dayOfWeek);
+            // If work hours are not provided for this day, leave them as null
+            if (workHours != null && workHours.getStartTime() != null && workHours.getEndTime() != null) {
+                // Validate work hours
+                if (workHours.getEndTime().isBefore(workHours.getStartTime()) || workHours.getEndTime().equals(workHours.getStartTime())) {
+                    throw new IllegalArgumentException("End time must be later than start time for day: " + dayOfWeek);
+                }
+            } else {
+                // If work hours are not provided, we leave them as null in the schedule entity
+                workHours = null;
             }
 
-            // Create the schedule entity
+            // Create the schedule entity with startTime and endTime being null if no work hours are provided
             Schedule schedule = new Schedule();
             if (user != null && merchant == null) {
                 schedule.setUser(user);
@@ -67,8 +70,13 @@ public class ScheduleService {
                 schedule.setMerchant(merchant);
             }
             schedule.setDayOfWeek(dayOfWeek);
-            schedule.setStartTime(workHours.getStartTime());
-            schedule.setEndTime(workHours.getEndTime());
+            if (workHours != null) {
+                schedule.setStartTime(workHours.getStartTime());
+                schedule.setEndTime(workHours.getEndTime());
+            } else {
+                schedule.setStartTime(null);  // No work hours provided
+                schedule.setEndTime(null);    // No work hours provided
+            }
             schedules.add(schedule);
         }
 

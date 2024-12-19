@@ -45,7 +45,6 @@ public class MerchantRequestDTO {
     @Size(max = 20, message = "Postcode must not exceed 20 characters")
     private String postcode;
 
-    // Weekly schedule: A map with DayOfWeek as keys and work hours as values
-    @NotNull(message = "Weekly schedule is required")
-    private Map<DayOfWeek, WorkHoursDTO> weeklySchedule;
+    @NotNull(message = "Schedule is required")
+    private Map<DayOfWeek, WorkHoursDTO> schedule;
 }

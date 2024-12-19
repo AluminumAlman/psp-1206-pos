@@ -124,6 +124,6 @@ public class MerchantService {
         merchant.setCity(requestDTO.getCity());
         merchant.setCountry(requestDTO.getCountry());
         merchant.setPostcode(requestDTO.getPostcode());
-        merchant.setSchedules(scheduleService.createScheduleEntities(requestDTO.getWeeklySchedule(), merchant));
+        merchant.setSchedules(scheduleService.createScheduleEntities(requestDTO.getSchedule(), merchant));
     }
 }
