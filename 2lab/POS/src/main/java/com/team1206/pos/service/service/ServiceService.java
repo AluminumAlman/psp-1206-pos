@@ -126,6 +126,9 @@ public class ServiceService {
 
         // Iterate through each schedule (employee's work time)
         for (Schedule schedule : schedules) {
+            if (schedule.getStartTime() == null || schedule.getEndTime() == null) {
+                throw new IllegalArgumentException("This employee is not working today!");
+            }
             // Convert LocalTime to LocalDateTime based on the given date
             LocalDateTime scheduleStartTime;
             if (date.isEqual(LocalDate.now())) {
