@@ -19,6 +19,4 @@ public class UpdateProductRequestDTO {
     private Integer quantity;
 
     private UUID categoryId;
-
-    private List<UUID> chargeIds;
 }

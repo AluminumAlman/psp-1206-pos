@@ -25,8 +25,4 @@ public class CreateProductRequestDTO {
 
     @NotNull(message = "Category ID is required")
     private UUID categoryId;
-
-    // Empty list for no charges
-    @NotNull(message = "Charges must not be null. Use an empty array for no charges.")
-    private List<UUID> chargeIds;
 }

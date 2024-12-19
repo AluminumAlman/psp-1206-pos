@@ -6,10 +6,13 @@ import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.exceptions.UnauthorizedActionException;
 import com.team1206.pos.inventory.product.Product;
+import com.team1206.pos.inventory.product.ProductService;
 import com.team1206.pos.service.service.Service;
+import com.team1206.pos.service.service.ServiceService;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.merchant.MerchantService;
 import com.team1206.pos.user.user.UserService;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,11 +29,19 @@ public class ChargeService {
     private final ChargeRepository chargeRepository;
     private final MerchantService merchantService;
     private final UserService userService;
+    private final ProductService productService;
+    private final ServiceService serviceService;
 
-    public ChargeService(ChargeRepository chargeRepository, MerchantService merchantService, UserService userService) {
+    public ChargeService(ChargeRepository chargeRepository,
+                         MerchantService merchantService,
+                         UserService userService,
+                         ProductService productService,
+                         ServiceService serviceService) {
         this.chargeRepository = chargeRepository;
         this.merchantService = merchantService;
         this.userService = userService;
+        this.productService = productService;
+        this.serviceService = serviceService;
     }
 
     // Get charges by merchantId paginated
@@ -74,10 +85,7 @@ public class ChargeService {
 
     // Retrieve charge by ID
     public ChargeResponseDTO getChargeById(UUID chargeId) {
-        Charge charge =
-                chargeRepository.findById(chargeId).orElseThrow(() -> new ResourceNotFoundException(
-                        ResourceType.CHARGE,
-                        chargeId.toString()));
+        Charge charge = getChargeEntityById(chargeId);
 
         userService.verifyLoggedInUserBelongsToMerchant(charge.getMerchant().getId(), "You are not authorized to retrieve this charge");
 
@@ -86,10 +94,7 @@ public class ChargeService {
 
     // Update charge by ID
     public ChargeResponseDTO updateCharge(UUID chargeId, ChargeRequestDTO request) {
-        Charge charge =
-                chargeRepository.findById(chargeId).orElseThrow(() -> new ResourceNotFoundException(
-                        ResourceType.CHARGE,
-                        chargeId.toString()));
+        Charge charge = getChargeEntityById(chargeId);
 
         userService.verifyLoggedInUserBelongsToMerchant(charge.getMerchant().getId(), "You are not authorized to update this charge");
 
@@ -102,10 +107,7 @@ public class ChargeService {
 
     // Deactivate charge by ID
     public void deactivateCharge(UUID chargeId) {
-        Charge charge =
-                chargeRepository.findById(chargeId).orElseThrow(() -> new ResourceNotFoundException(
-                        ResourceType.CHARGE,
-                        chargeId.toString()));
+        Charge charge = getChargeEntityById(chargeId);
 
         userService.verifyLoggedInUserBelongsToMerchant(charge.getMerchant().getId(), "You are not authorized to deactivate this charge");
 
@@ -116,10 +118,7 @@ public class ChargeService {
 
     // Reactivate charge by ID
     public ChargeResponseDTO reactivateCharge(UUID chargeId) {
-        Charge charge =
-                chargeRepository.findById(chargeId).orElseThrow(() -> new ResourceNotFoundException(
-                        ResourceType.CHARGE,
-                        chargeId.toString()));
+        Charge charge = getChargeEntityById(chargeId);
 
         userService.verifyLoggedInUserBelongsToMerchant(charge.getMerchant().getId(), "You are not authorized to reactivate this charge");
 
@@ -130,6 +129,104 @@ public class ChargeService {
         return mapToResponseDTO(updatedCharge);
     }
 
+    // Get charges of a product
+    public List<ChargeResponseDTO> getChargesOfProduct(UUID productId) {
+        Product product = productService.getProductEntityById(productId);
+        userService.verifyLoggedInUserBelongsToMerchant(
+                product.getCategory().getMerchant().getId(),
+                "You are not authorized to get charges of this product");
+
+        return product.getCharges().stream().map(this::mapToResponseDTO).toList();
+    }
+
+    // Add charge to product
+    @Transactional
+    public void addChargeToProduct(UUID chargeId, UUID productId) {
+        Product product = productService.getProductEntityById(productId);
+        UUID merchantId = product.getCategory().getMerchant().getId();
+        userService.verifyLoggedInUserBelongsToMerchant(
+                merchantId,
+                "You are not authorized to add charges to this product");
+
+        Charge charge = getChargeEntityById(chargeId);
+        if (merchantId != charge.getMerchant().getId())
+            throw new IllegalRequestException("Product and charge merchants differ");
+
+        if (charge.getProducts().contains(product))
+            throw new IllegalRequestException("Charge is already applied to product");
+
+        charge.getProducts().add(product);
+        chargeRepository.save(charge);
+    }
+
+    // Remove charge from product
+    @Transactional
+    public void removeChargeFromProduct(UUID chargeId, UUID productId) {
+        Product product = productService.getProductEntityById(productId);
+        UUID merchantId = product.getCategory().getMerchant().getId();
+        userService.verifyLoggedInUserBelongsToMerchant(
+                merchantId,
+                "You are not authorized to remove charges from this product");
+
+        Charge charge = getChargeEntityById(chargeId);
+        if (merchantId != charge.getMerchant().getId())
+            throw new IllegalRequestException("Product and charge merchants differ");
+
+        if (!charge.getProducts().remove(product))
+            throw new IllegalRequestException("Charge is not applied to product");
+
+        chargeRepository.save(charge);
+    }
+
+    // Get charges of a service
+    public List<ChargeResponseDTO> getChargesOfService(UUID serviceId) {
+        Service service = serviceService.getServiceEntityById(serviceId);
+        userService.verifyLoggedInUserBelongsToMerchant(
+                service.getMerchant().getId(),
+                "You are not authorized to get charges of this service");
+
+        return service.getCharges().stream().map(this::mapToResponseDTO).toList();
+    }
+
+    // Add charge to service
+    @Transactional
+    public void addChargeToService(UUID chargeId, UUID serviceId) {
+        Service service = serviceService.getServiceEntityById(serviceId);
+        UUID merchantId = service.getMerchant().getId();
+        userService.verifyLoggedInUserBelongsToMerchant(
+                merchantId,
+                "You are not authorized to add charges to this service");
+
+        Charge charge = getChargeEntityById(chargeId);
+        if (merchantId != charge.getMerchant().getId())
+            throw new IllegalRequestException("Service and charge merchants differ");
+
+        if (charge.getProducts().contains(service))
+            throw new IllegalRequestException("Charge is already applied to service");
+
+        charge.getServices().add(service);
+        chargeRepository.save(charge);
+    }
+
+    // Remove charge from service
+    @Transactional
+    public void removeChargeFromService(UUID chargeId, UUID serviceId) {
+        Service service = serviceService.getServiceEntityById(serviceId);
+        UUID merchantId = service.getMerchant().getId();
+        userService.verifyLoggedInUserBelongsToMerchant(
+                merchantId,
+                "You are not authorized to remove charges from this service");
+
+        Charge charge = getChargeEntityById(chargeId);
+        if (merchantId != charge.getMerchant().getId())
+            throw new IllegalRequestException("Service and charge merchants differ");
+
+        if (!charge.getServices().remove(service))
+            throw new IllegalRequestException("Charge is not applied to service");
+
+        chargeRepository.save(charge);
+    }
+
     // Service layer
     public List<Charge> getAllEntitiesById(List<UUID> chargeIds) {
         return chargeRepository.findAllById(chargeIds);
@@ -137,6 +234,13 @@ public class ChargeService {
 
 
     // *** Helper methods ***
+
+    public Charge getChargeEntityById(UUID chargeId) {
+        Charge charge =  chargeRepository.findById(chargeId).orElseThrow(() -> new ResourceNotFoundException(
+                ResourceType.CHARGE,
+                chargeId.toString()));
+        return charge;
+    }
 
     public ResponseEntity<Page<ChargeResponseDTO>> handleGetChargesRequest(
             int limit,
