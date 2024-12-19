@@ -3,6 +3,8 @@ package com.team1206.pos.service.service;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
+import com.team1206.pos.service.schedule.Schedule;
+import com.team1206.pos.service.schedule.ScheduleService;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.merchant.MerchantService;
 import com.team1206.pos.user.user.User;
@@ -13,7 +15,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,11 +27,13 @@ public class ServiceService {
     private final ServiceRepository serviceRepository;
     private final UserService userService;
     private final MerchantService merchantService;
+    private final ScheduleService scheduleService;
 
-    public ServiceService(ServiceRepository serviceRepository, UserService userService, MerchantService merchantService) {
+    public ServiceService(ServiceRepository serviceRepository, UserService userService, MerchantService merchantService, ScheduleService scheduleService) {
         this.serviceRepository = serviceRepository;
         this.userService = userService;
         this.merchantService = merchantService;
+        this.scheduleService = scheduleService;
     }
 
     // Get services paginated
@@ -84,14 +91,45 @@ public class ServiceService {
     }
 
     // Get available slots for a service on a given date
-    public AvailableSlotsResponseDTO getAvailableSlots(UUID serviceId, LocalDate date) {
+    public AvailableSlotsResponseDTO getAvailableSlots(UUID serviceId, LocalDate date, UUID userId) {
+        // Get the day of the week for the given date
+        DayOfWeek dayOfWeek = date.getDayOfWeek();
 
-        // Implement logic to fetch and calculate available slots for the service
-        // Return placeholder data for now
+        // Fetch employee's schedule for the given day
+        List<Schedule> schedules = scheduleService.getUserScheduleByDay(userId, dayOfWeek);
+
+        // List to hold the available slots
+        List<AvailableSlotsResponseDTO.Slot> availableSlots = new ArrayList<>();
+
+        // Get service duration (in minutes) from the service entity
+        com.team1206.pos.service.service.Service service = getServiceEntityById(serviceId);
+        Long serviceDurationInSeconds = service.getDuration();  // Service duration in minutes
+
+        // Iterate through each schedule (employee's work time)
+        for (Schedule schedule : schedules) {
+            // Convert LocalTime to LocalDateTime based on the given date
+            LocalDateTime scheduleStartTime = LocalDateTime.of(date, schedule.getStartTime());
+            LocalDateTime scheduleEndTime = LocalDateTime.of(date, schedule.getEndTime());
+
+            // Calculate the available slots based on the service duration
+            LocalDateTime slotStartTime = scheduleStartTime;
+            while (slotStartTime.plusSeconds(serviceDurationInSeconds).isBefore(scheduleEndTime)) {
+                LocalDateTime slotEndTime = slotStartTime.plusMinutes(serviceDurationInSeconds);
+                AvailableSlotsResponseDTO.Slot slot = new AvailableSlotsResponseDTO.Slot();
+                slot.setStartTime(slotStartTime);
+                slot.setEndTime(slotEndTime);
+                availableSlots.add(slot);
+
+                // Move to the next available time slot
+                slotStartTime = slotEndTime;
+            }
+        }
+
+        // Create and return the response DTO
         AvailableSlotsResponseDTO responseDTO = new AvailableSlotsResponseDTO();
+        responseDTO.setItems(availableSlots);
         return responseDTO;
     }
-
 
     // Service layer methods
     public com.team1206.pos.service.service.Service getServiceEntityById(UUID serviceId) {
