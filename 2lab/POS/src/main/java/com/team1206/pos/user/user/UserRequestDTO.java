@@ -31,5 +31,5 @@ public class UserRequestDTO {
     private UserRoles role;
 
     @NotNull(message = "Weekly schedule is required")
-    private Map<DayOfWeek, WorkHoursDTO> weeklySchedule;
+    private Map<DayOfWeek, WorkHoursDTO> schedule;
 }

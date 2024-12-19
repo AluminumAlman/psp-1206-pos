@@ -1,5 +1,0 @@
-ALTER TABLE schedule
-    ALTER COLUMN merchant_id DROP NOT NULL;
-
-ALTER TABLE schedule
-    ALTER COLUMN user_id DROP NOT NULL;
