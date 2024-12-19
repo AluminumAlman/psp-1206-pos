@@ -17,13 +17,13 @@
     border-radius: 15px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     width: 300px;
-    text-align: center; /* Center the text inside the box */
+    text-align: center;
     cursor: pointer;
 }
 
-.merchant-modal {
+.business-modal {
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* Ensure form fields are stacked vertically */
     align-items: center;
     gap: 15px;
     width: 350px;
@@ -31,16 +31,17 @@
     padding: 20px;
     border-radius: 15px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    text-align: center; /* Ensure text alignment is centered */
+    text-align: center;
 }
 
-.merchant-modal select, .merchant-modal button {
+.business-modal input {
     width: 100%;
     padding: 10px;
     font-size: 16px;
+    box-sizing: border-box;
 }
 
-.create-button, .logout-button {
+.create-button {
     margin-top: 15px;
     background-color: #007bff;
     color: white;
@@ -50,7 +51,7 @@
     border-radius: 5px;
 }
 
-.create-button:disabled, .assign-button:disabled {
+.create-button:disabled {
     background-color: #ccc;
     cursor: not-allowed;
 }
@@ -58,7 +59,7 @@
 .details-box {
     margin-top: 10px;
     font-size: 14px;
-    text-align: center; /* Center the text inside the details box */
+    text-align: center;
 }
 
 .error-message {
