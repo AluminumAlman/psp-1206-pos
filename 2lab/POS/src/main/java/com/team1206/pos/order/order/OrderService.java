@@ -6,6 +6,7 @@ import com.team1206.pos.exceptions.IllegalRequestException;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.exceptions.UnauthorizedActionException;
 import com.team1206.pos.order.orderCharge.OrderCharge;
+import com.team1206.pos.order.orderCharge.OrderChargeService;
 import com.team1206.pos.order.orderItem.OrderItem;
 import com.team1206.pos.order.orderItem.OrderItemService;
 import com.team1206.pos.payments.discount.Discount;
@@ -13,6 +14,7 @@ import com.team1206.pos.payments.transaction.Transaction;
 import com.team1206.pos.user.merchant.MerchantService;
 import com.team1206.pos.user.user.UserService;
 import jakarta.transaction.Transactional;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,17 +31,20 @@ public class OrderService {
     private final UserService userService;
     private final MerchantService merchantService;
     private final OrderItemService orderItemService;
+    private final OrderChargeService orderChargeService;
 
     public OrderService(
             OrderRepository orderRepository,
             UserService userService,
             MerchantService merchantService,
-            OrderItemService orderItemService
+            OrderItemService orderItemService,
+            @Lazy OrderChargeService orderChargeService
     ) {
         this.orderRepository = orderRepository;
         this.userService = userService;
         this.merchantService = merchantService;
         this.orderItemService = orderItemService;
+        this.orderChargeService = orderChargeService;
     }
 
     // Get paged orders
@@ -173,7 +178,7 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    public BigDecimal calculateTotalAmount(UUID orderId) {
+    public BigDecimal calculateTotalProductAndServicePrice(UUID orderId) {
         Order order = getOrderEntityById(orderId);
         userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to get total amount of this order");
 
@@ -183,6 +188,12 @@ public class OrderService {
         }
 
         return totalAmount;
+    }
+
+    public BigDecimal calculateFinalCheckoutAmount(UUID orderId) {
+        BigDecimal totalOrderItemsPrice = calculateTotalProductAndServicePrice(orderId);
+
+        return orderChargeService.applyOrderCharges(orderId, totalOrderItemsPrice);
     }
 
     private void setOrderFields(Order order, OrderRequestDTO requestBody) {

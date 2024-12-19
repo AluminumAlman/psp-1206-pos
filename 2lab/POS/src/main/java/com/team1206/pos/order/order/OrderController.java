@@ -3,7 +3,6 @@ package com.team1206.pos.order.order;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -66,10 +65,21 @@ public class OrderController {
     public ResponseEntity<BigDecimal> getTotal(@PathVariable UUID orderId) {
         log.debug("Received get total amount request: orderId={}", orderId);
 
-        BigDecimal total = orderService.calculateTotalAmount(orderId);
+        BigDecimal total = orderService.calculateTotalProductAndServicePrice(orderId);
 
         log.debug("Returning {} to get total amount request (orderId={})", total, orderId);
         return ResponseEntity.ok(total);
+    }
+
+    @GetMapping("{orderId}/finalCheckoutAmount")
+    @Operation(summary = "Get the final checkout amount of an order")
+    public ResponseEntity<BigDecimal> getFinalCheckoutAmount(@PathVariable UUID orderId) {
+        log.debug("Received get final checkout amount request: orderId={}", orderId);
+
+        BigDecimal finalCheckoutAmount = orderService.calculateFinalCheckoutAmount(orderId);
+
+        log.debug("Returning {} to get final checkout amount request (orderId={})", finalCheckoutAmount, orderId);
+        return ResponseEntity.ok(finalCheckoutAmount);
     }
 
     @PostMapping("{orderId}/setTip")
