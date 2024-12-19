@@ -3,6 +3,8 @@ package com.team1206.pos.service.service;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
+import com.team1206.pos.service.reservation.Reservation;
+import com.team1206.pos.service.reservation.ReservationService;
 import com.team1206.pos.service.schedule.Schedule;
 import com.team1206.pos.service.schedule.ScheduleService;
 import com.team1206.pos.user.merchant.Merchant;
@@ -27,12 +29,14 @@ public class ServiceService {
     private final UserService userService;
     private final MerchantService merchantService;
     private final ScheduleService scheduleService;
+    private final ReservationService reservationService;
 
-    public ServiceService(ServiceRepository serviceRepository, UserService userService, MerchantService merchantService, ScheduleService scheduleService) {
+    public ServiceService(ServiceRepository serviceRepository, UserService userService, MerchantService merchantService, ScheduleService scheduleService, ReservationService reservationService) {
         this.serviceRepository = serviceRepository;
         this.userService = userService;
         this.merchantService = merchantService;
         this.scheduleService = scheduleService;
+        this.reservationService = reservationService;
     }
 
     // Get services paginated
@@ -102,7 +106,10 @@ public class ServiceService {
 
         // Get service duration (in minutes) from the service entity
         com.team1206.pos.service.service.Service service = getServiceEntityById(serviceId);
-        Long serviceDurationInSeconds = service.getDuration();  // Service duration in minutes
+        Long serviceDurationInSeconds = service.getDuration();  // Service duration in seconds (as long)
+
+        // Fetch existing reservations for the given date and employee
+        List<Reservation> existingReservations = reservationService.findReservationsByEmployeeAndDate(userId, date);
 
         // Iterate through each schedule (employee's work time)
         for (Schedule schedule : schedules) {
@@ -113,11 +120,22 @@ public class ServiceService {
             // Calculate the available slots based on the service duration
             LocalDateTime slotStartTime = scheduleStartTime;
             while (slotStartTime.plusSeconds(serviceDurationInSeconds).isBefore(scheduleEndTime)) {
-                LocalDateTime slotEndTime = slotStartTime.plusMinutes(serviceDurationInSeconds);
-                AvailableSlotsResponseDTO.Slot slot = new AvailableSlotsResponseDTO.Slot();
-                slot.setStartTime(slotStartTime);
-                slot.setEndTime(slotEndTime);
-                responseDTO.getItems().add(slot);  // Directly add to the list in the DTO
+                LocalDateTime slotEndTime = slotStartTime.plusSeconds(serviceDurationInSeconds);
+
+                // Check if the slot is already occupied by an existing reservation
+                boolean isSlotOccupied = existingReservations.stream().anyMatch(reservation ->
+                        !slotStartTime.isBefore(reservation.getAppointedAt()) &&
+                                slotEndTime.isAfter(reservation.getAppointedAt()) &&
+                                slotStartTime.isBefore(reservation.getAppointedAt().plusSeconds(reservation.getService().getDuration()))
+                );
+
+                // If the slot is not occupied, add it to the available slots list
+                if (!isSlotOccupied) {
+                    AvailableSlotsResponseDTO.Slot slot = new AvailableSlotsResponseDTO.Slot();
+                    slot.setStartTime(slotStartTime);
+                    slot.setEndTime(slotEndTime);
+                    responseDTO.getItems().add(slot);
+                }
 
                 // Move to the next available time slot
                 slotStartTime = slotEndTime;
@@ -127,6 +145,7 @@ public class ServiceService {
         // Return the response DTO with the available slots
         return responseDTO;
     }
+
 
     // Service layer methods
     public com.team1206.pos.service.service.Service getServiceEntityById(UUID serviceId) {
