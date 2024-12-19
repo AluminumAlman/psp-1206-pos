@@ -4,10 +4,12 @@ import com.team1206.pos.common.enums.ChargeScope;
 import com.team1206.pos.common.enums.ChargeType;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
+import com.team1206.pos.exceptions.UnauthorizedActionException;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.service.service.Service;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.merchant.MerchantService;
+import com.team1206.pos.user.user.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,38 +26,46 @@ import java.util.stream.Collectors;
 public class ChargeService {
     private final ChargeRepository chargeRepository;
     private final MerchantService merchantService;
+    private final UserService userService;
 
-    public ChargeService(ChargeRepository chargeRepository, MerchantService merchantService) {
+    public ChargeService(ChargeRepository chargeRepository, MerchantService merchantService, UserService userService) {
         this.chargeRepository = chargeRepository;
         this.merchantService = merchantService;
+        this.userService = userService;
     }
 
-    // TODO: Check that the logged in user has access to the order
     // Get charges by merchantId paginated
-    public Page<ChargeResponseDTO> getCharges(int limit, int offset, UUID merchantId) {
+    public Page<ChargeResponseDTO> getCharges(int limit, int offset) {
         Pageable pageable = PageRequest.of(offset / limit, limit);
-
+        UUID merchantId = userService.getMerchantIdFromLoggedInUser();
+        if(merchantId == null)
+            throw new UnauthorizedActionException("User is not assigned to Merchant", "");
         Page<Charge> chargePage = chargeRepository.findAllWithFilters(merchantId, pageable);
 
         return chargePage.map(this::mapToResponseDTO);
     }
 
-    // TODO: Check that the logged in user has access to the order
     // Get charges by chargeType paginated
     public Page<ChargeResponseDTO> getCharges(int limit, int offset, String chargeType) {
         Pageable pageable = PageRequest.of(offset / limit, limit);
+        UUID merchantId = userService.getMerchantIdFromLoggedInUser();
+        if(merchantId == null)
+            throw new UnauthorizedActionException("User is not assigned to Merchant", "");
 
         Page<Charge> chargePage = chargeRepository.findAllWithFilters(
                 ChargeType.valueOf(chargeType.toUpperCase()),
+                merchantId,
                 pageable);
 
         return chargePage.map(this::mapToResponseDTO);
     }
 
-    // TODO: Check that the logged in user has access to the order
     // Create charge
     public ChargeResponseDTO createCharge(ChargeRequestDTO request) {
-        Merchant merchant = merchantService.findById(request.getMerchantId());
+        UUID merchantId = userService.getMerchantIdFromLoggedInUser();
+        if(merchantId == null)
+            throw new UnauthorizedActionException("User is not assigned to Merchant", "");
+        Merchant merchant = merchantService.getMerchantEntityById(merchantId);
 
         Charge charge = mapToEntity(request, merchant);
         Charge savedCharge = chargeRepository.save(charge);
@@ -63,7 +73,6 @@ public class ChargeService {
         return mapToResponseDTO(savedCharge);
     }
 
-    // TODO: Check that the logged in user has access to the order
     // Retrieve charge by ID
     public ChargeResponseDTO getChargeById(UUID chargeId) {
         Charge charge =
@@ -71,10 +80,11 @@ public class ChargeService {
                         ResourceType.CHARGE,
                         chargeId.toString()));
 
+        userService.verifyLoggedInUserBelongsToMerchant(charge.getMerchant().getId(), "You are not authorized to retrieve this charge");
+
         return mapToResponseDTO(charge);
     }
 
-    // TODO: Check that the logged in user has access to the order
     // Update charge by ID
     public ChargeResponseDTO updateCharge(UUID chargeId, ChargeRequestDTO request) {
         Charge charge =
@@ -82,17 +92,15 @@ public class ChargeService {
                         ResourceType.CHARGE,
                         chargeId.toString()));
 
-        Merchant merchant = merchantService.findById(request.getMerchantId());
+        userService.verifyLoggedInUserBelongsToMerchant(charge.getMerchant().getId(), "You are not authorized to update this charge");
 
         setChargeFieldsFromRequestDTO(charge, request);
-        charge.setMerchant(merchant);
 
         Charge updatedCharge = chargeRepository.save(charge);
 
         return mapToResponseDTO(updatedCharge);
     }
 
-    // TODO: Check that the logged in user has access to the order
     // Deactivate charge by ID
     public void deactivateCharge(UUID chargeId) {
         Charge charge =
@@ -100,18 +108,21 @@ public class ChargeService {
                         ResourceType.CHARGE,
                         chargeId.toString()));
 
+        userService.verifyLoggedInUserBelongsToMerchant(charge.getMerchant().getId(), "You are not authorized to deactivate this charge");
+
         charge.setIsActive(false);
 
         chargeRepository.save(charge);
     }
 
-    // TODO: Check that the logged in user has access to the order
     // Reactivate charge by ID
     public ChargeResponseDTO reactivateCharge(UUID chargeId) {
         Charge charge =
                 chargeRepository.findById(chargeId).orElseThrow(() -> new ResourceNotFoundException(
                         ResourceType.CHARGE,
                         chargeId.toString()));
+
+        userService.verifyLoggedInUserBelongsToMerchant(charge.getMerchant().getId(), "You are not authorized to reactivate this charge");
 
         charge.setIsActive(true);
 
