@@ -11,6 +11,7 @@ import com.team1206.pos.payments.charge.ChargeRepository;
 import com.team1206.pos.payments.charge.Charge;
 import com.team1206.pos.payments.charge.ChargeService;
 import com.team1206.pos.user.user.UserService;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.PageRequest;
@@ -131,7 +132,7 @@ public class ProductService {
 
         int newQuantity = product.getQuantity() + adjustDTO.getAdjustment();
         if (newQuantity < 0) {
-            throw new IllegalStateExceptionWithId("Product quantity cannot be less than zero", id.toString());
+            throw new IllegalStateExceptionWithId("Requested quantity cannot exceed product quantity", id.toString());
         }
 
         product.setQuantity(newQuantity);
@@ -154,7 +155,7 @@ public class ProductService {
 
         int newQuantity = product.getQuantity() + adjustment;
         if (newQuantity < 0) {
-            throw new IllegalStateExceptionWithId("Product quantity cannot be less than zero", productId.toString());
+            throw new IllegalStateExceptionWithId("Requested quantity cannot exceed product quantity", productId.toString());
         }
 
         product.setQuantity(newQuantity);

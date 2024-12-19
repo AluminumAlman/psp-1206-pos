@@ -8,6 +8,7 @@ import com.team1206.pos.inventory.product.AdjustProductQuantityDTO;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.inventory.product.ProductService;
 import com.team1206.pos.user.user.UserService;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -102,7 +103,7 @@ public class ProductVariationService {
 
         int newQuantity = productVariation.getQuantity() + adjustDTO.getAdjustment();
         if (newQuantity < 0) {
-            throw new IllegalStateExceptionWithId("Product quantity cannot be less than zero", id.toString());
+            throw new IllegalStateExceptionWithId("Requested quantity cannot exceed product variation quantity", id.toString());
         }
 
         productVariation.setQuantity(newQuantity);
@@ -128,7 +129,7 @@ public class ProductVariationService {
 
         int newQuantity = productVariation.getQuantity() + adjustment;
         if (newQuantity < 0) {
-            throw new IllegalStateExceptionWithId("Product quantity cannot be less than zero", productVariationId.toString());
+            throw new IllegalStateExceptionWithId("Requested quantity cannot exceed product variation quantity", productVariationId.toString());
         }
 
         productVariation.setQuantity(newQuantity);

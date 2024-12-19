@@ -58,10 +58,8 @@ public class OrderChargeService {
             UUID orderId,
             @Valid OrderChargeRequestDTO requestBody
     ) {
-        checkIfOrderExists(orderId);
-
         Order order = orderService.getOrderEntityById(orderId);
-        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to create an order charge");
+        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to add charges to this order");
 
         OrderCharge orderCharge = new OrderCharge();
 
@@ -75,10 +73,8 @@ public class OrderChargeService {
 
     // Update order charge
     public void deleteOrderCharge(UUID orderId, UUID chargeId) {
-        checkIfOrderExists(orderId);
-
         Order order = orderService.getOrderEntityById(orderId);
-        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to delete an order charge");
+        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to delete charges from this order");
 
         OrderCharge orderCharge = orderChargeRepository.findById(chargeId)
                                                        .orElseThrow(() -> new ResourceNotFoundException(
@@ -95,10 +91,6 @@ public class OrderChargeService {
 
 
     // *** Helper methods ***
-
-    private void checkIfOrderExists(UUID orderId) {
-        orderService.getOrderEntityById(orderId);
-    }
 
     private void setOrderChargeFields(OrderCharge orderCharge, OrderChargeRequestDTO requestBody) {
         orderCharge.setType(OrderChargeType.valueOf(requestBody.getType().toUpperCase()));
