@@ -44,11 +44,12 @@ public class OrderChargeService {
             throw new IllegalArgumentException("Offset must be greater than or equal to 0");
         }
 
+
         UUID merchantId = userService.getMerchantIdFromLoggedInUser();
 
         Pageable pageable = PageRequest.of(offset / limit, limit);
 
-        Page<OrderCharge> orderCharges = null; orderChargeRepository.findAllByMerchantId(
+        Page<OrderCharge> orderCharges = orderChargeRepository.findAllByMerchantId(
                 merchantId,
                 pageable
         );
