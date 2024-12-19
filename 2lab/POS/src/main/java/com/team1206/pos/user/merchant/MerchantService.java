@@ -5,6 +5,7 @@ import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.service.schedule.Schedule;
 import com.team1206.pos.service.schedule.ScheduleService;
+import com.team1206.pos.user.user.UserService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -18,10 +19,12 @@ import java.util.stream.Collectors;
 public class MerchantService {
     private final MerchantRepository merchantRepository;
     private final ScheduleService scheduleService;
+    private final UserService userService;
 
-    public MerchantService(MerchantRepository merchantRepository, ScheduleService scheduleService) {
+    public MerchantService(MerchantRepository merchantRepository, ScheduleService scheduleService, UserService userService) {
         this.merchantRepository = merchantRepository;
         this.scheduleService = scheduleService;
+        this.userService = userService;
     }
 
     // Create a new merchant
@@ -30,6 +33,7 @@ public class MerchantService {
         setMerchantFieldsFromRequestDTO(merchant, request);
 
         Merchant savedMerchant = merchantRepository.save(merchant);
+        userService.getCurrentUser().setMerchant(savedMerchant);
         return mapToResponseDTO(savedMerchant);
     }
 
