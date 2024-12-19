@@ -9,10 +9,7 @@ import com.team1206.pos.user.user.User;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class ScheduleService {
@@ -22,7 +19,7 @@ public class ScheduleService {
         this.scheduleRepository = scheduleRepository;
     }
 
-
+    // Create schedule for user
     public List<Schedule> createScheduleEntities(Map<DayOfWeek, WorkHoursDTO> requestSchedule, User user) {
         if (user.getRole() == UserRoles.EMPLOYEE) {
             return getScheduleList(requestSchedule, user, null);
@@ -30,48 +27,94 @@ public class ScheduleService {
         return null;
     }
 
+    // Create schedule for merchant
     public List<Schedule> createScheduleEntities(Map<DayOfWeek, WorkHoursDTO> requestSchedule, Merchant merchant) {
         return getScheduleList(requestSchedule, null, merchant);
     }
 
+    // Set schedule entities with validation
     private List<Schedule> getScheduleList(Map<DayOfWeek, WorkHoursDTO> requestSchedule, User user, Merchant merchant) {
-        List<Schedule> schedules = new ArrayList<>();
+        if (requestSchedule == null || requestSchedule.isEmpty()) {
+            throw new IllegalArgumentException("Request schedule cannot be null or empty.");
+        }
 
-        // Loop through each day of the week and create a Schedule entity if work hours are defined
+        List<Schedule> schedules = new ArrayList<>();
+        Set<DayOfWeek> daysProcessed = new HashSet<>(); // To track processed days for duplicates
+
         for (Map.Entry<DayOfWeek, WorkHoursDTO> entry : requestSchedule.entrySet()) {
             DayOfWeek dayOfWeek = entry.getKey();
             WorkHoursDTO workHours = entry.getValue();
 
-            if (workHours != null && workHours.getStartTime() != null && workHours.getEndTime() != null) {
-                Schedule schedule = new Schedule();
-                if (user != null) {
-                    schedule.setUser(user);
-                } else if (merchant != null) {
-                    schedule.setMerchant(merchant);
-                }
-                schedule.setDayOfWeek(dayOfWeek);
-                schedule.setStartTime(workHours.getStartTime());
-                schedule.setEndTime(workHours.getEndTime());
-                schedules.add(schedule);
+            // Validate if day is duplicated (shouldn't happen with a Map but to cover misuse)
+            if (daysProcessed.contains(dayOfWeek)) {
+                throw new IllegalArgumentException("Duplicate day found in the schedule: " + dayOfWeek);
             }
+            daysProcessed.add(dayOfWeek);
+
+            // Validate work hours
+            if (workHours == null || workHours.getStartTime() == null || workHours.getEndTime() == null) {
+                throw new IllegalArgumentException("Work hours must be provided for day: " + dayOfWeek);
+            }
+            if (workHours.getEndTime().isBefore(workHours.getStartTime()) || workHours.getEndTime().equals(workHours.getStartTime())) {
+                throw new IllegalArgumentException("End time must be later than start time for day: " + dayOfWeek);
+            }
+
+            // Create the schedule entity
+            Schedule schedule = new Schedule();
+            if (user != null && merchant == null) {
+                schedule.setUser(user);
+            } else if (user == null && merchant != null) {
+                schedule.setMerchant(merchant);
+            }
+            schedule.setDayOfWeek(dayOfWeek);
+            schedule.setStartTime(workHours.getStartTime());
+            schedule.setEndTime(workHours.getEndTime());
+            schedules.add(schedule);
+        }
+
+        return schedules;
+    }
+
+    // Get work hours (schedule) for a specific day for a user
+    public List<Schedule> getUserScheduleByDay(UUID userId, DayOfWeek dayOfWeek) {
+        List<Schedule> schedules = scheduleRepository.findByUserIdAndDayOfWeek(userId, dayOfWeek);
+
+        if (schedules == null || schedules.isEmpty()) {
+            throw new ResourceNotFoundException(ResourceType.SCHEDULE, "userId: " + userId + " on " + dayOfWeek);
+        }
+
+        return schedules;
+    }
+
+    // Get work hours (schedule) for a specific day for a merchant
+    public List<Schedule> getMerchantScheduleByDay(UUID merchantId, DayOfWeek dayOfWeek) {
+        List<Schedule> schedules = scheduleRepository.findByMerchantIdAndDayOfWeek(merchantId, dayOfWeek);
+
+        if (schedules == null || schedules.isEmpty()) {
+            throw new ResourceNotFoundException(ResourceType.SCHEDULE, "merchantId: " + merchantId + " on " + dayOfWeek);
         }
         return schedules;
     }
 
-    // Create a new schedule for a user or merchant
-    public Schedule createSchedule(Schedule schedule) {
-        // Validate that the schedule is linked to either a user or a merchant, but not both
-        if ((schedule.getUser() == null && schedule.getMerchant() == null) ||
-                (schedule.getUser() != null && schedule.getMerchant() != null)) {
-            throw new IllegalArgumentException("A schedule must be associated with either a user or a merchant, but not both.");
-        }
 
-        // If a user is linked, verify the user belongs to the logged-in user's merchant
-        if (schedule.getUser() != null) {
-            //userService.verifyLoggedInUserBelongsToMerchant(schedule.getUser().getMerchant().getId(), "You are not authorized to create this schedule!");
-        }
+    // TODO like metodai tikriausiai nereikalingi bus, kol kas palieku
+    // Get work hours (schedule) for all days for a user
+    public List<Schedule> getUserScheduleForAllDays(UUID userId) {
+        return scheduleRepository.findByUserId(userId);
+    }
 
-        return scheduleRepository.save(schedule);
+    // Get work hours (schedule) for all days for a merchant
+    public List<Schedule> getMerchantScheduleForAllDays(UUID merchantId) {
+        return scheduleRepository.findByMerchantId(merchantId);
+    }
+
+    /*
+    // Delete a schedule by ID
+    public void deleteSchedule(UUID scheduleId) {
+        if (!scheduleRepository.existsById(scheduleId)) {
+            throw new ResourceNotFoundException(ResourceType.SCHEDULE, scheduleId.toString());
+        }
+        scheduleRepository.deleteById(scheduleId);
     }
 
     // Update a schedule for a specific day for a user or merchant
@@ -97,34 +140,6 @@ public class ScheduleService {
 
                     return scheduleRepository.save(existingSchedule);
                 }).orElseThrow(() -> new ResourceNotFoundException(ResourceType.SCHEDULE, scheduleId.toString()));
-    }
-
-    // Delete a schedule by ID
-    public void deleteSchedule(UUID scheduleId) {
-        if (!scheduleRepository.existsById(scheduleId)) {
-            throw new ResourceNotFoundException(ResourceType.SCHEDULE, scheduleId.toString());
-        }
-        scheduleRepository.deleteById(scheduleId);
-    }
-
-    // Get work hours (schedule) for a specific day for a user
-    public List<Schedule> getUserScheduleByDay(UUID userId, DayOfWeek dayOfWeek) {
-        return scheduleRepository.findByUserIdAndDayOfWeek(userId, dayOfWeek);
-    }
-
-    // Get work hours (schedule) for all days for a user
-    public List<Schedule> getUserScheduleForAllDays(UUID userId) {
-        return scheduleRepository.findByUserId(userId);
-    }
-
-    // Get work hours (schedule) for a specific day for a merchant
-    public List<Schedule> getMerchantScheduleByDay(UUID merchantId, DayOfWeek dayOfWeek) {
-        return scheduleRepository.findByMerchantIdAndDayOfWeek(merchantId, dayOfWeek);
-    }
-
-    // Get work hours (schedule) for all days for a merchant
-    public List<Schedule> getMerchantScheduleForAllDays(UUID merchantId) {
-        return scheduleRepository.findByMerchantId(merchantId);
     }
 
     // Bulk update schedules for all days for a user
@@ -183,4 +198,5 @@ public class ScheduleService {
             throw new IllegalArgumentException("The number of schedules provided does not match the existing schedules.");
         }
     }
+    */
 }

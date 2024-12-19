@@ -1,9 +1,11 @@
 package com.team1206.pos.user.user;
 
+import com.team1206.pos.common.dto.WorkHoursDTO;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.exceptions.UnauthorizedActionException;
+import com.team1206.pos.service.schedule.Schedule;
 import com.team1206.pos.service.schedule.ScheduleService;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.merchant.MerchantRepository;
@@ -14,6 +16,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.DayOfWeek;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -235,10 +238,21 @@ public class UserService {
         dto.setFirstName(user.getFirstName());
         dto.setLastName(user.getLastName());
         dto.setEmail(user.getEmail());
+        dto.setMerchantId(user.getMerchant() != null ? user.getMerchant().getId() : null);
         dto.setRole(user.getRole());
+
+        // Only map schedule if the user is an EMPLOYEE
+        if (user.getRole() == UserRoles.EMPLOYEE) {
+            Map<DayOfWeek, WorkHoursDTO> scheduleMap = user.getSchedules().stream()
+                    .collect(Collectors.toMap(
+                            Schedule::getDayOfWeek,
+                            schedule -> new WorkHoursDTO(schedule.getStartTime(), schedule.getEndTime())
+                    ));
+            dto.setSchedule(scheduleMap);
+        }
+
         dto.setCreatedAt(user.getCreatedAt());
         dto.setUpdatedAt(user.getUpdatedAt());
-        dto.setMerchantId(user.getMerchant() != null ? user.getMerchant().getId() : null);
         return dto;
     }
 }
