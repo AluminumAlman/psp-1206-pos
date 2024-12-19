@@ -1,15 +1,17 @@
-/* General container */
+/* Container */
 .home-container {
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     padding: 20px;
-    height: 100vh;
+    min-height: 100vh;
     background-color: #f5f5f5;
     font-family: 'Arial', sans-serif;
+    box-sizing: border-box;
+    position: relative;
 }
 
-/* User box styling */
+/* User box */
 .user-box {
     position: absolute;
     top: 20px;
@@ -19,19 +21,33 @@
     border-radius: 15px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     width: 300px;
-    text-align: left;
+    cursor: pointer;
 }
 
-/* Details button */
-.details-button {
-    background: none;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
+.user-header .user-name {
+    font-size: 16px;
+    font-weight: bold;
 }
 
 .details-box {
     margin-top: 10px;
+    font-size: 14px;
+}
+
+.switch-button {
+    margin-top: 10px;
+    background-color: #007bff;
+    color: white;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 12px;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+.switch-button:hover {
+    background-color: #0056b3;
 }
 
 /* Merchant Modal */
@@ -47,28 +63,194 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
+.merchant-modal h2 {
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
 .merchant-modal select {
     width: 100%;
     padding: 10px;
     font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
 }
 
 .merchant-modal button {
     padding: 10px 15px;
     border: none;
     border-radius: 5px;
+    font-size: 14px;
     cursor: pointer;
-}
-
-.assign-button, .switch-button {
-    margin: 20px;
     background-color: #007bff;
     color: white;
-    font-size: 16px;
-    cursor: pointer;
+}
+
+.assign-button {
+    margin-top: 10px;
+    font-size: 14px;
 }
 
 .assign-button:disabled {
     background-color: #ccc;
     cursor: not-allowed;
+}
+
+/* Merchant section */
+.merchant-section {
+    position: absolute;
+    margin-top: -63vh;
+    margin-left: -45vw;
+    width: 270px;
+    background-color: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.merchant-section h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+
+.merchant-info p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+/* Buttons in merchant info */
+.merchant-info button {
+    margin: 10px 10px 0 0;
+    background-color: #007bff;
+    color: white;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.merchant-info button:hover {
+    background-color: #0056b3;
+}
+
+/* Users table section */
+.users-table-section {
+    position: absolute;
+    margin-top: -73vh;
+    margin-left: 6vw;
+    width: 600px;
+    background-color: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.users-table-section h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.users-table th, .users-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.users-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+.users-table th {
+    background-color: #f9f9f9;
+    font-weight: bold;
+}
+
+.users-table td button {
+    background-color: #007bff;
+    color: white;
+    font-size: 12px;
+    border: none;
+    border-radius: 3px;
+    padding: 5px 8px;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+.users-table td button:hover {
+    background-color: #0056b3;
+}
+
+/* Modal overlays */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 15px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.modal-content h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+
+.modal-content form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.modal-content form label {
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-content form input,
+.modal-content form select {
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.modal-buttons {
+    margin-top: 15px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.modal-buttons button {
+    background-color: #007bff;
+    color: white;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.modal-buttons button:hover {
+    background-color: #0056b3;
 }
