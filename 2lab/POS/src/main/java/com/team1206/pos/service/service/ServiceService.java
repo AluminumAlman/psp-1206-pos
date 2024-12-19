@@ -11,6 +11,7 @@ import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.merchant.MerchantService;
 import com.team1206.pos.user.user.User;
 import com.team1206.pos.user.user.UserService;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,9 +30,14 @@ public class ServiceService {
     private final UserService userService;
     private final MerchantService merchantService;
     private final ScheduleService scheduleService;
+    @Lazy
     private final ReservationService reservationService;
 
-    public ServiceService(ServiceRepository serviceRepository, UserService userService, MerchantService merchantService, ScheduleService scheduleService, ReservationService reservationService) {
+    public ServiceService(ServiceRepository serviceRepository,
+                          UserService userService,
+                          MerchantService merchantService,
+                          ScheduleService scheduleService,
+                          @Lazy ReservationService reservationService) {
         this.serviceRepository = serviceRepository;
         this.userService = userService;
         this.merchantService = merchantService;
@@ -179,7 +185,7 @@ public class ServiceService {
             userService.verifyUserRole(employee, UserRoles.EMPLOYEE);
             userService.verifyLoggedInUserBelongsToMerchant(employee.getMerchant().getId(), "You do not have permission to perform this action");
         });
-        
+
         service.setEmployees(employees);
     }
 
