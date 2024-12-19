@@ -10,7 +10,6 @@ import java.util.UUID;
 public class ChargeResponseDTO {
     private UUID id;
     private String chargeType;
-    private String chargeScope;
     private String name;
     private Integer percent;
     private BigDecimal amount;
