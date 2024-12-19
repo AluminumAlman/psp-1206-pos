@@ -3,7 +3,9 @@ package com.team1206.pos.order.orderCharge;
 import com.team1206.pos.common.enums.OrderChargeType;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
+import com.team1206.pos.order.order.Order;
 import com.team1206.pos.order.order.OrderService;
+import com.team1206.pos.user.user.UserService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,16 +18,17 @@ import java.util.UUID;
 public class OrderChargeService {
     private final OrderChargeRepository orderChargeRepository;
     private final OrderService orderService;
+    private final UserService userService;
 
     public OrderChargeService(
             OrderChargeRepository orderChargeRepository,
-            OrderService orderService
-    ) {
+            OrderService orderService,
+            UserService userService) {
         this.orderChargeRepository = orderChargeRepository;
         this.orderService = orderService;
+        this.userService = userService;
     }
 
-    // TODO: Check that the logged in user has access to the order
     // Get order charges
     public Page<OrderChargeResponseDTO> getOrderCharges(UUID orderId, int offset, int limit) {
         if (limit < 1) {
@@ -37,6 +40,9 @@ public class OrderChargeService {
 
         checkIfOrderExists(orderId);
 
+        Order order = orderService.getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to retrieve order charges");
+
         Pageable pageable = PageRequest.of(offset / limit, limit);
 
         Page<OrderCharge> orderCharges = orderChargeRepository.findAllWithFilters(
@@ -47,13 +53,15 @@ public class OrderChargeService {
         return orderCharges.map(this::mapToResponseDTO);
     }
 
-    // TODO: Check that the logged in user has access to the order
     // Create order charge
     public OrderChargeResponseDTO createOrderCharge(
             UUID orderId,
             @Valid OrderChargeRequestDTO requestBody
     ) {
         checkIfOrderExists(orderId);
+
+        Order order = orderService.getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to create an order charge");
 
         OrderCharge orderCharge = new OrderCharge();
 
@@ -65,10 +73,12 @@ public class OrderChargeService {
         return mapToResponseDTO(savedOrderCharge);
     }
 
-    // TODO: Check that the logged in user has access to the order
     // Update order charge
     public void deleteOrderCharge(UUID orderId, UUID chargeId) {
         checkIfOrderExists(orderId);
+
+        Order order = orderService.getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to delete an order charge");
 
         OrderCharge orderCharge = orderChargeRepository.findById(chargeId)
                                                        .orElseThrow(() -> new ResourceNotFoundException(

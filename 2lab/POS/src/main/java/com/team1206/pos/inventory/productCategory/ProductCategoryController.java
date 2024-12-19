@@ -25,7 +25,7 @@ public class ProductCategoryController {
         ProductCategoryResponseDTO productCategory = productCategoryService.createProductCategory(request);
 
         log.debug("Returning {} to create product category request", productCategory);
-        // TODO: add to response the URI to created product category.
+        
         return ResponseEntity.status(HttpStatus.CREATED).body(productCategory);
     }
 

@@ -31,7 +31,7 @@ public class ProductVariationController {
                 productVariationService.createProductVariation(UUID.fromString(productId), requestBody);
 
         log.debug("Returning {} to create product variation request (productId={})", createdVariation, productId);
-        // TODO: add to response the URI to created product variation.
+        
         return ResponseEntity.ok(createdVariation);
     }
 

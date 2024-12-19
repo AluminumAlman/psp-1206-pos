@@ -27,7 +27,7 @@ public class MerchantController {
         MerchantResponseDTO createdMerchant = merchantService.createMerchant(request);
 
         log.debug("Returning {} to create merchant request", createdMerchant);
-        // TODO: add to response the URI to created merchant.
+        
         return ResponseEntity.status(HttpStatus.CREATED).body(createdMerchant);
         // return ResponseEntity
         //            .created(URI.create("/merchants/" + createdMerchant.getId())) // You might want to return the URI of the newly created resource

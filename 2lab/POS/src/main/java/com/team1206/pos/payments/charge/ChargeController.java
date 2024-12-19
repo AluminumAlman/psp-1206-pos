@@ -59,7 +59,7 @@ public class ChargeController {
         ChargeResponseDTO response = chargeService.createCharge(request);
 
         log.debug("Returning {} to create charge request", response);
-        // TODO: add to response the URI to created charge.
+        
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

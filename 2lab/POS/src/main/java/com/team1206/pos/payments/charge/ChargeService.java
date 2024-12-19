@@ -120,6 +120,11 @@ public class ChargeService {
         return mapToResponseDTO(updatedCharge);
     }
 
+    // Service layer
+    public List<Charge> getAllEntitiesById(List<UUID> chargeIds) {
+        return chargeRepository.findAllById(chargeIds);
+    }
+
 
     // *** Helper methods ***
 
