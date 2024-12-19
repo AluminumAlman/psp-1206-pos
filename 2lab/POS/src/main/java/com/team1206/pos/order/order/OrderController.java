@@ -61,6 +61,17 @@ public class OrderController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("{orderId}/totalPrice")
+    @Operation(summary = "Get the total amount of an order")
+    public ResponseEntity<BigDecimal> getTotal(@PathVariable UUID orderId) {
+        log.debug("Received get total amount request: orderId={}", orderId);
+
+        BigDecimal total = orderService.calculateTotalAmount(orderId);
+
+        log.debug("Returning {} to get total amount request (orderId={})", total, orderId);
+        return ResponseEntity.ok(total);
+    }
+
     @PostMapping("{orderId}/setTip")
     @Operation(summary = "Set order tip")
     public ResponseEntity<OrderResponseDTO> setTip(@PathVariable UUID orderId, @RequestBody BigDecimal tipAmount) {

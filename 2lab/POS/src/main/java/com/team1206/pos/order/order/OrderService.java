@@ -91,11 +91,11 @@ public class OrderService {
 
     // Create order
     public OrderResponseDTO createOrder(OrderRequestDTO requestBody) {
-        UUID merchantId = requestBody.getMerchantId();
-        userService.verifyLoggedInUserBelongsToMerchant(merchantId, "You are not authorized to create an order");
+        UUID userMerchantId = userService.getMerchantIdFromLoggedInUser();
 
         Order order = new Order();
 
+        order.setMerchant(merchantService.getMerchantEntityById(userMerchantId));
         setOrderFields(order, requestBody);
 
         Order savedOrder = orderRepository.save(order);
@@ -173,16 +173,33 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
+    public BigDecimal calculateTotalAmount(UUID orderId) {
+        Order order = getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to get total amount of this order");
+
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        for (OrderItem item : order.getItems()) {
+            totalAmount = totalAmount.add(orderItemService.getTotalPrice(item));
+        }
+
+        return totalAmount;
+    }
+
     private void setOrderFields(Order order, OrderRequestDTO requestBody) {
-        order.setMerchant(merchantService.getMerchantEntityById(requestBody.getMerchantId()));
         order.setStatus(OrderStatus.OPEN);
 
-        List<OrderItem> orderItems = requestBody.getOrderItems()
-                                                .stream()
-                                                .map(orderItemService::getOrderItemEntityById)
-                                                .toList();
+        // if orderItems is empty, set items to empty list
+        if (requestBody.getOrderItems() == null) {
+            order.setItems(List.of());
+        }
+        else {
 
-        order.setItems(orderItems);
+            List<OrderItem> orderItems = requestBody.getOrderItems()
+                                                    .stream()
+                                                    .map(orderItemService::getOrderItemEntityById)
+                                                    .toList();
+            order.setItems(orderItems);
+        }
     }
 
     public OrderResponseDTO mapToResponseDTO(Order order) {
@@ -191,19 +208,19 @@ public class OrderService {
         orderResponseDTO.setId(order.getId());
         orderResponseDTO.setStatus(String.valueOf(order.getStatus()));
 
-        List<UUID> orderCharges = order.getCharges().stream().map(OrderCharge::getId).toList();
-        orderResponseDTO.setCharges(orderCharges);
+        List<OrderCharge> charges = order.getCharges();
+        orderResponseDTO.setCharges(charges == null ? List.of() : charges.stream().map(OrderCharge::getId).toList());
 
-        List<UUID> orderItems = order.getItems().stream().map(OrderItem::getId).toList();
-        orderResponseDTO.setItems(orderItems);
+        List<OrderItem> orderItems = order.getItems();
+        orderResponseDTO.setItems(orderItems == null ? List.of() : orderItems.stream().map(OrderItem::getId).toList());
 
-        List<UUID> transactions = order.getTransactions().stream().map(Transaction::getId).toList();
+        List<Transaction> transactions = order.getTransactions();
+        orderResponseDTO.setTransactions(transactions == null ? List.of() : transactions.stream().map(Transaction::getId).toList());
 
-        orderResponseDTO.setTransactions(transactions);
         orderResponseDTO.setMerchantId(order.getMerchant().getId());
 
-        List<UUID> discounts = order.getDiscounts().stream().map(Discount::getId).toList();
-        orderResponseDTO.setDiscounts(discounts);
+        List<Discount> discounts = order.getDiscounts();
+        orderResponseDTO.setDiscounts(discounts == null ? List.of() : discounts.stream().map(Discount::getId).toList());
 
         orderResponseDTO.setCreatedAt(order.getCreatedAt());
         orderResponseDTO.setUpdatedAt(order.getUpdatedAt());
