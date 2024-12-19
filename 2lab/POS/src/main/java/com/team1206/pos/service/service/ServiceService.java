@@ -112,10 +112,13 @@ public class ServiceService {
 
         // Get service duration (in seconds) from the service entity
         com.team1206.pos.service.service.Service service = getServiceEntityById(serviceId);
-        Long serviceDurationInSeconds = service.getDuration();  // Service duration in seconds (as long)
+        Long serviceDurationInSeconds = service.getDuration();  // Service duration in seconds
 
         // Fetch existing reservations for the given date and employee
         List<Reservation> existingReservations = reservationService.findReservationsByEmployeeAndDate(userId, date);
+
+        // If there are no reservations, consider all slots within the schedule as available
+        existingReservations = (existingReservations == null) ? List.of() : existingReservations;
 
         // Iterate through each schedule (employee's work time)
         for (Schedule schedule : schedules) {

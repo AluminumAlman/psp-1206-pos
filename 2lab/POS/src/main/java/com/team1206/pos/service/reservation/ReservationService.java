@@ -132,10 +132,6 @@ public class ReservationService {
         // Call the repository method to fetch reservations for the given date
         List<Reservation> reservations = reservationRepository.findReservationsByEmployeeAndDate(userId, startOfDay, endOfDay);
 
-        if (reservations == null || reservations.isEmpty()) {
-            throw new ResourceNotFoundException(ResourceType.RESERVATION, "userId: " + userId + " on " + date);
-        }
-
         return reservations;
     }
 
