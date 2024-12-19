@@ -32,6 +32,10 @@ public class UserService {
     }
 
     public UserResponseDTO createUser(UserRequestDTO request) {
+        if(getMerchantIdFromLoggedInUser() == null) {
+            throw new UnauthorizedActionException("Admin must be assigned to a Merchant");
+        }
+
         User user = new User();
         setUserFieldsFromRequest(user, request);
         User savedUser = userRepository.save(user);
@@ -232,6 +236,7 @@ public class UserService {
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
         user.setRole(request.getRole());
+        user.setMerchant(getCurrentUser().getMerchant());
         user.setSchedules(scheduleService.createScheduleEntities(request.getSchedule(), user));
     }
 
@@ -240,6 +245,7 @@ public class UserService {
         user.setLastName(request.getLastName());
         user.setEmail(request.getEmail());
         user.setRole(request.getRole());
+        user.setMerchant(getCurrentUser().getMerchant());
         user.setSchedules(scheduleService.createScheduleEntities(request.getSchedule(), user));
     }
 
