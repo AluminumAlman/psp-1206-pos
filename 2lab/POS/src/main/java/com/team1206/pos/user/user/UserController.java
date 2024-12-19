@@ -31,7 +31,7 @@ public class UserController {
         UserResponseDTO createdUser = userService.createUser(request);
 
         log.debug("Returning {} to create user request", createdUser);
-        // TODO: add to response the URI to created user.
+        
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 

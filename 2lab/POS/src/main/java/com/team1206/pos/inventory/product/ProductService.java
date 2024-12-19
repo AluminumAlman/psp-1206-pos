@@ -9,6 +9,7 @@ import com.team1206.pos.inventory.productCategory.ProductCategoryService;
 import com.team1206.pos.inventory.productVariation.ProductVariation;
 import com.team1206.pos.payments.charge.ChargeRepository;
 import com.team1206.pos.payments.charge.Charge;
+import com.team1206.pos.payments.charge.ChargeService;
 import com.team1206.pos.user.user.UserService;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -24,15 +25,15 @@ import java.util.UUID;
 public class ProductService {
 
     private final ProductRepository productRepository;
-    private final ChargeRepository chargeRepository;
     private final ProductCategoryService productCategoryService;
     private final UserService userService;
+    private final ChargeService chargeService;
 
-    public ProductService(ProductRepository productRepository, ChargeRepository chargeRepository, ProductCategoryService productCategoryService, UserService userService) {
+    public ProductService(ProductRepository productRepository, ProductCategoryService productCategoryService, UserService userService, ChargeService chargeService) {
         this.productRepository = productRepository;
-        this.chargeRepository = chargeRepository;
         this.productCategoryService = productCategoryService;
         this.userService = userService;
+        this.chargeService = chargeService;
     }
 
 
@@ -168,7 +169,7 @@ public class ProductService {
             return List.of(); // Return an empty list if no charges are provided
         }
 
-        List<Charge> charges = chargeRepository.findAllById(chargeIds); // TODO pakeisti i atitinkama Charges service layer metoda
+        List<Charge> charges = chargeService.getAllEntitiesById(chargeIds);
         List<UUID> foundChargeIds = charges.stream()
                 .map(Charge::getId)
                 .toList();

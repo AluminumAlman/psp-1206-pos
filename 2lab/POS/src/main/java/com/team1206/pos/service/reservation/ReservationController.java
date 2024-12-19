@@ -31,7 +31,7 @@ public class ReservationController {
         ReservationResponseDTO reservationResponseDTO = reservationService.createReservation(reservationRequestDTO);
 
         log.debug("Returning {} to create new reservation request");
-        // TODO: add to response the URI to created discount.
+        
         return ResponseEntity.status(HttpStatus.CREATED).body(reservationResponseDTO);
     }
 

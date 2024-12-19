@@ -55,7 +55,7 @@ public class ServiceController {
         ServiceResponseDTO serviceResponseDTO = serviceService.createService(serviceRequestDTO);
 
         log.debug("Returning {} to create new service request", serviceResponseDTO);
-        // TODO: add to response the URI to created service.
+        
         return ResponseEntity.status(HttpStatus.CREATED).body(serviceResponseDTO);
     }
 

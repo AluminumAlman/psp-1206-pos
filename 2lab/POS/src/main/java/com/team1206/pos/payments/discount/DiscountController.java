@@ -43,7 +43,7 @@ public class DiscountController {
         DiscountResponseDTO response = discountService.createDiscount(discountRequestDTO);
 
         log.debug("Returning {} to create discount request", response);
-        // TODO: add to response the URI to created discount.
+        
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
