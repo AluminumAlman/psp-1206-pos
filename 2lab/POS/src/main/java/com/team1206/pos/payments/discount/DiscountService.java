@@ -3,10 +3,10 @@ package com.team1206.pos.payments.discount;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.user.merchant.MerchantService;
+import com.team1206.pos.user.user.UserService;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -16,15 +16,17 @@ import java.util.UUID;
 public class DiscountService {
     private final DiscountRepository discountRepository;
     private final MerchantService merchantService;
+    private final UserService userService;
 
     public DiscountService(DiscountRepository discountRepository,
-                           MerchantService merchantService) {
+                           MerchantService merchantService, UserService userService) {
         this.discountRepository = discountRepository;
         this.merchantService = merchantService;
+        this.userService = userService;
     }
 
     @Transactional
-    public DiscountResponseDTO createDiscount(CreateDiscountRequestDTO discountRequestDTO) {
+    public DiscountResponseDTO createDiscount(DiscountRequestDTO discountRequestDTO) {
         Discount discount = new Discount();
 
         discount.setName(discountRequestDTO.getName());
@@ -32,7 +34,7 @@ public class DiscountService {
         discount.setAmount(discountRequestDTO.getAmount());
         discount.setValidFrom(discountRequestDTO.getValidFrom());
         discount.setValidUntil(discountRequestDTO.getValidUntil());
-        discount.setMerchant(merchantService.findById(discountRequestDTO.getMerchantId()));
+        discount.setMerchant(merchantService.getMerchantEntityById(userService.getMerchantIdFromLoggedInUser()));
 
         discountRepository.save(discount);
         return toResponseDTO(discount);
@@ -58,7 +60,7 @@ public class DiscountService {
     }
 
     @Transactional
-    public DiscountResponseDTO updateDiscount(UUID id, UpdateDiscountRequestDTO discountRequestDTO) {
+    public DiscountResponseDTO updateDiscount(UUID id, DiscountRequestDTO discountRequestDTO) {
         Discount discount = discountRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.DISCOUNT, id.toString()));
         if (!discount.getIsActive())
