@@ -1,7 +1,10 @@
 package com.team1206.pos.user.merchant;
 
 import com.team1206.pos.common.enums.ResourceType;
+import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
+import com.team1206.pos.user.user.UserResponseDTO;
+import com.team1206.pos.user.user.UserService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -12,9 +15,11 @@ import java.util.stream.Collectors;
 @Service
 public class MerchantService {
     private final MerchantRepository merchantRepository;
+    private final UserService userService;
 
-    public MerchantService(MerchantRepository merchantRepository) {
+    public MerchantService(MerchantRepository merchantRepository, UserService userService) {
         this.merchantRepository = merchantRepository;
+        this.userService = userService;
     }
 
     // Create a new merchant
@@ -59,12 +64,27 @@ public class MerchantService {
         if (!merchantRepository.existsById(merchantId)) {
             throw new ResourceNotFoundException(ResourceType.MERCHANT, merchantId.toString());
         }
+
         try {
+            List<UserResponseDTO> allUsers = userService.getAllUsers(null, null, null);
+
+            for (UserResponseDTO u : allUsers) {
+                if (u.getMerchantId() != null && u.getMerchantId().equals(merchantId)) {
+                    if (u.getRole() == UserRoles.EMPLOYEE) {
+                        userService.deleteUser(u.getId());
+                    } else {
+                        userService.assignMerchantToUser(u.getId(), null);
+                    }
+                }
+            }
+
             merchantRepository.deleteById(merchantId);
+
         } catch (Exception e) {
             throw new RuntimeException("An error occurred while deleting the merchant with ID: " + merchantId, e);
         }
     }
+
 
     public Merchant findById(UUID merchantId) {
         return merchantRepository.findById(merchantId)

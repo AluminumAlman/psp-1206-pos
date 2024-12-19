@@ -86,10 +86,15 @@ public class UserService {
         User targetUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, userId.toString()));
 
-        Merchant merchant = merchantRepository.findById(merchantId)
-                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.MERCHANT, merchantId.toString()));
+        if (merchantId == null) {
+            // No merchant assigned
+            targetUser.setMerchant(null);
+        } else {
+            Merchant merchant = merchantRepository.findById(merchantId)
+                    .orElseThrow(() -> new ResourceNotFoundException(ResourceType.MERCHANT, merchantId.toString()));
+            targetUser.setMerchant(merchant);
+        }
 
-        targetUser.setMerchant(merchant);
         User updatedUser = userRepository.save(targetUser);
         return mapToResponseDTO(updatedUser);
     }

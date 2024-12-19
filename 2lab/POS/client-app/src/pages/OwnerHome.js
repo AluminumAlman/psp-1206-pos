@@ -80,6 +80,7 @@ export const OwnerHome = () => {
                         value={formData.name}
                         onChange={handleInputChange}
                         required
+                        placeholder="Business Name"
                     />
                     <input
                         type="text"
@@ -87,6 +88,7 @@ export const OwnerHome = () => {
                         value={formData.phone}
                         onChange={handleInputChange}
                         required
+                        placeholder="Phone Number"
                     />
                     <input
                         type="email"
@@ -94,6 +96,7 @@ export const OwnerHome = () => {
                         value={formData.email}
                         onChange={handleInputChange}
                         required
+                        placeholder="Business Email"
                     />
                     <input
                         type="text"
@@ -101,6 +104,7 @@ export const OwnerHome = () => {
                         value={formData.currency}
                         onChange={handleInputChange}
                         required
+                        placeholder="Currency (e.g. USD)"
                     />
                     <input
                         type="text"
@@ -108,6 +112,7 @@ export const OwnerHome = () => {
                         value={formData.address}
                         onChange={handleInputChange}
                         required
+                        placeholder="Address"
                     />
                     <input
                         type="text"
@@ -115,6 +120,7 @@ export const OwnerHome = () => {
                         value={formData.city}
                         onChange={handleInputChange}
                         required
+                        placeholder="City"
                     />
                     <input
                         type="text"
@@ -122,6 +128,7 @@ export const OwnerHome = () => {
                         value={formData.country}
                         onChange={handleInputChange}
                         required
+                        placeholder="Country"
                     />
                     <input
                         type="text"
@@ -129,6 +136,7 @@ export const OwnerHome = () => {
                         value={formData.postcode}
                         onChange={handleInputChange}
                         required
+                        placeholder="Postcode"
                     />
                     <button className="create-button" onClick={handleCreateBusiness}>
                         Create Business
