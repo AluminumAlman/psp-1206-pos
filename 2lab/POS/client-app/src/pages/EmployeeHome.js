@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/EmployeeHome.css";
-import { getCurrentUser } from "../api/users";
-import { getAllMerchants } from "../api/merchants";
-import { assignMerchantToUser } from "../api/users";
+import { getCurrentUser, assignMerchantToUser } from "../api/users";
+import { getAllMerchants, getMerchant } from "../api/merchants";
 
 export const EmployeeHome = () => {
     const token = localStorage.getItem("jwt-token");
     const [user, setUser] = useState(null);
     const [merchants, setMerchants] = useState([]);
+    const [assignedMerchantName, setAssignedMerchantName] = useState("");
     const [selectedMerchant, setSelectedMerchant] = useState("");
     const [showMerchantModal, setShowMerchantModal] = useState(false);
+    const [showDetails, setShowDetails] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -18,7 +19,10 @@ export const EmployeeHome = () => {
             const currentUser = await getCurrentUser(token);
             setUser(currentUser);
 
-            if (!currentUser?.merchantId) {
+            if (currentUser?.merchantId) {
+                const merchant = await getMerchant(token, currentUser.merchantId);
+                setAssignedMerchantName(merchant.name);
+            } else {
                 const merchantsData = await getAllMerchants(token);
                 setMerchants(merchantsData);
                 setShowMerchantModal(true);
@@ -32,7 +36,9 @@ export const EmployeeHome = () => {
 
         await assignMerchantToUser(token, user.id, selectedMerchant);
         const updatedUser = await getCurrentUser(token);
+        const merchant = await getMerchant(token, selectedMerchant);
         setUser(updatedUser);
+        setAssignedMerchantName(merchant.name);
         setShowMerchantModal(false);
     };
 
@@ -67,9 +73,33 @@ export const EmployeeHome = () => {
                 </div>
             ) : (
                 user && (
-                    <div className="user-box">
-                        <h1>Welcome, {user.firstName}!</h1>
-                        <button onClick={handleLogout} className="logout-button">Logout</button>
+                    <div
+                        className="user-box"
+                        onClick={() => setShowDetails(!showDetails)}
+                    >
+                        <div className="user-header">
+                            <span className="user-name">
+                                {user.firstName} {user.lastName} (Employee)
+                            </span>
+                        </div>
+                        {showDetails && (
+                            <div className="details-box">
+                                <p>Email: {user.email}</p>
+                                <p>
+                                    Role: <strong>{user.role}</strong>
+                                </p>
+                                <p>
+                                    Assigned Merchant:{" "}
+                                    <strong>{assignedMerchantName || "None"}</strong>
+                                </p>
+                                <button
+                                    className="switch-button"
+                                    onClick={handleLogout}
+                                >
+                                    Logout
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )
             )}

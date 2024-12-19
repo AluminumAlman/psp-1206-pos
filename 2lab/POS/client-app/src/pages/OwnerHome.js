@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/OwnerHome.css";
 import { getCurrentUser, assignMerchantToUser } from "../api/users";
-import { createMerchant } from "../api/merchants";
+import { createMerchant, getMerchant } from "../api/merchants";
 
 export const OwnerHome = () => {
     const token = localStorage.getItem("jwt-token");
@@ -17,13 +17,20 @@ export const OwnerHome = () => {
         country: "",
         postcode: "",
     });
+    const [assignedMerchantName, setAssignedMerchantName] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
+    const [showDetails, setShowDetails] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
         async function init() {
             const currentUser = await getCurrentUser(token);
             setUser(currentUser);
+
+            if (currentUser?.merchantId) {
+                const merchant = await getMerchant(token, currentUser.merchantId);
+                setAssignedMerchantName(merchant.name);
+            }
         }
         init();
     }, [token]);
@@ -49,6 +56,7 @@ export const OwnerHome = () => {
             // Update user data
             const updatedUser = await getCurrentUser(token);
             setUser(updatedUser);
+            setAssignedMerchantName(createdMerchant.name);
         } catch (error) {
             setErrorMessage("Failed to create business. Please try again.");
             console.error("Business creation error:", error);
@@ -128,12 +136,33 @@ export const OwnerHome = () => {
                 </div>
             ) : (
                 user && (
-                    <div className="user-box">
-                        <h1>Welcome, {user.firstName}!</h1>
-                        <p>Your business: {user.merchantId ? "Created" : "None"}</p>
-                        <button onClick={handleLogout} className="logout-button">
-                            Logout
-                        </button>
+                    <div
+                        className="user-box"
+                        onClick={() => setShowDetails(!showDetails)}
+                    >
+                        <div className="user-header">
+                            <span className="user-name">
+                                {user.firstName} {user.lastName} (Owner)
+                            </span>
+                        </div>
+                        {showDetails && (
+                            <div className="details-box">
+                                <p>Email: {user.email}</p>
+                                <p>
+                                    Role: <strong>{user.role}</strong>
+                                </p>
+                                <p>
+                                    Assigned Merchant:{" "}
+                                    <strong>{assignedMerchantName || "None"}</strong>
+                                </p>
+                                <button
+                                    className="switch-button"
+                                    onClick={handleLogout}
+                                >
+                                    Logout
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )
             )}

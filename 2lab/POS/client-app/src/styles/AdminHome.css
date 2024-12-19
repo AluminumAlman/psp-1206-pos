@@ -65,6 +65,7 @@
     background-color: #007bff;
     color: white;
     font-size: 16px;
+    cursor: pointer;
 }
 
 .assign-button:disabled {
