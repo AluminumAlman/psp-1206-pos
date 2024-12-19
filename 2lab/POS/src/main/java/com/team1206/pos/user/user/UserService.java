@@ -89,11 +89,9 @@ public class UserService {
     }
 
     public UserResponseDTO assignMerchantToUser(UUID userId, UUID merchantId) {
-        verifyAdminOrOwnerRole();
         User targetUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, userId.toString()));
 
-        verifySameMerchantIfOwner(targetUser);
         Merchant merchant = merchantRepository.findById(merchantId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.MERCHANT, merchantId.toString()));
 

@@ -30,7 +30,7 @@ public class OrderItemController {
     @Operation(summary = "Add item to order")
     public ResponseEntity<OrderResponseDTO> addItemToOrder(
             @PathVariable UUID orderId,
-            @Valid @RequestBody OrderItemRequestDTO requestDTO
+            @Valid @RequestBody CreateOrderItemRequestDTO requestDTO
     ) {
         return ResponseEntity.ok(orderItemService.addItemToOrder(orderId, requestDTO));
     }
@@ -40,7 +40,7 @@ public class OrderItemController {
     public ResponseEntity<OrderResponseDTO> updateOrderItem(
             @PathVariable UUID orderId,
             @PathVariable UUID orderItemId,
-            @Valid @RequestBody OrderItemRequestDTO requestDTO
+            @RequestBody UpdateOrderItemRequestDTO requestDTO
     ) {
         return ResponseEntity.ok(orderItemService.updateOrderItem(
                 orderId,
