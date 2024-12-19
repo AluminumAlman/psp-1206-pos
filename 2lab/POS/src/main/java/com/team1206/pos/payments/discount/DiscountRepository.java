@@ -12,8 +12,8 @@ import java.util.UUID;
 public interface DiscountRepository extends JpaRepository<Discount, UUID> {
     @Query("SELECT d FROM Discount d " +
             "WHERE (d.merchant = :merchantId " +
-            "AND d.isActive " +
-            "AND (not(:validOnly) " +
+            "AND d.isActive = true " +
+            "AND (:validOnly = false " +
             "OR d.validFrom <= cast(:now as timestamp) AND cast(:now as timestamp) < d.validUntil))")
     Page<Discount> findAllWithFilters(
             @Param("merchantId") UUID merchantId,
