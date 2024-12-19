@@ -1,13 +1,19 @@
 package com.team1206.pos.inventory.inventoryLog;
 
+import com.team1206.pos.exceptions.UnauthorizedActionException;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.inventory.product.ProductService;
 import com.team1206.pos.inventory.productVariation.ProductVariation;
 import com.team1206.pos.inventory.productVariation.ProductVariationService;
 import com.team1206.pos.order.order.OrderService;
 import com.team1206.pos.user.user.UserService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -64,6 +70,43 @@ public class InventoryLogService {
         userService.verifyLoggedInUserBelongsToMerchant(inventoryLog.getUser().getMerchant().getId(), "You are not authorized to retrieve this inventory log");
 
         return mapToResponse(inventoryLog);
+    }
+
+    // TODO test more
+    public Page<InventoryLogResponseDTO> getAllInventoryLogs(int offset, int limit, InventoryLogFilterDTO filterDTO) {
+        UUID merchantId = userService.getMerchantIdFromLoggedInUser();
+
+        Pageable pageable = PageRequest.of(offset / limit, limit); // Create Pageable object
+        Page<InventoryLog> inventoryLogPage;
+
+        if(merchantId == null)
+            throw new UnauthorizedActionException("Super-admin has to be assigned to Merchant first", "");
+
+        inventoryLogPage = inventoryLogRepository.findAllByMerchantId(merchantId, pageable);
+
+        // Filter the logs based on the DTO
+        List<InventoryLog> filteredLogs = inventoryLogPage
+                .getContent()
+                .stream()
+                .filter(log -> filterDTO.getProductId() == null ||
+                        (log.getProduct() != null && log.getProduct().getId().equals(filterDTO.getProductId())))
+                .filter(log -> filterDTO.getProductVariationId() == null ||
+                        (log.getProductVariation() != null &&
+                                (log.getProductVariation().getId().equals(filterDTO.getProductVariationId()) ||
+                                        log.getProductVariation().getProduct().getId().equals(filterDTO.getProductId()))))
+                .filter(log -> filterDTO.getOrderId() == null ||
+                        (log.getOrder() != null && log.getOrder().getId().equals(filterDTO.getOrderId())))
+                .filter(log -> filterDTO.getUserId() == null ||
+                        (log.getUser() != null && log.getUser().getId().equals(filterDTO.getUserId())))
+                .toList();
+
+        // Map the filtered list to DTOs
+        List<InventoryLogResponseDTO> responseDTOs = filteredLogs.stream()
+                .map(this::mapToResponse)
+                .toList();
+
+        // Create a new Page object for the filtered results
+        return new PageImpl<>(responseDTOs, pageable, filteredLogs.size());
     }
 
     // Service layer

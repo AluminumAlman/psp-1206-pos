@@ -49,7 +49,8 @@ public class SecurityConfiguration {
                     // Allow all roles, except EMPLOYEE, to access the following user endpoints
                     .requestMatchers(HttpMethod.POST, "/users/**").hasAnyAuthority(
                             "SUPER_ADMIN",
-                            "MERCHANT_OWNER"
+                            "MERCHANT_OWNER",
+                            "EMPLOYEE"
                     ).requestMatchers(HttpMethod.PUT, "/users/**").hasAnyAuthority(
                             "SUPER_ADMIN",
                             "MERCHANT_OWNER"

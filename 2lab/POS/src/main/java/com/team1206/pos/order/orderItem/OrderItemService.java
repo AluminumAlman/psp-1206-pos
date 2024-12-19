@@ -2,14 +2,19 @@ package com.team1206.pos.order.orderItem;
 
 import com.team1206.pos.common.enums.OrderStatus;
 import com.team1206.pos.common.enums.ResourceType;
+import com.team1206.pos.exceptions.IllegalRequestException;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
+import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.inventory.product.ProductService;
 import com.team1206.pos.inventory.productVariation.ProductVariation;
 import com.team1206.pos.inventory.productVariation.ProductVariationRepository;
+import com.team1206.pos.inventory.productVariation.ProductVariationService;
 import com.team1206.pos.order.order.Order;
 import com.team1206.pos.order.order.OrderResponseDTO;
 import com.team1206.pos.order.order.OrderService;
+import com.team1206.pos.service.reservation.Reservation;
 import com.team1206.pos.service.reservation.ReservationService;
+import com.team1206.pos.user.user.UserService;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -24,57 +29,86 @@ public class OrderItemService {
     private final ProductService productService;
     private final OrderService orderService;
     private final ReservationService reservationService;
+    private final UserService userService;
+    private final ProductVariationService productVariationService;
 
     public OrderItemService(
             OrderItemRepository orderItemRepository,
             ProductVariationRepository productVariationRepository,
             ProductService productService,
             @Lazy OrderService orderService,
-            ReservationService reservationService
+            ReservationService reservationService,
+            UserService userService,
+            ProductVariationService productVariationService
     ) {
         this.orderItemRepository = orderItemRepository;
         this.productVariationRepository = productVariationRepository;
         this.productService = productService;
         this.orderService = orderService;
         this.reservationService = reservationService;
+        this.userService = userService;
+        this.productVariationService = productVariationService;
     }
 
     // Get order items by order id
     public List<OrderItemResponseDTO> getOrderItems(UUID orderId) {
+        Order order = orderService.getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(
+                order.getMerchant().getId(),
+                "You are not authorized to view items in this order"
+        );
+
         return orderItemRepository.findByOrderId(orderId)
                                   .stream()
                                   .map(this::mapToResponseDTO)
                                   .collect(Collectors.toList());
     }
 
-    // TODO: Test out this method
-    // TODO: Adjust the quantity of the order item
     // Add item to order
-    public OrderResponseDTO addItemToOrder(UUID orderId, OrderItemRequestDTO requestDTO) {
+    public OrderResponseDTO addItemToOrder(UUID orderId, CreateOrderItemRequestDTO requestDTO) {
         Order order = orderService.getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(
+                order.getMerchant().getId(),
+                "You are not authorized to add items to this order"
+        );
+
+        checkCreateRequestDTO(requestDTO);
+
         if (order.getStatus() != OrderStatus.OPEN) {
             throw new IllegalStateException("Order is not open");
         }
 
+
+        if (requestDTO.getProductId() != null) {
+            adjustQuantityOrderItemAdd(requestDTO);
+        }
+
         OrderItem orderItem = new OrderItem();
+
         setOrderItemFields(orderItem, requestDTO);
         orderItem.setOrder(order);
         orderItem = orderItemRepository.save(orderItem);
-
         Order updatedOrder = orderService.addOrderItemToOrder(order, orderItem);
 
         return orderService.mapToResponseDTO(updatedOrder);
     }
 
-    // TODO: Test out this method
-    // TODO: Adjust the quantity of the order item
     // Update order item
     public OrderResponseDTO updateOrderItem(
             UUID orderId,
             UUID orderItemId,
-            OrderItemRequestDTO requestDTO
+            UpdateOrderItemRequestDTO requestDTO
     ) {
         Order order = orderService.getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(
+                order.getMerchant().getId(),
+                "You are not authorized to update items in this order"
+        );
+
+        if (requestDTO.getQuantity() <= 0) {
+            throw new IllegalRequestException("Quantity must be greater than zero");
+        }
+
         if (order.getStatus() != OrderStatus.OPEN) {
             throw new IllegalStateException("Order is not open");
         }
@@ -84,18 +118,28 @@ public class OrderItemService {
             throw new ResourceNotFoundException(ResourceType.ORDER_ITEM, orderItemId.toString());
         }
 
-        setOrderItemFields(orderItem, requestDTO);
-        orderItemRepository.save(orderItem);
+        if (orderItem.getReservation() != null) {
+            throw new IllegalRequestException("Cannot update reservation order item quantity");
+        }
 
+
+        int quantityDiff = orderItem.getQuantity() - requestDTO.getQuantity();
+        adjustQuantityOrderItemUpdate(orderItem, quantityDiff);
+
+        orderItem.setQuantity(requestDTO.getQuantity());
+        orderItemRepository.save(orderItem);
         Order updatedOrder = orderService.replaceOrderItemInOrder(order, orderItem);
 
         return orderService.mapToResponseDTO(updatedOrder);
     }
 
-    // TODO: Adjust the quantity of the order item
     // Delete order item
     public OrderResponseDTO removeOrderItem(UUID orderId, UUID orderItemId) {
         Order order = orderService.getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(
+                order.getMerchant().getId(),
+                "You are not authorized to remove items from this order"
+        );
         if (order.getStatus() != OrderStatus.OPEN) {
             throw new IllegalStateException("Order is not open");
         }
@@ -105,8 +149,9 @@ public class OrderItemService {
             throw new ResourceNotFoundException(ResourceType.ORDER_ITEM, orderItemId.toString());
         }
 
-        Order updatedOrder = orderService.removeOrderItemFromOrder(order, orderItem);
+        adjustQuantityOrderItemRemove(orderItem);
 
+        Order updatedOrder = orderService.removeOrderItemFromOrder(order, orderItem);
         orderItemRepository.delete(orderItem);
 
         return orderService.mapToResponseDTO(updatedOrder);
@@ -115,6 +160,58 @@ public class OrderItemService {
 
     // *** Helper methods ***
 
+    private void checkCreateRequestDTO(CreateOrderItemRequestDTO requestDTO) {
+        if (requestDTO.getQuantity() <= 0) {
+            throw new IllegalRequestException("Quantity must be greater than zero");
+        }
+        if (requestDTO.getProductId() == null && requestDTO.getReservationId() == null) {
+            throw new IllegalRequestException("Either productId or reservationId must be provided");
+        }
+        if (requestDTO.getReservationId() != null && requestDTO.getProductVariationId() != null) {
+            throw new IllegalRequestException(
+                    "Order reservation item cannot be paired with product variation");
+        }
+    }
+
+    private void adjustQuantityOrderItemAdd(CreateOrderItemRequestDTO orderItem) {
+        if (orderItem.getProductVariationId() != null) {
+            productVariationService.adjustProductVariationQuantity(
+                    orderItem.getProductVariationId(),
+                    -orderItem.getQuantity()
+            );
+        }
+        else {
+            productService.adjustProductQuantity(
+                    orderItem.getProductId(),
+                    -orderItem.getQuantity()
+            );
+        }
+    }
+
+    private void adjustQuantityOrderItemUpdate(OrderItem orderItem, int quantityDiff) {
+        if (orderItem.getProductVariation() != null) {
+            productVariationService.adjustProductVariationQuantity(
+                    orderItem.getProductVariation().getId(),
+                    quantityDiff
+            );
+        }
+        else if (orderItem.getProduct() != null) {
+            productService.adjustProductQuantity(orderItem.getProduct().getId(), quantityDiff);
+        }
+    }
+
+    private void adjustQuantityOrderItemRemove(OrderItem orderItem) {
+        if (orderItem.getProductVariation() != null) {
+            productVariationService.adjustProductVariationQuantity(
+                    orderItem.getProductVariation().getId(),
+                    orderItem.getQuantity()
+            );
+        }
+        else if (orderItem.getProduct() != null) {
+            productService.adjustProductQuantity(orderItem.getProduct().getId(), orderItem.getQuantity());
+        }
+    }
+
     // Get order item by id
     public OrderItem getOrderItemEntityById(UUID id) {
         return orderItemRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(ResourceType.ORDER_ITEM,
@@ -122,14 +219,15 @@ public class OrderItemService {
         ));
     }
 
-    private void setOrderItemFields(OrderItem orderItem, OrderItemRequestDTO requestDTO) {
+    private void setOrderItemFields(OrderItem orderItem, CreateOrderItemRequestDTO requestDTO) {
         if (requestDTO.getProductId() != null) {
             orderItem.setProduct(productService.getProductEntityById(requestDTO.getProductId()));
+            orderItem.setQuantity(requestDTO.getQuantity());
         }
         else {
             orderItem.setReservation(reservationService.getReservationEntityById(requestDTO.getReservationId()));
+            orderItem.setQuantity(1);
         }
-        orderItem.setQuantity(requestDTO.getQuantity());
 
         UUID productVariationId = requestDTO.getProductVariationId();
         if (productVariationId != null) {
@@ -146,8 +244,12 @@ public class OrderItemService {
     private OrderItemResponseDTO mapToResponseDTO(OrderItem orderItem) {
         OrderItemResponseDTO responseDTO = new OrderItemResponseDTO();
         responseDTO.setId(orderItem.getId());
-        responseDTO.setProductId(orderItem.getProduct().getId());
-        responseDTO.setReservationId(orderItem.getReservation().getId());
+
+        Product product = orderItem.getProduct();
+        responseDTO.setProductId(product != null ? product.getId() : null);
+
+        Reservation reservation = orderItem.getReservation();
+        responseDTO.setReservationId(reservation != null ? reservation.getId() : null);
         responseDTO.setQuantity(orderItem.getQuantity());
 
         ProductVariation productVariation = orderItem.getProductVariation();
@@ -157,7 +259,4 @@ public class OrderItemService {
         responseDTO.setUpdatedAt(orderItem.getUpdatedAt());
         return responseDTO;
     }
-
-
-    // TODO: Automatically adjust the quantity of the order item
 }
