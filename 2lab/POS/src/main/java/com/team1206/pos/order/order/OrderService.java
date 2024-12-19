@@ -175,6 +175,8 @@ public class OrderService {
 
     public BigDecimal calculateTotalAmount(UUID orderId) {
         Order order = getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to get total amount of this order");
+
         BigDecimal totalAmount = BigDecimal.ZERO;
         for (OrderItem item : order.getItems()) {
             totalAmount = totalAmount.add(orderItemService.getTotalPrice(item));
@@ -206,39 +208,19 @@ public class OrderService {
         orderResponseDTO.setId(order.getId());
         orderResponseDTO.setStatus(String.valueOf(order.getStatus()));
 
-        if (order.getCharges() == null) {
-            orderResponseDTO.setCharges(List.of());
-        }
-        else {
-            List<UUID> orderCharges = order.getCharges().stream().map(OrderCharge::getId).toList();
-            orderResponseDTO.setCharges(orderCharges);
-        }
+        List<OrderCharge> charges = order.getCharges();
+        orderResponseDTO.setCharges(charges == null ? List.of() : charges.stream().map(OrderCharge::getId).toList());
 
-        if (order.getItems() == null) {
-            orderResponseDTO.setItems(List.of());
-        }
-        else {
-            List<UUID> orderItems = order.getItems().stream().map(OrderItem::getId).toList();
-            orderResponseDTO.setItems(orderItems);
-        }
+        List<OrderItem> orderItems = order.getItems();
+        orderResponseDTO.setItems(orderItems == null ? List.of() : orderItems.stream().map(OrderItem::getId).toList());
 
-        if (order.getTransactions() == null) {
-            orderResponseDTO.setTransactions(List.of());
-        }
-        else {
-            List<UUID> transactions = order.getTransactions().stream().map(Transaction::getId).toList();
-            orderResponseDTO.setTransactions(transactions);
-        }
+        List<Transaction> transactions = order.getTransactions();
+        orderResponseDTO.setTransactions(transactions == null ? List.of() : transactions.stream().map(Transaction::getId).toList());
 
         orderResponseDTO.setMerchantId(order.getMerchant().getId());
 
-        if (order.getDiscounts() == null) {
-            orderResponseDTO.setDiscounts(List.of());
-        }
-        else {
-            List<UUID> discounts = order.getDiscounts().stream().map(Discount::getId).toList();
-            orderResponseDTO.setDiscounts(discounts);
-        }
+        List<Discount> discounts = order.getDiscounts();
+        orderResponseDTO.setDiscounts(discounts == null ? List.of() : discounts.stream().map(Discount::getId).toList());
 
         orderResponseDTO.setCreatedAt(order.getCreatedAt());
         orderResponseDTO.setUpdatedAt(order.getUpdatedAt());
