@@ -1,11 +1,12 @@
 package com.team1206.pos.user.merchant;
 
+import com.team1206.pos.common.dto.WorkHoursDTO;
 import lombok.Data;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.*;
+
+import java.time.DayOfWeek;
+import java.util.Map;
 
 @Data
 public class MerchantRequestDTO {
@@ -43,4 +44,7 @@ public class MerchantRequestDTO {
     @NotBlank(message = "Postcode is required")
     @Size(max = 20, message = "Postcode must not exceed 20 characters")
     private String postcode;
+
+    @NotNull(message = "Schedule is required")
+    private Map<DayOfWeek, WorkHoursDTO> schedule;
 }

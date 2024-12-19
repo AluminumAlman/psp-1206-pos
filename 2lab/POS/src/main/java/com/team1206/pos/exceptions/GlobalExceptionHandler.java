@@ -37,6 +37,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorObject, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(IllegalRequestException.class)
+    public ResponseEntity<ErrorObject> handleIllegalRequestException(IllegalRequestException ex, WebRequest request) {
+        ErrorObject errorObject = new ErrorObject();
+        errorObject.setStatusCode(HttpStatus.BAD_REQUEST.value());
+        errorObject.setMessage(ex.getMessage());
+        errorObject.setPath(request.getDescription(false).replace("uri=", ""));
+        errorObject.setTimestamp(LocalDateTime.now());
+
+        return new ResponseEntity<>(errorObject, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(IllegalStateExceptionWithId.class)
     public ResponseEntity<ErrorObject> handleIllegalStateException(IllegalStateExceptionWithId ex, WebRequest request) {
         ErrorObject errorObject = new ErrorObject();
@@ -102,11 +113,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         errorObject.setMessage(ex.getMessage());
         errorObject.setPath(request.getDescription(false).replace("uri=", ""));
         errorObject.setTimestamp(LocalDateTime.now());
-
-        // Optional: Include the specific action the user attempted
-        if ("dev".equalsIgnoreCase(activeProfile)) {
-            errorObject.setDetails(Collections.singletonMap("attemptedAction", ex.getAction()));
-        }
 
         return new ResponseEntity<>(errorObject, HttpStatus.FORBIDDEN);
     }

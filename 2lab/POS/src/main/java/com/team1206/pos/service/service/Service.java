@@ -32,6 +32,7 @@ public class Service {
     @Column(name = "price", nullable = false, precision = 19, scale = 2)
     private BigDecimal price;
 
+    // JPA does not support Duration. Duration is amount of seconds.
     @Column(name = "duration", nullable = false)
     private Long duration;
 

@@ -26,14 +26,13 @@ public class ChargeController {
     @Operation(summary = "Get all charges by merchant ID")
     public ResponseEntity<Page<ChargeResponseDTO>> getChargesByMerchant(
             @RequestParam(value = "limit", defaultValue = "10") int limit,
-            @RequestParam(value = "offset", defaultValue = "0") int offset,
-            @RequestParam(value = "merchantId") UUID merchantId) {
-        log.info("Received get all charges request: limit={} offset={} merchantId={}", limit, offset, merchantId);
+            @RequestParam(value = "offset", defaultValue = "0") int offset) {
+        log.info("Received get all charges request: limit={} offset={}", limit, offset);
 
-        ResponseEntity<Page<ChargeResponseDTO>> response = chargeService.handleGetChargesRequest(limit, offset, () -> chargeService.getCharges(limit, offset, merchantId));
+        ResponseEntity<Page<ChargeResponseDTO>> response = chargeService.handleGetChargesRequest(limit, offset, () -> chargeService.getCharges(limit, offset));
 
-        log.debug("Returning {} to get all charges request (limit={} offset={} merchantId={})",
-                response.getBody().stream().toList(), limit, offset, merchantId);
+        log.debug("Returning {} to get all charges request (limit={} offset={})",
+                response.getBody().stream().toList(), limit, offset);
         return response;
     }
 
@@ -59,7 +58,7 @@ public class ChargeController {
         ChargeResponseDTO response = chargeService.createCharge(request);
 
         log.debug("Returning {} to create charge request", response);
-        // TODO: add to response the URI to created charge.
+        
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

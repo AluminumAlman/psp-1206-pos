@@ -31,7 +31,7 @@ public class UserController {
         UserResponseDTO createdUser = userService.createUser(request);
 
         log.debug("Returning {} to create user request", createdUser);
-        // TODO: add to response the URI to created user.
+        
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
@@ -105,6 +105,7 @@ public class UserController {
         return ResponseEntity.ok(currentUser);
     }
 
+    @Operation(summary = "switch merchant for super-admins")
     @PatchMapping("/switch-merchant")
     public ResponseEntity<UserResponseDTO> switchMerchant(@RequestParam(required = false) UUID merchantId) {
         log.info("Received switch merchant request: merchantId={}", merchantId);

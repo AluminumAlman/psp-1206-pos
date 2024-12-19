@@ -29,7 +29,7 @@ public class ProductController {
         ProductResponseDTO createdProduct = productService.createProduct(requestDTO);
 
         log.debug("Returning {} to create product request", createdProduct);
-        // TODO: add to response the URI to created product.
+        
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
     }
 
