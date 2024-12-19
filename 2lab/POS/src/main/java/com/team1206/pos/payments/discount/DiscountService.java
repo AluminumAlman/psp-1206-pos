@@ -26,7 +26,7 @@ public class DiscountService {
     }
 
     @Transactional
-    public DiscountResponseDTO createDiscount(CreateDiscountRequestDTO discountRequestDTO) {
+    public DiscountResponseDTO createDiscount(DiscountRequestDTO discountRequestDTO) {
         Discount discount = new Discount();
 
         discount.setName(discountRequestDTO.getName());
@@ -60,7 +60,7 @@ public class DiscountService {
     }
 
     @Transactional
-    public DiscountResponseDTO updateDiscount(UUID id, UpdateDiscountRequestDTO discountRequestDTO) {
+    public DiscountResponseDTO updateDiscount(UUID id, DiscountRequestDTO discountRequestDTO) {
         Discount discount = discountRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.DISCOUNT, id.toString()));
         if (!discount.getIsActive())
