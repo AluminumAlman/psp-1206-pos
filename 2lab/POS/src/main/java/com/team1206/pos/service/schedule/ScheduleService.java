@@ -45,7 +45,7 @@ public class ScheduleService {
             DayOfWeek dayOfWeek = entry.getKey();
             WorkHoursDTO workHours = entry.getValue();
 
-            // Validate if day is duplicated (shouldn't happen with a Map but to cover misuse)
+            // Validate if day is duplicated
             if (daysProcessed.contains(dayOfWeek)) {
                 throw new IllegalArgumentException("Duplicate day found in the schedule: " + dayOfWeek);
             }

@@ -164,7 +164,7 @@ public class UserService {
         return userRepository.findByEmail(email)
                 .map(User::getMerchant)
                 .map(Merchant::getId)
-                .orElse(null);
+                .orElseThrow(() -> new UnauthorizedActionException("User has to have a Merchant assigned"));
     }
 
     // MAIN VALIDATION METHOD

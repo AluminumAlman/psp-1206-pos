@@ -58,7 +58,7 @@ public class ServiceService {
 
     // Create Service
     public ServiceResponseDTO createService(ServiceRequestDTO requestDTO) {
-        Merchant merchant = merchantService.findById(requestDTO.getMerchantId());
+        Merchant merchant = merchantService.findById(userService.getMerchantIdFromLoggedInUser());
 
         com.team1206.pos.service.service.Service service = new com.team1206.pos.service.service.Service();
         SetServiceFieldsFromRequestDTO(service, requestDTO);
@@ -73,7 +73,7 @@ public class ServiceService {
         com.team1206.pos.service.service.Service service = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.SERVICE, serviceId.toString()));
 
-        Merchant merchant = merchantService.findById(requestDTO.getMerchantId());
+        Merchant merchant = merchantService.findById(userService.getMerchantIdFromLoggedInUser());
 
         SetServiceFieldsFromRequestDTO(service, requestDTO);
         service.setMerchant(merchant);
