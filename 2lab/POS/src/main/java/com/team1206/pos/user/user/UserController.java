@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +22,8 @@ public class UserController {
         this.userService = userService;
     }
 
+    //TODO remove this
+    /*
     @PostMapping
     @Operation(summary = "Create new user")
     public ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody UserRequestDTO request) {
@@ -33,7 +34,7 @@ public class UserController {
         log.debug("Returning {} to create user request", createdUser);
         
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
-    }
+    }*/
 
     @GetMapping
     @Operation(summary = "Get user list")
@@ -63,7 +64,7 @@ public class UserController {
 
     @PutMapping("/{userId}")
     @Operation(summary = "Update user")
-    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable UUID userId, @Valid @RequestBody UserRequestDTO request) {
+    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable UUID userId, @Valid @RequestBody UserUpdateRequestDTO request) {
         log.info("Received update user request: userId={} {}", userId, request);
 
         UserResponseDTO updatedUser = userService.updateUser(userId, request);
