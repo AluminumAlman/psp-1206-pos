@@ -16,10 +16,6 @@ public class ChargeRequestDTO {
     private String chargeType;
 
     @NotBlank
-    @Pattern(regexp = "(?i)^(product|order)$", message = "chargeScope must be either 'product' or 'order'")
-    private String chargeScope;
-
-    @NotBlank
     private String name;
 
     @Min(value = 0, message = "percent must be greater than or equal to 0")
