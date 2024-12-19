@@ -84,7 +84,7 @@ public class OrderItemService {
             adjustQuantityOrderItemAdd(requestDTO);
         }
 
-        OrderResponseDTO responseDTO = adjustQuantityOrderItemCreateUpdate(order, requestDTO);
+        OrderResponseDTO responseDTO = adjustQuantityOrderItemCombine(order, requestDTO);
         if (responseDTO != null) {
             return responseDTO;
         }
@@ -189,7 +189,7 @@ public class OrderItemService {
 
     // *** Helper methods ***
 
-    private OrderResponseDTO adjustQuantityOrderItemCreateUpdate(Order order, CreateOrderItemRequestDTO requestDTO) {
+    private OrderResponseDTO adjustQuantityOrderItemCombine(Order order, CreateOrderItemRequestDTO requestDTO) {
         for (OrderItem orderItem : order.getItems()) {
             if (orderItem.getProduct() != null && orderItem.getProduct().getId().equals(requestDTO.getProductId())) {
                 orderItem.setQuantity(orderItem.getQuantity() + requestDTO.getQuantity());
