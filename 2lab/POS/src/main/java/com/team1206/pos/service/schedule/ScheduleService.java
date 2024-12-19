@@ -3,6 +3,7 @@ package com.team1206.pos.service.schedule;
 import com.team1206.pos.common.dto.WorkHoursDTO;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.common.enums.UserRoles;
+import com.team1206.pos.exceptions.IllegalRequestException;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.user.User;
@@ -35,7 +36,7 @@ public class ScheduleService {
     // Set schedule entities with validation
     private List<Schedule> getScheduleList(Map<DayOfWeek, WorkHoursDTO> requestSchedule, User user, Merchant merchant) {
         if (requestSchedule == null || requestSchedule.isEmpty()) {
-            throw new IllegalArgumentException("Request schedule cannot be null or empty.");
+            throw new IllegalRequestException("Request schedule cannot be null or empty.");
         }
 
         List<Schedule> schedules = new ArrayList<>();
@@ -47,7 +48,7 @@ public class ScheduleService {
 
             // Validate if day is duplicated
             if (daysProcessed.contains(dayOfWeek)) {
-                throw new IllegalArgumentException("Duplicate day found in the schedule: " + dayOfWeek);
+                throw new IllegalRequestException("Duplicate day found in the schedule: " + dayOfWeek);
             }
             daysProcessed.add(dayOfWeek);
 
@@ -55,7 +56,7 @@ public class ScheduleService {
             if (workHours != null && workHours.getStartTime() != null && workHours.getEndTime() != null) {
                 // Validate work hours
                 if (workHours.getEndTime().isBefore(workHours.getStartTime()) || workHours.getEndTime().equals(workHours.getStartTime())) {
-                    throw new IllegalArgumentException("End time must be later than start time for day: " + dayOfWeek);
+                    throw new IllegalRequestException("End time must be later than start time for day: " + dayOfWeek);
                 }
             } else {
                 // If work hours are not provided, we leave them as null in the schedule entity
@@ -203,7 +204,7 @@ public class ScheduleService {
     // Helper method to validate consistency of schedule updates
     private void validateScheduleConsistency(List<Schedule> existingSchedules, List<Schedule> updatedSchedules) {
         if (existingSchedules.size() != updatedSchedules.size()) {
-            throw new IllegalArgumentException("The number of schedules provided does not match the existing schedules.");
+            throw new IllegalRequestException("The number of schedules provided does not match the existing schedules.");
         }
     }
     */

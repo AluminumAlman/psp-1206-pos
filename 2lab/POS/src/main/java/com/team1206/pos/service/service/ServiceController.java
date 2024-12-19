@@ -1,5 +1,6 @@
 package com.team1206.pos.service.service;
 
+import com.team1206.pos.exceptions.IllegalRequestException;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -35,10 +36,10 @@ public class ServiceController {
                 limit, offset, name, price, duration);
 
         if (limit < 1) {
-            throw new IllegalArgumentException("Limit must be at least 1");
+            throw new IllegalRequestException("Limit must be at least 1");
         }
         if (offset < 0) {
-            throw new IllegalArgumentException("Offset must be at least 0");
+            throw new IllegalRequestException("Offset must be at least 0");
         }
         Page<ServiceResponseDTO> services = serviceService.getServices(limit, offset, name, price, duration);
 

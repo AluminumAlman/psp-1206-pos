@@ -37,10 +37,10 @@ public class OrderChargeService {
     // Get order charges
     public Page<OrderChargeResponseDTO> getOrderCharges(int offset, int limit) {
         if (limit < 1) {
-            throw new IllegalArgumentException("Limit must be greater than 0");
+            throw new IllegalRequestException("Limit must be greater than 0");
         }
         if (offset < 0) {
-            throw new IllegalArgumentException("Offset must be greater than or equal to 0");
+            throw new IllegalRequestException("Offset must be greater than or equal to 0");
         }
 
         UUID merchantId = userService.getMerchantIdFromLoggedInUser();

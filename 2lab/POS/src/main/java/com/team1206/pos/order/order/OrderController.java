@@ -1,5 +1,6 @@
 package com.team1206.pos.order.order;
 
+import com.team1206.pos.exceptions.IllegalRequestException;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -78,7 +79,7 @@ public class OrderController {
         log.info("Received set order tip request: orderId={} {}", orderId, tipAmount);
 
         if (tipAmount.compareTo(BigDecimal.ZERO) < 0)
-            throw new IllegalArgumentException("Tip amount must not be negative");
+            throw new IllegalRequestException("Tip amount must not be negative");
 
         tipAmount = tipAmount.setScale(2, RoundingMode.FLOOR);
         OrderResponseDTO response = orderService.setTip(orderId, tipAmount);

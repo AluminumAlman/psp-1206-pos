@@ -1,5 +1,6 @@
 package com.team1206.pos.inventory.product;
 
+import com.team1206.pos.exceptions.IllegalRequestException;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -45,10 +46,10 @@ public class ProductController {
                 name, price, categoryId, offset, limit);
 
         if (limit < 1) {
-            throw new IllegalArgumentException("Limit must be at least 1");
+            throw new IllegalRequestException("Limit must be at least 1");
         }
         if (offset < 0) {
-            throw new IllegalArgumentException("Offset must be at least 0");
+            throw new IllegalRequestException("Offset must be at least 0");
         }
 
         Page<ProductResponseDTO> productPage = productService.getAllProducts(name, price, categoryId, offset, limit);

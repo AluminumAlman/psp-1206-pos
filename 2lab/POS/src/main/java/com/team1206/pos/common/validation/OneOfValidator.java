@@ -1,5 +1,6 @@
 package com.team1206.pos.common.validation;
 
+import com.team1206.pos.exceptions.IllegalRequestException;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
@@ -19,7 +20,7 @@ public class OneOfValidator implements ConstraintValidator<OneOf, Object> {
     public boolean isValid(Object obj, ConstraintValidatorContext context) {
         System.out.println("Validating object: " + obj);
         if (fields == null || fields.length < 2) {
-            throw new IllegalArgumentException(
+            throw new IllegalRequestException(
                     "At least two fields must be specified for @OneOf validation.");
         }
 

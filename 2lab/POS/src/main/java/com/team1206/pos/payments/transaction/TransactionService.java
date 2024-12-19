@@ -3,6 +3,7 @@ package com.team1206.pos.payments.transaction;
 import com.team1206.pos.common.enums.PaymentMethodType;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.common.enums.TransactionStatus;
+import com.team1206.pos.exceptions.IllegalRequestException;
 import com.team1206.pos.exceptions.InvalidPaymentMethod;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.order.order.OrderService;
@@ -52,10 +53,10 @@ public class TransactionService {
             BigDecimal amount
     ) {
         if (limit < 1) {
-            throw new IllegalArgumentException("Limit must be greater than 0");
+            throw new IllegalRequestException("Limit must be greater than 0");
         }
         if (offset < 0) {
-            throw new IllegalArgumentException("Offset must be greater than or equal to 0");
+            throw new IllegalRequestException("Offset must be greater than or equal to 0");
         }
 
         checkIfOrderExists(orderId);

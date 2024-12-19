@@ -3,6 +3,7 @@ package com.team1206.pos.payments.charge;
 import com.team1206.pos.common.enums.ChargeScope;
 import com.team1206.pos.common.enums.ChargeType;
 import com.team1206.pos.common.enums.ResourceType;
+import com.team1206.pos.exceptions.IllegalRequestException;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.exceptions.UnauthorizedActionException;
 import com.team1206.pos.inventory.product.Product;
@@ -143,10 +144,10 @@ public class ChargeService {
             int offset,
             Supplier<Page<ChargeResponseDTO>> serviceCall) {
         if (limit < 1) {
-            throw new IllegalArgumentException("Limit must be at least 1");
+            throw new IllegalRequestException("Limit must be at least 1");
         }
         if (offset < 0) {
-            throw new IllegalArgumentException("Offset must be at least 0");
+            throw new IllegalRequestException("Offset must be at least 0");
         }
 
         Page<ChargeResponseDTO> response = serviceCall.get();

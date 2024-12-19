@@ -1,5 +1,6 @@
 package com.team1206.pos.inventory.inventoryLog;
 
+import com.team1206.pos.exceptions.IllegalRequestException;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -39,10 +40,10 @@ public class InventoryLogController {
         @RequestBody(required = false) InventoryLogFilterDTO filter) {
 
         if (limit < 1) {
-            throw new IllegalArgumentException("Limit must be at least 1");
+            throw new IllegalRequestException("Limit must be at least 1");
         }
         if (offset < 0) {
-            throw new IllegalArgumentException("Offset must be at least 0");
+            throw new IllegalRequestException("Offset must be at least 0");
         }
 
         if (filter == null) {
