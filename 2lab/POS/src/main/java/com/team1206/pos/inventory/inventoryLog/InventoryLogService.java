@@ -80,7 +80,7 @@ public class InventoryLogService {
         Page<InventoryLog> inventoryLogPage;
 
         if(merchantId == null)
-            throw new UnauthorizedActionException("Super-admin has to be assigned to Merchant first", "");
+            throw new UnauthorizedActionException("Super-admin has to be assigned to Merchant first");
 
         inventoryLogPage = inventoryLogRepository.findAllByMerchantId(merchantId, pageable);
 

@@ -67,7 +67,7 @@ public class Discount {
             inverseJoinColumns = @JoinColumn(name = "product_variation_id"))
     private List<ProductVariation> productVariations;
 
-    @Column(name = "isActive")
+    @Column(name = "is_active")
     private Boolean isActive = true;
 
     @Column(name = "created_at", nullable = false, updatable = false)

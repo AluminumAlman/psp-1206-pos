@@ -4,11 +4,8 @@ import lombok.Getter;
 
 @Getter
 public class UnauthorizedActionException extends RuntimeException {
-    private final String action;
-
-    public UnauthorizedActionException(String message, String action) {
+    public UnauthorizedActionException(String message) {
         super(message);
-        this.action = action;
     }
 }
 

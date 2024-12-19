@@ -1,9 +1,12 @@
 package com.team1206.pos.user.user;
 
+import com.team1206.pos.common.dto.WorkHoursDTO;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.exceptions.UnauthorizedActionException;
+import com.team1206.pos.service.schedule.Schedule;
+import com.team1206.pos.service.schedule.ScheduleService;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.merchant.MerchantRepository;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -11,18 +14,21 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.List;
-import java.util.UUID;
+import java.time.DayOfWeek;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
     private final MerchantRepository merchantRepository;
+    private final ScheduleService scheduleService;
 
-    public UserService(UserRepository userRepository, MerchantRepository merchantRepository) {
+    public UserService(UserRepository userRepository, MerchantRepository merchantRepository, ScheduleService scheduleService) {
         this.userRepository = userRepository;
         this.merchantRepository = merchantRepository;
+        this.scheduleService = scheduleService;
     }
 
     public UserResponseDTO createUser(UserRequestDTO request) {
@@ -56,7 +62,7 @@ public class UserService {
         return users.stream().map(this::mapToResponseDTO).toList();
     }
 
-    public UserResponseDTO updateUser(UUID userId, UserRequestDTO request) {
+    public UserResponseDTO updateUser(UUID userId, UserUpdateRequestDTO request) {
         verifyAdminOrOwnerRole();
         User targetUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.USER, userId.toString()));
@@ -68,7 +74,7 @@ public class UserService {
             }
         }
 
-        setUserFieldsFromRequest(targetUser, request);
+        setUserUpdateFieldsFromRequest(targetUser, request);
         User updatedUser = userRepository.save(targetUser);
         return mapToResponseDTO(updatedUser);
     }
@@ -105,7 +111,7 @@ public class UserService {
         User currentUser = getCurrentUser();
 
         if (!isCurrentUserRole(UserRoles.SUPER_ADMIN)) {
-            throw new UnauthorizedActionException("Only super-admins can switch merchants.", "");
+            throw new UnauthorizedActionException("Only super-admins can switch merchants.");
         }
 
         // If newMerchantId is null, it means logging out from the current merchant
@@ -161,19 +167,20 @@ public class UserService {
         return userRepository.findByEmail(email)
                 .map(User::getMerchant)
                 .map(Merchant::getId)
-                .orElse(null);
+                .orElseThrow(() -> new UnauthorizedActionException("User has to have a Merchant assigned"));
     }
 
+    // MAIN VALIDATION METHOD
     public void verifyLoggedInUserBelongsToMerchant(UUID merchantId, String messageIfInvalid) {
         // If User is assigned to a different Merchant or the super-admin didn't choose the Merchant yet (or regular user, which hasn't been assigned a merchant yet)
         if ((getCurrentUser().getRole() == UserRoles.SUPER_ADMIN && getCurrentUser().getMerchant().getId() == null) || getMerchantIdFromLoggedInUser() != merchantId) {
-            throw new UnauthorizedActionException(messageIfInvalid, "");
+            throw new UnauthorizedActionException(messageIfInvalid);
         }
     }
 
     public void verifyUserRole(User user, UserRoles targetUserRole) {
         if (!user.getRole().equals(targetUserRole)) {
-            throw new UnauthorizedActionException("User role is invalid for this operation!", "");
+            throw new UnauthorizedActionException("User role is invalid for this operation!");
         }
     }
 
@@ -198,8 +205,7 @@ public class UserService {
     public void verifyAdminOrOwnerRole() {
         UserRoles currentUserRole = getCurrentUserRole();
         if (!(currentUserRole == UserRoles.SUPER_ADMIN || currentUserRole == UserRoles.MERCHANT_OWNER)) {
-            System.out.println("Current user role: " + currentUserRole);
-            throw new UnauthorizedActionException("You do not have permission to perform this action.", "");
+            throw new UnauthorizedActionException("You do not have permission to perform this action.");
         }
     }
 
@@ -213,7 +219,7 @@ public class UserService {
             UUID targetMerchantId = targetUser.getMerchant() != null ? targetUser.getMerchant().getId() : null;
 
             if (currentMerchantId == null || !currentMerchantId.equals(targetMerchantId)) {
-                throw new UnauthorizedActionException("You do not have permission to perform this action.", "You do not have permission to modify a user from a different merchant.");
+                throw new UnauthorizedActionException("You do not have permission to perform this action.");
             }
         }
     }
@@ -226,6 +232,15 @@ public class UserService {
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
         user.setRole(request.getRole());
+        user.setSchedules(scheduleService.createScheduleEntities(request.getSchedule(), user));
+    }
+
+    private void setUserUpdateFieldsFromRequest(User user, UserUpdateRequestDTO request) {
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setEmail(request.getEmail());
+        user.setRole(request.getRole());
+        user.setSchedules(scheduleService.createScheduleEntities(request.getSchedule(), user));
     }
 
     private UserResponseDTO mapToResponseDTO(User user) {
@@ -234,10 +249,21 @@ public class UserService {
         dto.setFirstName(user.getFirstName());
         dto.setLastName(user.getLastName());
         dto.setEmail(user.getEmail());
+        dto.setMerchantId(user.getMerchant() != null ? user.getMerchant().getId() : null);
         dto.setRole(user.getRole());
+
+        // Only map schedule if the user is an EMPLOYEE
+        if (user.getRole() == UserRoles.EMPLOYEE) {
+            Map<DayOfWeek, WorkHoursDTO> scheduleMap = user.getSchedules().stream()
+                    .collect(Collectors.toMap(
+                            Schedule::getDayOfWeek,
+                            schedule -> new WorkHoursDTO(schedule.getStartTime(), schedule.getEndTime())
+                    ));
+            dto.setSchedule(scheduleMap);
+        }
+
         dto.setCreatedAt(user.getCreatedAt());
         dto.setUpdatedAt(user.getUpdatedAt());
-        dto.setMerchantId(user.getMerchant() != null ? user.getMerchant().getId() : null);
         return dto;
     }
 }

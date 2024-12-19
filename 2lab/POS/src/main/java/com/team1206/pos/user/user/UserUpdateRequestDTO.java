@@ -2,14 +2,17 @@ package com.team1206.pos.user.user;
 
 import com.team1206.pos.common.dto.WorkHoursDTO;
 import com.team1206.pos.common.enums.UserRoles;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.time.DayOfWeek;
 import java.util.Map;
 
 @Data
-public class UserRequestDTO {
+public class UserUpdateRequestDTO {
     @NotBlank(message = "First name is required")
     @Size(max = 40)
     private String firstName;
@@ -22,10 +25,6 @@ public class UserRequestDTO {
     @Email(message = "Must be a valid email address")
     @Size(max = 255)
     private String email;
-
-    @NotBlank(message = "Password is required")
-    @Size(max = 255)
-    private String password;
 
     @NotNull(message = "A role must be assigned")
     private UserRoles role;

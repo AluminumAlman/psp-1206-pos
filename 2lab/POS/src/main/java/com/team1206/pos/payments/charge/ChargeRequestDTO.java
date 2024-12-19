@@ -32,6 +32,4 @@ public class ChargeRequestDTO {
     private List<UUID> products;
 
     private List<UUID> services;
-
-    private UUID merchantId;
 }

@@ -1,14 +1,20 @@
 package com.team1206.pos.user.merchant;
 
+import com.team1206.pos.common.dto.WorkHoursDTO;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
+import com.team1206.pos.service.schedule.Schedule;
+import com.team1206.pos.service.schedule.ScheduleService;
+import com.team1206.pos.service.schedule.ScheduleService;
 import com.team1206.pos.user.user.UserResponseDTO;
 import com.team1206.pos.user.user.UserService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -16,10 +22,12 @@ import java.util.stream.Collectors;
 public class MerchantService {
     private final MerchantRepository merchantRepository;
     private final UserService userService;
+    private final ScheduleService scheduleService;
 
-    public MerchantService(MerchantRepository merchantRepository, UserService userService) {
+    public MerchantService(MerchantRepository merchantRepository, UserService userService, ScheduleService scheduleService) {
         this.merchantRepository = merchantRepository;
         this.userService = userService;
+        this.scheduleService = scheduleService;
     }
 
     // Create a new merchant
@@ -114,7 +122,16 @@ public class MerchantService {
         response.setCity(merchant.getCity());
         response.setCountry(merchant.getCountry());
         response.setPostcode(merchant.getPostcode());
+
+        Map<DayOfWeek, WorkHoursDTO> scheduleMap = merchant.getSchedules().stream()
+                .collect(Collectors.toMap(
+                        Schedule::getDayOfWeek,
+                        schedule -> new WorkHoursDTO(schedule.getStartTime(), schedule.getEndTime())
+                ));
+        response.setSchedule(scheduleMap);
+
         response.setCreatedAt(merchant.getCreatedAt());
+        response.setUpdatedAt(merchant.getUpdatedAt());
         return response;
     }
 
@@ -128,5 +145,6 @@ public class MerchantService {
         merchant.setCity(requestDTO.getCity());
         merchant.setCountry(requestDTO.getCountry());
         merchant.setPostcode(requestDTO.getPostcode());
+        merchant.setSchedules(scheduleService.createScheduleEntities(requestDTO.getSchedule(), merchant));
     }
 }

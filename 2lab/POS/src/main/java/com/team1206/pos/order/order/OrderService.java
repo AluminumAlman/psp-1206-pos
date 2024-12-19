@@ -3,6 +3,7 @@ package com.team1206.pos.order.order;
 import com.team1206.pos.common.enums.OrderStatus;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
+import com.team1206.pos.exceptions.UnauthorizedActionException;
 import com.team1206.pos.order.orderCharge.OrderCharge;
 import com.team1206.pos.order.orderItem.OrderItem;
 import com.team1206.pos.order.orderItem.OrderItemService;
@@ -38,7 +39,6 @@ public class OrderService {
         this.orderItemService = orderItemService;
     }
 
-    // TODO: Check if the user is SUPER_ADMIN
     // Get paged orders
     public Page<OrderResponseDTO> getOrders(
             int offset,
@@ -54,12 +54,10 @@ public class OrderService {
             throw new IllegalArgumentException("Offset must be greater than or equal to 0");
         }
 
-        // TODO: Ištrinti, kai SUPER_ADMIN turės jam priskirtą merchantId
         UUID merchantId = userService.getMerchantIdFromLoggedInUser();
-//        if (merchantId == null) {
-//            merchantId = userMerchantId;
-//        }
-        userService.verifyLoggedInUserBelongsToMerchant(merchantId, "You are not authorized to view these orders");
+
+        if(merchantId == null)
+            throw new UnauthorizedActionException("Super-admin has to be assigned to Merchant first");
 
         OrderStatus orderStatus =
                 (status != null && !status.isEmpty()) ? OrderStatus.valueOf(status.toUpperCase()) : null;
