@@ -55,32 +55,22 @@ public class ReservationService {
     }
 
     public ReservationResponseDTO createReservation(ReservationRequestDTO requestDTO) {
+        // Fetch the service and employee
         Service service = serviceService.getServiceEntityById(requestDTO.getServiceId());
-
         User employee = userService.getUserEntityById(requestDTO.getEmployeeId());
         userService.verifyUserRole(employee, UserRoles.EMPLOYEE);
 
-        // Fetch available slots for the employee and service
-        validateReservationDateTime(requestDTO.getAppointedAt());
-        LocalDate appointmentDate = requestDTO.getAppointedAt().toLocalDate();
-        AvailableSlotsResponseDTO availableSlots = serviceService.getAvailableSlots(
-                requestDTO.getServiceId(),
-                appointmentDate,
-                requestDTO.getEmployeeId()
-        );
-
-        // Validate that the requested time fits into one of the available slots
+        // Validate the requested appointment date and time, and fetch available slots
         LocalDateTime requestedStartTime = requestDTO.getAppointedAt();
-        LocalDateTime requestedEndTime = requestedStartTime.plusSeconds(service.getDuration());
-        boolean fitsIntoSlot = availableSlots.getItems().stream().anyMatch(slot ->
-                !requestedStartTime.isBefore(slot.getStartTime()) && !requestedEndTime.isAfter(slot.getEndTime())
+        AvailableSlotsResponseDTO availableSlots = validateAndFetchAvailableSlot(
+                requestDTO.getServiceId(),
+                requestedStartTime.toLocalDate(),
+                requestDTO.getEmployeeId(),
+                requestedStartTime,
+                service.getDuration()
         );
 
-        if (!fitsIntoSlot) {
-            throw new IllegalArgumentException("The requested time slot is not available.");
-        }
-
-        // Proceed with reservation creation if the time slot is valid
+        // Proceed with the reservation creation if the time slot is valid
         Reservation reservation = new Reservation();
         mapRequestToReservation(requestDTO, reservation);
         reservation.setService(service);
@@ -88,6 +78,7 @@ public class ReservationService {
 
         Reservation savedReservation = reservationRepository.save(reservation);
 
+        // Send confirmation SMS
         snsService.sendSms(savedReservation.getPhone(),
                 String.format("Hey, %s, Your reservation at %s for %s with %s %s is confirmed for %tF at %tR. Thank you for choosing us!",
                         savedReservation.getFirstName(), service.getMerchant().getName(), service.getName(),
@@ -97,8 +88,8 @@ public class ReservationService {
         return mapToResponseDTO(savedReservation);
     }
 
-    // Update a reservation
     public ReservationResponseDTO updateReservation(UUID reservationId, ReservationRequestDTO requestDTO) {
+        // Fetch the existing reservation to update
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.RESERVATION, reservationId.toString()));
 
@@ -107,27 +98,15 @@ public class ReservationService {
         User employee = userService.getUserEntityById(requestDTO.getEmployeeId());
         userService.verifyUserRole(employee, UserRoles.EMPLOYEE);
 
-        // Validate the updated appointment date and time
-        validateReservationDateTime(requestDTO.getAppointedAt());
-        LocalDate appointmentDate = requestDTO.getAppointedAt().toLocalDate();
-
-        // Fetch available slots for the employee and service
-        AvailableSlotsResponseDTO availableSlots = serviceService.getAvailableSlots(
-                requestDTO.getServiceId(),
-                appointmentDate,
-                requestDTO.getEmployeeId()
-        );
-
-        // Validate that the requested time fits into one of the available slots
+        // Validate the requested appointment date and time, and fetch available slots
         LocalDateTime requestedStartTime = requestDTO.getAppointedAt();
-        LocalDateTime requestedEndTime = requestedStartTime.plusSeconds(service.getDuration());
-        boolean fitsIntoSlot = availableSlots.getItems().stream().anyMatch(slot ->
-                !requestedStartTime.isBefore(slot.getStartTime()) && !requestedEndTime.isAfter(slot.getEndTime())
+        AvailableSlotsResponseDTO availableSlots = validateAndFetchAvailableSlot(
+                requestDTO.getServiceId(),
+                requestedStartTime.toLocalDate(),
+                requestDTO.getEmployeeId(),
+                requestedStartTime,
+                service.getDuration()
         );
-
-        if (!fitsIntoSlot) {
-            throw new IllegalArgumentException("The requested time slot is not available.");
-        }
 
         // Map the updated data from requestDTO to the existing reservation
         mapRequestToReservation(requestDTO, reservation);
@@ -137,16 +116,36 @@ public class ReservationService {
         // Save the updated reservation
         Reservation updatedReservation = reservationRepository.save(reservation);
 
-        // Send confirmation SMS to the customer
+        // Send confirmation SMS
         snsService.sendSms(updatedReservation.getPhone(),
                 String.format("Hey, %s, Your reservation at %s for %s with %s %s is confirmed for %tF at %tR. Thank you for choosing us!",
                         updatedReservation.getFirstName(), service.getMerchant().getName(), service.getName(),
                         employee.getFirstName(), employee.getLastName(),
                         updatedReservation.getAppointedAt(), updatedReservation.getAppointedAt()));
 
-        // Return the updated reservation as a response
         return mapToResponseDTO(updatedReservation);
     }
+
+    // Helper method to validate the requested time and fetch available slots
+    private AvailableSlotsResponseDTO validateAndFetchAvailableSlot(UUID serviceId, LocalDate appointmentDate,
+                                                                    UUID employeeId, LocalDateTime requestedStartTime,
+                                                                    long serviceDuration) {
+        // Fetch available slots for the given date and employee
+        AvailableSlotsResponseDTO availableSlots = serviceService.getAvailableSlots(serviceId, appointmentDate, employeeId);
+
+        // Validate that the requested time fits into one of the available slots
+        LocalDateTime requestedEndTime = requestedStartTime.plusSeconds(serviceDuration);
+        boolean fitsIntoSlot = availableSlots.getItems().stream().anyMatch(slot ->
+                !requestedStartTime.isBefore(slot.getStartTime()) && !requestedEndTime.isAfter(slot.getEndTime())
+        );
+
+        if (!fitsIntoSlot) {
+            throw new IllegalArgumentException("The requested time slot is not available.");
+        }
+
+        return availableSlots;
+    }
+
 
 
     // Get a reservation by ID
