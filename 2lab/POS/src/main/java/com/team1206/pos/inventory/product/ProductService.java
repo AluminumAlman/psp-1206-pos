@@ -169,13 +169,17 @@ public class ProductService {
         BigDecimal finalProductPrice = product.getPrice();
 
         if (product.getCharges() != null) {
-            for (Charge charge : product.getCharges()) {
+            List<Charge> sortedCharges = product.getCharges().stream()
+                    .sorted((c1, c2) -> c1.getType() == ChargeType.TAX ? -1 : 1)
+                    .toList();
+
+            for (Charge charge : sortedCharges) {
                 if (charge.getType() == ChargeType.TAX) {
                     BigDecimal multiplier = BigDecimal.valueOf(100 + charge.getPercent())
                             .divide(BigDecimal.valueOf(100));
                     finalProductPrice = finalProductPrice.multiply(multiplier);
                 } else if(charge.getType() == ChargeType.SERVICE)
-                    finalProductPrice = finalProductPrice.subtract(charge.getAmount());
+                    finalProductPrice = finalProductPrice.add(charge.getAmount());
             }
         }
 

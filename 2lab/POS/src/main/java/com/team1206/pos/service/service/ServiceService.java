@@ -169,13 +169,18 @@ public class ServiceService {
         BigDecimal finalServicePrice = service.getPrice();
 
         if (service.getCharges() != null) {
-            for (Charge charge : service.getCharges()) {
+            // Sort charges so that TAX types come first
+            List<Charge> sortedCharges = service.getCharges().stream()
+                    .sorted((c1, c2) -> c1.getType() == ChargeType.TAX ? -1 : 1)
+                    .toList();
+
+            for (Charge charge : sortedCharges) {
                 if (charge.getType() == ChargeType.TAX) {
                     BigDecimal multiplier = BigDecimal.valueOf(100 + charge.getPercent())
                             .divide(BigDecimal.valueOf(100));
                     finalServicePrice = finalServicePrice.multiply(multiplier);
                 } else if(charge.getType() == ChargeType.SERVICE)
-                    finalServicePrice = finalServicePrice.subtract(charge.getAmount());
+                    finalServicePrice = finalServicePrice.add(charge.getAmount());
             }
         }
 
