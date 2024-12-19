@@ -60,4 +60,26 @@ public class OrderChargeController {
         log.debug("Returning {} to create order charge request", response);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+  
+    @PostMapping("{orderId}/charges/{chargeId}")
+    @Operation(summary = "Add order charge to order")
+    public ResponseEntity<Void> addOrderChargeToOrder(@PathVariable UUID orderId, @PathVariable UUID chargeId) {
+        log.info("Received add order charge to order request: orderId={} chargeId={}", orderId, chargeId);
+
+        orderChargeService.addOrderChargeToOrder(chargeId, orderId);
+
+        log.debug("Returning 200 OK to add order charge to order request (orderId={} chargeId={})", orderId, chargeId);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("{orderId}/charges/{chargeId}")
+    @Operation(summary = "Remove order charge from order")
+    public ResponseEntity<Void> removeOrderChargeFromOrder(@PathVariable UUID orderId, @PathVariable UUID chargeId) {
+        log.info("Received remove order charge from order request: orderId={} chargeId={}", orderId, chargeId);
+
+        orderChargeService.removeOrderChargeFromOrder(chargeId, orderId);
+
+        log.debug("Returning 204 No content to remove order charge from order request (orderId={} chargeId={})", orderId, chargeId);
+        return ResponseEntity.noContent().build();
+    }
 }
