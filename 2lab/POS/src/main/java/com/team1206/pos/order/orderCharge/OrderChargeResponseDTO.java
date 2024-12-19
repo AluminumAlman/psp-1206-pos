@@ -13,6 +13,7 @@ public class OrderChargeResponseDTO {
     private String name;
     private Integer percent;
     private BigDecimal amount;
+    private UUID merchantId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

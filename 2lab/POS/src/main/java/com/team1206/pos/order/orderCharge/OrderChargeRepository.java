@@ -10,6 +10,6 @@ import java.util.UUID;
 
 public interface OrderChargeRepository extends JpaRepository<OrderCharge, UUID> {
 
-    @Query("SELECT oc FROM OrderCharge oc WHERE oc.order.id = :orderId")
-    Page<OrderCharge> findAllWithFilters(@Param("orderId") UUID orderId, Pageable pageable);
+    //@Query("SELECT oc FROM OrderCharge oc WHERE oc.order.id = :orderId")
+    //Page<OrderCharge> findAllWithFilters(@Param("orderId") UUID orderId, Pageable pageable);
 }
