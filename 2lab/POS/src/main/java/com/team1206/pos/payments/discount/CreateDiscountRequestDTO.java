@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Data
 public class CreateDiscountRequestDTO {
@@ -24,7 +23,4 @@ public class CreateDiscountRequestDTO {
 
     @NotNull(message = "Discount 'valid until' must not be null.")
     private LocalDateTime validUntil;
-
-    @NotNull(message = "Discount must have a merchant.")
-    private UUID merchantId;
 }
