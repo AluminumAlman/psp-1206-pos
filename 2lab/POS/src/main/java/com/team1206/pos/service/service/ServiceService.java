@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -175,14 +176,16 @@ public class ServiceService {
                     .toList();
 
             for (Charge charge : sortedCharges) {
-                if (charge.getType() == ChargeType.TAX) {
+                if (charge.getType() == ChargeType.TAX && charge.getPercent() != null) {
                     BigDecimal multiplier = BigDecimal.valueOf(100 + charge.getPercent())
                             .divide(BigDecimal.valueOf(100));
                     finalServicePrice = finalServicePrice.multiply(multiplier);
-                } else if(charge.getType() == ChargeType.SERVICE)
+                } else if(charge.getType() == ChargeType.SERVICE && charge.getAmount() != null)
                     finalServicePrice = finalServicePrice.add(charge.getAmount());
             }
         }
+
+        finalServicePrice = finalServicePrice.setScale(2, RoundingMode.HALF_UP);
 
         return finalServicePrice;
     }

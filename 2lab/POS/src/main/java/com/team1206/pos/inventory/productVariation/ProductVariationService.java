@@ -13,6 +13,7 @@ import com.team1206.pos.user.user.UserService;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -153,14 +154,17 @@ public class ProductVariationService {
                     .toList();
 
             for (Charge charge : sortedCharges) {
-                if (charge.getType() == ChargeType.TAX) {
+                if (charge.getType() == ChargeType.TAX && charge.getPercent() != null) {
                     BigDecimal multiplier = BigDecimal.valueOf(100 + charge.getPercent())
                             .divide(BigDecimal.valueOf(100));
                     finalProductVariationPrice = finalProductVariationPrice.multiply(multiplier);
-                } else if(charge.getType() == ChargeType.SERVICE)
+                } else if(charge.getType() == ChargeType.SERVICE && charge.getAmount() != null)
                     finalProductVariationPrice = finalProductVariationPrice.add(charge.getAmount());
             }
         }
+
+        finalProductVariationPrice = finalProductVariationPrice.setScale(2, RoundingMode.HALF_UP);
+
 
         return finalProductVariationPrice;
     }

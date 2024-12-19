@@ -17,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
 
@@ -174,14 +175,17 @@ public class ProductService {
                     .toList();
 
             for (Charge charge : sortedCharges) {
-                if (charge.getType() == ChargeType.TAX) {
+                if (charge.getType() == ChargeType.TAX && charge.getPercent() != null) {
                     BigDecimal multiplier = BigDecimal.valueOf(100 + charge.getPercent())
                             .divide(BigDecimal.valueOf(100));
                     finalProductPrice = finalProductPrice.multiply(multiplier);
-                } else if(charge.getType() == ChargeType.SERVICE)
+                } else if(charge.getType() == ChargeType.SERVICE && charge.getAmount() != null)
                     finalProductPrice = finalProductPrice.add(charge.getAmount());
             }
         }
+
+        finalProductPrice = finalProductPrice.setScale(2, RoundingMode.HALF_UP);
+
 
         return finalProductPrice;
     }
