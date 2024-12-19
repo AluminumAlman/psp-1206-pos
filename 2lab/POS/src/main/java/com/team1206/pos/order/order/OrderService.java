@@ -95,13 +95,13 @@ public class OrderService {
     }
 
     // Create order
-    public OrderResponseDTO createOrder(OrderRequestDTO requestBody) {
+    public OrderResponseDTO createOrder() {
         UUID userMerchantId = userService.getMerchantIdFromLoggedInUser();
 
         Order order = new Order();
 
         order.setMerchant(merchantService.getMerchantEntityById(userMerchantId));
-        setOrderFields(order, requestBody);
+        setOrderFields(order);
 
         Order savedOrder = orderRepository.save(order);
 
@@ -214,21 +214,11 @@ public class OrderService {
         return orderChargeService.applyOrderCharges(orderId, totalOrderItemsPrice);
     }
 
-    private void setOrderFields(Order order, OrderRequestDTO requestBody) {
+    private void setOrderFields(Order order) {
         order.setStatus(OrderStatus.OPEN);
 
         // if orderItems is empty, set items to empty list
-        if (requestBody.getOrderItems() == null) {
-            order.setItems(List.of());
-        }
-        else {
-
-            List<OrderItem> orderItems = requestBody.getOrderItems()
-                                                    .stream()
-                                                    .map(orderItemService::getOrderItemEntityById)
-                                                    .toList();
-            order.setItems(orderItems);
-        }
+        order.setItems(List.of());
     }
 
     public OrderResponseDTO mapToResponseDTO(Order order) {
