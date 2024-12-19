@@ -159,18 +159,20 @@ public class ReservationService {
     }
 
     // Cancel (delete) a reservation
-    public void cancelReservation(UUID reservationId) {
+    public void cancelReservation(UUID reservationId, boolean sendSms) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.RESERVATION, reservationId.toString()));
 
-        try {
-            String phoneNumber = reservation.getPhone();
-            reservationRepository.deleteById(reservationId);
-            snsService.sendSms(phoneNumber,
-                    "Hey, Your reservation was successfully cancelled. Thank you for choosing us!");
+        if (sendSms) {
+            try {
+                String phoneNumber = reservation.getPhone();
+                reservationRepository.deleteById(reservationId);
+                snsService.sendSms(phoneNumber,
+                        "Hey, Your reservation was successfully cancelled. Thank you for choosing us!");
 
-        } catch (Exception e) {
-            throw new RuntimeException("An error occurred while cancelling the reservation with ID: " + reservationId, e);
+            } catch (Exception e) {
+                throw new RuntimeException("An error occurred while cancelling the reservation with ID: " + reservationId, e);
+            }
         }
     }
 
