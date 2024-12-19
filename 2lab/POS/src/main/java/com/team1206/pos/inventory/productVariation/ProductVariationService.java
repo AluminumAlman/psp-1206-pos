@@ -1,5 +1,6 @@
 package com.team1206.pos.inventory.productVariation;
 
+import com.team1206.pos.common.enums.ChargeType;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
@@ -7,10 +8,12 @@ import com.team1206.pos.exceptions.UnauthorizedActionException;
 import com.team1206.pos.inventory.product.AdjustProductQuantityDTO;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.inventory.product.ProductService;
+import com.team1206.pos.payments.charge.Charge;
 import com.team1206.pos.user.user.UserService;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -135,6 +138,35 @@ public class ProductVariationService {
         productVariation.setQuantity(newQuantity);
 
         productVariationRepository.save(productVariation);
+    }
+
+    public BigDecimal getFinalPrice(UUID productVariationId) {
+        ProductVariation productVariation = productVariationRepository.findById(productVariationId)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_VARIATION, productVariationId.toString()));
+
+        BigDecimal finalProductVariationPrice = productVariation.getPrice();
+
+        Product product = productVariation.getProduct();
+
+        if (product.getCharges() != null) {
+            List<Charge> sortedCharges = product.getCharges().stream()
+                    .sorted((c1, c2) -> c1.getType() == ChargeType.TAX ? -1 : 1)
+                    .toList();
+
+            for (Charge charge : sortedCharges) {
+                if (charge.getType() == ChargeType.TAX && charge.getPercent() != null) {
+                    BigDecimal multiplier = BigDecimal.valueOf(100 + charge.getPercent())
+                            .divide(BigDecimal.valueOf(100));
+                    finalProductVariationPrice = finalProductVariationPrice.multiply(multiplier);
+                } else if(charge.getType() == ChargeType.SERVICE && charge.getAmount() != null)
+                    finalProductVariationPrice = finalProductVariationPrice.add(charge.getAmount());
+            }
+        }
+
+        finalProductVariationPrice = finalProductVariationPrice.setScale(2, RoundingMode.HALF_UP);
+
+
+        return finalProductVariationPrice;
     }
 
     // Mappers

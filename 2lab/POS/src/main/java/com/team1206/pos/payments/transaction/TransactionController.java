@@ -29,6 +29,14 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.getTransactions(limit, offset, orderId));
     }
 
+    @GetMapping("/{orderId}/totalPaid")
+    @Operation(summary = "Get sum of order transactions")
+    public ResponseEntity<BigDecimal> getTotalPaid(@PathVariable String orderId)
+    {
+        return ResponseEntity.ok(transactionService.getTotalPaidByOrder(UUID.fromString(orderId)));
+    }
+
+
     @GetMapping("/transactions")
     @Operation(summary = "Get paged transactions")
     public ResponseEntity<Page<TransactionResponseDTO>> getTransactions(
@@ -71,7 +79,7 @@ public class TransactionController {
             @PathVariable UUID orderId,
             @PathVariable UUID transactionId
     ) {
-        return ResponseEntity.ok(transactionService.completeCashTransaction(
+        return ResponseEntity.ok(transactionService.completeTransaction(
                 orderId,
                 transactionId
         ));

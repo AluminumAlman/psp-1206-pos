@@ -152,6 +152,23 @@ public class OrderService {
         return mapToResponseDTO(order);
     }
 
+    // Service layer
+
+    public Order closeOrder(UUID orderId) {
+        Order order = getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(
+                order.getMerchant().getId(),
+                "You are not authorized to close order"
+        );
+
+        if (order.getStatus() != OrderStatus.OPEN) {
+            throw new IllegalStateException("Order has to be open to be closed");
+        }
+
+        order.setStatus(OrderStatus.CLOSED);
+        return orderRepository.save(order);
+    }
+
     // *** Helper methods ***
 
     public Order addOrderItemToOrder(Order order, OrderItem orderItem) {
@@ -173,11 +190,12 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    public BigDecimal calculateTotalAmount(UUID orderId) {
+    public BigDecimal calculateTotalProductAndServicePrice(UUID orderId) {
         Order order = getOrderEntityById(orderId);
         userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to get total amount of this order");
 
         BigDecimal totalAmount = BigDecimal.ZERO;
+
         for (OrderItem item : order.getItems()) {
             totalAmount = totalAmount.add(orderItemService.getTotalPrice(item));
         }

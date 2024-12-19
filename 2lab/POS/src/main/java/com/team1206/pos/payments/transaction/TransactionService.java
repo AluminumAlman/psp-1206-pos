@@ -5,7 +5,9 @@ import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.common.enums.TransactionStatus;
 import com.team1206.pos.exceptions.InvalidPaymentMethod;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
+import com.team1206.pos.order.order.Order;
 import com.team1206.pos.order.order.OrderService;
+import com.team1206.pos.user.user.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,19 +20,29 @@ import java.util.UUID;
 public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final OrderService orderService;
+    private final UserService userService;
 
     public TransactionService(
             TransactionRepository transactionRepository,
-            OrderService orderService
-    ) {
+            OrderService orderService,
+            UserService userService) {
         this.transactionRepository = transactionRepository;
         this.orderService = orderService;
+        this.userService = userService;
     }
 
-    // TODO: Check that the logged in user has access to the order
-    // TODO filter my Merchant
     // Get paged transactions
     public Page<TransactionResponseDTO> getTransactions(int limit, int offset, UUID orderId) {
+        Order order = orderService.getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to process this order");
+
+        if (limit < 1) {
+            throw new IllegalArgumentException("Limit must be greater than 0");
+        }
+        if (offset < 0) {
+            throw new IllegalArgumentException("Offset must be greater than or equal to 0");
+        }
+
         Pageable pageable = PageRequest.of(offset / limit, limit);
 
         Page<Transaction> transactionPage = transactionRepository.findAllWithFilters(
@@ -41,7 +53,6 @@ public class TransactionService {
         return transactionPage.map(this::mapToResponseDTO);
     }
 
-    // TODO: Check that the logged in user has access to the order
     // Get paged transactions with filters
     public Page<TransactionResponseDTO> getTransactions(
             int limit,
@@ -51,6 +62,9 @@ public class TransactionService {
             String status,
             BigDecimal amount
     ) {
+        Order order = orderService.getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to process this order");
+
         if (limit < 1) {
             throw new IllegalArgumentException("Limit must be greater than 0");
         }
@@ -80,30 +94,52 @@ public class TransactionService {
         return transactionPage.map(this::mapToResponseDTO);
     }
 
-    // TODO: Check that the logged in user has access to the order
+    public BigDecimal getTotalPaidByOrder(UUID orderId)
+    {
+        Order order = orderService.getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to process this order");
+
+        BigDecimal totalPaid = BigDecimal.ZERO;
+        for(Transaction transaction : transactionRepository.findAllWithFilters(orderId, null, null, null, null))
+        {
+            if(transaction.getStatus().equals(TransactionStatus.COMPLETED))
+            {
+                totalPaid = totalPaid.add(transaction.getAmount());
+            }
+        }
+        return totalPaid;
+    }
+
     // Create transaction
     public TransactionResponseDTO createTransaction(
             UUID orderId,
             TransactionRequestDTO requestDTO
     ) {
-        checkIfOrderExists(orderId);
+        Order order = orderService.getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to process this order");
 
         Transaction transaction = new Transaction();
 
         setTransactionFieldsFromRequestDTO(transaction, requestDTO);
-        transaction.setOrder(orderService.getOrderEntityById(orderId));
+        transaction.setOrder(order);
 
         transaction.setStatus(TransactionStatus.PENDING);
 
         Transaction savedTransaction = transactionRepository.save(transaction);
 
+        BigDecimal totalPaid = getTotalPaidByOrder(orderId);
+
+        // Atkomentuot kai bus orderService.toPay
+//        if(totalPaid >= orderService.toPay(orderId))
+//            orderService.closeOrder(orderId);
+
         return mapToResponseDTO(savedTransaction);
     }
 
-    // TODO: Check that the logged in user has access to the order
     // Get transaction by ID
     public TransactionResponseDTO getTransaction(UUID orderId, UUID transactionId) {
-        checkIfOrderExists(orderId);
+        Order order = orderService.getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to process this order");
 
         Transaction transaction = transactionRepository.findById(transactionId)
                                                        .orElseThrow(() -> new ResourceNotFoundException(
@@ -118,18 +154,16 @@ public class TransactionService {
         return mapToResponseDTO(transaction);
     }
 
-    // TODO: Check that the logged in user has access to the order
     // Mark cash transaction as completed
-    public TransactionResponseDTO completeCashTransaction(UUID orderId, UUID transactionId) {
+    public TransactionResponseDTO completeTransaction(UUID orderId, UUID transactionId) {
         Transaction transaction = transactionRepository.findById(transactionId)
                                                        .orElseThrow(() -> new ResourceNotFoundException(
                                                                ResourceType.TRANSACTION,
                                                                transactionId.toString()
                                                        ));
 
-        if (!transaction.getPaymentMethod().equals(PaymentMethodType.CASH)) {
-            throw new InvalidPaymentMethod("Only cash transactions can be completed");
-        }
+        userService.verifyLoggedInUserBelongsToMerchant(transaction.getOrder().getMerchant().getId(), "You are not authorized to process this order");
+
 
         checkIfOrderExists(orderId);
 
@@ -144,7 +178,6 @@ public class TransactionService {
         return mapToResponseDTO(updatedTransaction);
     }
 
-    // TODO: Check that the logged in user has access to the order
     // Refund transaction
     public TransactionResponseDTO refundTransaction(UUID orderId, UUID transactionId) {
         Transaction transaction = transactionRepository.findById(transactionId)
@@ -153,6 +186,8 @@ public class TransactionService {
                                                                transactionId.toString()
                                                        ));
         checkIfOrderExists(orderId);
+
+        userService.verifyLoggedInUserBelongsToMerchant(transaction.getOrder().getMerchant().getId(), "You are not authorized to process this order");
 
         Transaction savedTransaction;
         if (transaction.getPaymentMethod().equals(PaymentMethodType.CASH)) {
