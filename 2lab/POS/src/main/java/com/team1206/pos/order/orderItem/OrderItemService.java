@@ -83,8 +83,13 @@ public class OrderItemService {
         }
 
 
-        if (requestDTO.getProductId() != null) {
+        if (requestDTO.getProductId() != null || requestDTO.getProductVariationId() != null) {
             adjustQuantityOrderItemAdd(requestDTO);
+        }
+
+        OrderResponseDTO responseDTO = adjustQuantityOrderItemCombine(order, requestDTO);
+        if (responseDTO != null) {
+            return responseDTO;
         }
 
         OrderItem orderItem = new OrderItem();
@@ -187,6 +192,25 @@ public class OrderItemService {
 
     // *** Helper methods ***
 
+    private OrderResponseDTO adjustQuantityOrderItemCombine(Order order, CreateOrderItemRequestDTO requestDTO) {
+        for (OrderItem orderItem : order.getItems()) {
+            if (orderItem.getProduct() != null && orderItem.getProduct().getId().equals(requestDTO.getProductId())) {
+                orderItem.setQuantity(orderItem.getQuantity() + requestDTO.getQuantity());
+                orderItemRepository.save(orderItem);
+                Order updatedOrder = orderService.replaceOrderItemInOrder(order, orderItem);
+                return orderService.mapToResponseDTO(updatedOrder);
+            }
+            else if (orderItem.getProductVariation() != null && orderItem.getProductVariation().getId().equals(requestDTO.getProductVariationId())) {
+                orderItem.setQuantity(orderItem.getQuantity() + requestDTO.getQuantity());
+                orderItemRepository.save(orderItem);
+                Order updatedOrder = orderService.replaceOrderItemInOrder(order, orderItem);
+                return orderService.mapToResponseDTO(updatedOrder);
+            }
+        }
+
+        return null;
+    }
+
     public void deleteOrderItem(OrderItem orderItem) {
         orderItemRepository.delete(orderItem);
     }
@@ -211,13 +235,6 @@ public class OrderItemService {
     private void checkCreateRequestDTO(CreateOrderItemRequestDTO requestDTO) {
         if (requestDTO.getQuantity() <= 0) {
             throw new IllegalRequestException("Quantity must be greater than zero");
-        }
-        if (requestDTO.getProductId() == null && requestDTO.getReservationId() == null) {
-            throw new IllegalRequestException("Either productId or reservationId must be provided");
-        }
-        if (requestDTO.getReservationId() != null && requestDTO.getProductVariationId() != null) {
-            throw new IllegalRequestException(
-                    "Order reservation item cannot be paired with product variation");
         }
     }
 
@@ -270,6 +287,13 @@ public class OrderItemService {
     private void setOrderItemFields(OrderItem orderItem, CreateOrderItemRequestDTO requestDTO) {
         if (requestDTO.getProductId() != null) {
             orderItem.setProduct(productService.getProductEntityById(requestDTO.getProductId()));
+            orderItem.setQuantity(requestDTO.getQuantity());
+        }
+        else if (requestDTO.getProductVariationId() != null) {
+            orderItem.setProductVariation(productVariationService.getProductVariationEntityById(
+                    requestDTO.getProductVariationId()
+            ));
+            orderItem.setProduct(orderItem.getProductVariation().getProduct());
             orderItem.setQuantity(requestDTO.getQuantity());
         }
         else {

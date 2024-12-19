@@ -15,6 +15,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
 
@@ -122,11 +124,53 @@ public class OrderChargeService {
     }
 
     // *** Helper methods ***
+
     public OrderCharge getOrderChargeEntityById(UUID orderChargeId) {
         return orderChargeRepository.findById(orderChargeId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         ResourceType.ORDER_CHARGE,
                         orderChargeId.toString()));
+    }
+
+    public BigDecimal applyOrderCharges(UUID orderId, BigDecimal totalOrderItemsPrice) {
+        Order order = orderService.getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(
+                order.getMerchant().getId(),
+                "You are not authorized to calculate total order charge"
+        );
+
+        List<OrderCharge> chargeCharges = orderChargeRepository.findAllByOrderIdAndType(
+                orderId,
+                OrderChargeType.CHARGE
+        );
+        List<OrderCharge> discountCharges = orderChargeRepository.findAllByOrderIdAndType(
+                orderId,
+                OrderChargeType.DISCOUNT
+        );
+
+        for (OrderCharge charge : chargeCharges) {
+            if (charge.getPercent() != null) {
+                totalOrderItemsPrice =
+                        totalOrderItemsPrice.add(totalOrderItemsPrice.multiply(new BigDecimal(charge.getPercent()).divide(
+                                new BigDecimal(100))));
+            }
+            else {
+                totalOrderItemsPrice = totalOrderItemsPrice.add(charge.getAmount());
+            }
+        }
+
+        for (OrderCharge discount : discountCharges) {
+            if (discount.getPercent() != null) {
+                totalOrderItemsPrice =
+                        totalOrderItemsPrice.subtract(totalOrderItemsPrice.multiply(new BigDecimal(discount.getPercent()).divide(
+                                new BigDecimal(100))));
+            }
+            else {
+                totalOrderItemsPrice = totalOrderItemsPrice.subtract(discount.getAmount());
+            }
+        }
+
+        return totalOrderItemsPrice.setScale(2, RoundingMode.HALF_UP);
     }
 
     private void setOrderChargeFields(OrderCharge orderCharge, OrderChargeRequestDTO requestBody) {
