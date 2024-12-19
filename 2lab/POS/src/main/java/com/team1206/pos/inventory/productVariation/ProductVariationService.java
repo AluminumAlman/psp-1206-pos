@@ -1,7 +1,6 @@
 package com.team1206.pos.inventory.productVariation;
 
 import com.team1206.pos.common.enums.ResourceType;
-import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.exceptions.UnauthorizedActionException;
@@ -111,6 +110,30 @@ public class ProductVariationService {
         ProductVariation updatedProductVariation = productVariationRepository.save(productVariation);
 
         return mapToResponseDTO(updatedProductVariation);
+    }
+
+    // Service layer
+
+    public ProductVariation getProductVariationEntityById(UUID id) {
+        return productVariationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_VARIATION, id.toString()));
+    }
+
+    // Adjust product variation quantity
+    public void adjustProductVariationQuantity(UUID productVariationId, int adjustment) {
+        ProductVariation productVariation = productVariationRepository.findById(productVariationId)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_VARIATION, productVariationId.toString()));
+
+        userService.verifyLoggedInUserBelongsToMerchant(productVariation.getProduct().getCategory().getMerchant().getId(), "You are not authorized to adjust this product variation quantity");
+
+        int newQuantity = productVariation.getQuantity() + adjustment;
+        if (newQuantity < 0) {
+            throw new IllegalStateExceptionWithId("Product quantity cannot be less than zero", productVariationId.toString());
+        }
+
+        productVariation.setQuantity(newQuantity);
+
+        productVariationRepository.save(productVariation);
     }
 
     // Mappers

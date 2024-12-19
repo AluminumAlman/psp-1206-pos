@@ -12,11 +12,11 @@ import java.util.UUID;
 @OneOf(fields = {"percent", "amount"})
 public class ChargeRequestDTO {
     @NotBlank
-    @Pattern(regexp = "^(tax|service)$", message = "chargeType must be either 'tax' or 'service'")
+    @Pattern(regexp = "(?i)^(tax|service)$", message = "chargeType must be either 'tax' or 'service'")
     private String chargeType;
 
     @NotBlank
-    @Pattern(regexp = "^(product|order)$", message = "chargeScope must be either 'product' or 'order'")
+    @Pattern(regexp = "(?i)^(product|order)$", message = "chargeScope must be either 'product' or 'order'")
     private String chargeScope;
 
     @NotBlank

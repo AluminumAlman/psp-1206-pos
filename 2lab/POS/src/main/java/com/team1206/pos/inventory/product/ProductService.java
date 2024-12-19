@@ -1,7 +1,6 @@
 package com.team1206.pos.inventory.product;
 
 import com.team1206.pos.common.enums.ResourceType;
-import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.exceptions.UnauthorizedActionException;
@@ -145,6 +144,21 @@ public class ProductService {
     public Product getProductEntityById(UUID id) {
         return productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, id.toString()));
+    }
+
+    // Adjust product quantity
+    public void adjustProductQuantity(UUID productId, int adjustment) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, productId.toString()));
+
+        int newQuantity = product.getQuantity() + adjustment;
+        if (newQuantity < 0) {
+            throw new IllegalStateExceptionWithId("Product quantity cannot be less than zero", productId.toString());
+        }
+
+        product.setQuantity(newQuantity);
+
+        productRepository.save(product);
     }
 
     // Helpers
