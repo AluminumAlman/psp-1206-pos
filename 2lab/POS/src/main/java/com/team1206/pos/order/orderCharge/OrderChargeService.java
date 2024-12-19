@@ -16,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -34,7 +35,7 @@ public class OrderChargeService {
     }
 
     // Get order charges
-    public Page<OrderChargeResponseDTO> getOrderCharges(UUID orderId, int offset, int limit) {
+    public Page<OrderChargeResponseDTO> getOrderCharges(int offset, int limit) {
         if (limit < 1) {
             throw new IllegalArgumentException("Limit must be greater than 0");
         }
@@ -42,17 +43,25 @@ public class OrderChargeService {
             throw new IllegalArgumentException("Offset must be greater than or equal to 0");
         }
 
-        Order order = orderService.getOrderEntityById(orderId);
-        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to retrieve order charges");
+        UUID merchantId = userService.getMerchantIdFromLoggedInUser();
 
         Pageable pageable = PageRequest.of(offset / limit, limit);
 
-        Page<OrderCharge> orderCharges = null; /*orderChargeRepository.findAllWithFilters(
-                orderId,
+        Page<OrderCharge> orderCharges = null; orderChargeRepository.findAllByMerchantId(
+                merchantId,
                 pageable
-        );*/
+        );
 
         return orderCharges.map(this::mapToResponseDTO);
+    }
+
+    public List<OrderChargeResponseDTO> getOrderChargesFromOrder(UUID orderId) {
+        Order order = orderService.getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to view charges from this order");
+
+        List<OrderCharge> orderCharges = orderChargeRepository.findAllByOrderId(orderId);
+
+        return orderCharges.stream().map(this::mapToResponseDTO).toList();
     }
 
     // Create order charge
@@ -70,18 +79,6 @@ public class OrderChargeService {
         OrderCharge savedOrderCharge = orderChargeRepository.save(orderCharge);
 
         return mapToResponseDTO(savedOrderCharge);
-    }
-
-    // Update order charge
-    public void deleteOrderCharge(UUID orderId, UUID chargeId) {
-        Order order = orderService.getOrderEntityById(orderId);
-        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to delete charges from this order");
-
-        OrderCharge orderCharge = getOrderChargeEntityById(chargeId);
-        /*if (!orderCharge.getOrder().getId().equals(orderId)) {
-            throw new ResourceNotFoundException(ResourceType.ORDER_CHARGE, chargeId.toString());
-        }*/
-        orderChargeRepository.delete(orderCharge);
     }
 
     @Transactional
@@ -122,7 +119,6 @@ public class OrderChargeService {
 
         orderChargeRepository.save(orderCharge);
     }
-
 
     // *** Helper methods ***
     public OrderCharge getOrderChargeEntityById(UUID orderChargeId) {
