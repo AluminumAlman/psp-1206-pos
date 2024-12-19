@@ -45,18 +45,6 @@ export async function getUsers(token, { firstname, lastname, email } = {}) {
     return res.json();
 }
 
-export async function createUser(token, data) {
-    const res = await fetch(`${BASE}/users`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    });
-    return res.json();
-}
-
 export async function assignMerchantToUser(token, userId, merchantId) {
     const res = await fetch(`${BASE}/users/${userId}/merchant`, {
         method: 'POST',
@@ -65,6 +53,17 @@ export async function assignMerchantToUser(token, userId, merchantId) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({ merchantId })
+    });
+    return res.json();
+}
+
+export async function switchMerchant(token, merchantId) {
+    const params = new URLSearchParams();
+    if (merchantId) params.append('merchantId', merchantId);
+
+    const res = await fetch(`${BASE}/users/switch-merchant?${params}`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}` }
     });
     return res.json();
 }

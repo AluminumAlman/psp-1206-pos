@@ -1,125 +1,101 @@
 import React, { useEffect, useState } from "react";
-import "../styles/Home.css";
-import "../styles/AdminHome.css"; // New CSS for Admin page
-import { getCurrentUser, getUsers, updateUser, deleteUser } from "../api/users";
-import { getMerchants, deleteMerchant } from "../api/merchants";
+import { useNavigate } from "react-router-dom";
+import "../styles/AdminHome.css";
+import { getCurrentUser, assignMerchantToUser, switchMerchant } from "../api/users";
+import { getAllMerchants } from "../api/merchants";
 
 export const AdminHome = () => {
-    const token = localStorage.getItem('jwt-token');
+    const token = localStorage.getItem("jwt-token");
     const [user, setUser] = useState(null);
-    const [users, setUsers] = useState([]);
-    const [merchants, setMerchantsData] = useState([]);
+    const [merchants, setMerchants] = useState([]);
+    const [selectedMerchant, setSelectedMerchant] = useState('');
+    const [showMerchantModal, setShowMerchantModal] = useState(false);
     const [showDetails, setShowDetails] = useState(false);
-
-    const [editingUser, setEditingUser] = useState(null);
-    const [newUserRole, setNewUserRole] = useState('');
+    const navigate = useNavigate();
 
     useEffect(() => {
         async function init() {
-            const cu = await getCurrentUser(token);
-            setUser(cu);
-            const us = await getUsers(token);
-            setUsers(us);
-            const ms = await getMerchants(token);
-            setMerchantsData(ms);
+            const merchantsData = await getAllMerchants(token);
+            setMerchants(merchantsData);
+
+            const currentUser = await getCurrentUser(token);
+            setUser(currentUser);
+
+            if (!currentUser?.merchantId) {
+                setShowMerchantModal(true);
+            }
         }
         init();
     }, [token]);
 
-    const handleUserUpdate = async (userId) => {
-        await updateUser(token, userId, { role: newUserRole });
-        const refreshed = await getUsers(token);
-        setUsers(refreshed);
-        setEditingUser(null);
-        setNewUserRole('');
+    const handleMerchantAssign = async () => {
+        if (!selectedMerchant) return;
+
+        await assignMerchantToUser(token, user.id, selectedMerchant);
+        const updatedUser = await getCurrentUser(token);
+        setUser(updatedUser);
+        setShowMerchantModal(false);
     };
 
-    const handleUserDelete = async (userId) => {
-        await deleteUser(token, userId);
-        setUsers(users.filter(u => u.id !== userId));
+    const handleMerchantUnassign = async () => {
+        await switchMerchant(token);
+        const updatedUser = await getCurrentUser(token);
+        setUser(updatedUser);
+        navigate('/');
     };
 
-    const handleMerchantDelete = async (merchantId) => {
-        await deleteMerchant(token, merchantId);
-        setMerchantsData(merchants.filter(m => m.id !== merchantId));
+    const handleSwitchMerchant = async () => {
+        setShowMerchantModal(true);
     };
 
     return (
         <div className="home-container admin-content">
-            {user && (
-                <div className="user-box">
-                    <div className="user-header">
-                        <span className="user-name">
-                          {user.firstName} {user.lastName} (Admin)
-                        </span>
-                        <button className="details-button" onClick={() => setShowDetails(!showDetails)}>...</button>
-                    </div>
-                    {showDetails && (
-                        <div className="details-box">
-                            <p>Email: {user.email}</p>
-                            <p>Role: <strong>{user.role}</strong></p>
-                        </div>
-                    )}
+            {showMerchantModal ? (
+                <div className="merchant-modal">
+                    <h2>Select a Merchant</h2>
+                    <select
+                        value={selectedMerchant}
+                        onChange={(e) => setSelectedMerchant(e.target.value)}
+                    >
+                        <option value="">Choose...</option>
+                        {merchants.map((merchant) => (
+                            <option key={merchant.id} value={merchant.id}>
+                                {merchant.name} ({merchant.city})
+                            </option>
+                        ))}
+                    </select>
+                    <button
+                        className="assign-button"
+                        onClick={handleMerchantAssign}
+                        disabled={!selectedMerchant}
+                    >
+                        Assign Merchant
+                    </button>
                 </div>
+            ) : (
+                user && (
+                    <div className="user-box" onClick={() => setShowDetails(!showDetails)}>
+                        <div className="user-header">
+                            <span className="user-name">
+                                {user.firstName} {user.lastName} (Admin)
+                            </span>
+                        </div>
+                        {showDetails && (
+                            <div className="details-box">
+                                <p>Email: {user.email}</p>
+                                <p>Role: <strong>{user.role}</strong></p>
+                                <p>Assigned Merchant: <strong>{merchants.find(m => m.id === user.merchantId)?.name || "None"}</strong></p>
+                                <button className="switch-button" onClick={handleSwitchMerchant}>
+                                    Switch Merchant
+                                </button>
+                                <button className="switch-button" onClick={handleMerchantUnassign}>
+                                    Logout
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )
             )}
-
-            <h2>All Users</h2>
-            <table className="admin-table">
-                <thead>
-                <tr>
-                    <th>Name</th><th>Email</th><th>Role</th><th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                {users.map(u => (
-                    <tr key={u.id}>
-                        <td>{u.firstName} {u.lastName}</td>
-                        <td>{u.email}</td>
-                        <td>{u.role}</td>
-                        <td>
-                            {editingUser === u.id ? (
-                                <>
-                                    <select value={newUserRole} onChange={(e) => setNewUserRole(e.target.value)}>
-                                        <option value="">Select role</option>
-                                        <option value="SUPER_ADMIN">SUPER_ADMIN</option>
-                                        <option value="MERCHANT_OWNER">MERCHANT_OWNER</option>
-                                        <option value="EMPLOYEE">EMPLOYEE</option>
-                                    </select>
-                                    <button onClick={() => handleUserUpdate(u.id)}>Save</button>
-                                    <button onClick={() => setEditingUser(null)}>Cancel</button>
-                                </>
-                            ) : (
-                                <>
-                                    <button onClick={() => setEditingUser(u.id)}>Edit</button>
-                                    <button onClick={() => handleUserDelete(u.id)}>Delete</button>
-                                </>
-                            )}
-                        </td>
-                    </tr>
-                ))}
-                </tbody>
-            </table>
-
-            <h2>Merchants</h2>
-            <table className="admin-table">
-                <thead>
-                <tr>
-                    <th>Name</th><th>Email</th><th>City</th><th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                {merchants.map(m => (
-                    <tr key={m.id}>
-                        <td>{m.name}</td>
-                        <td>{m.email}</td>
-                        <td>{m.city}</td>
-                        <td>
-                            <button onClick={() => handleMerchantDelete(m.id)}>Delete</button>
-                        </td>
-                    </tr>
-                ))}
-                </tbody>
-            </table>
         </div>
     );
 };

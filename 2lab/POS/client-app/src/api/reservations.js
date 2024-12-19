@@ -1,6 +1,6 @@
 const BASE = 'http://localhost:8080';
 
-export async function getReservations(token, {limit=20, offset=0, serviceName, customerName, customerEmail, customerPhone, appointedAt}={}) {
+export async function getReservations(token, {limit=20, offset=0, "service-name": serviceName, "customer-name": customerName, "customer-email": customerEmail, "customer-phone": customerPhone, appointedAt}={}) {
     const params = new URLSearchParams({ limit, offset });
     if (serviceName) params.append('service-name', serviceName);
     if (customerName) params.append('customer-name', customerName);

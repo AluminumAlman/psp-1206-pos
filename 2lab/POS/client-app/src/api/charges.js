@@ -55,7 +55,7 @@ export async function reactivateCharge(token, chargeId) {
 }
 
 export async function getChargesByMerchant(token, {limit=10, offset=0, merchantId}) {
-    const params = new URLSearchParams({limit, offset, merchantId});
+    const params = new URLSearchParams({ limit, offset, merchantId });
     const res = await fetch(`${BASE}/charges/merchant?${params}`, {
         headers: { 'Authorization': `Bearer ${token}` }
     });

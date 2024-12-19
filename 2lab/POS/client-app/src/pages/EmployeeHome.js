@@ -1,113 +1,78 @@
-import React, { useEffect, useState } from 'react';
-import "../styles/Home.css";
-import "../styles/EmployeeHome.css"; // New CSS file for Employee page
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "../styles/EmployeeHome.css";
 import { getCurrentUser } from "../api/users";
-import { getServices, createService } from "../api/services"; // createService not necessarily needed here
-import { createReservation } from "../api/reservations";
+import { getAllMerchants } from "../api/merchants";
+import { assignMerchantToUser } from "../api/users";
 
 export const EmployeeHome = () => {
-    const token = localStorage.getItem('jwt-token');
+    const token = localStorage.getItem("jwt-token");
     const [user, setUser] = useState(null);
-    const [showDetails, setShowDetails] = useState(false);
-    const [services, setServicesData] = useState([]);
-    const [selectedService, setSelectedService] = useState('');
-    const [reservationForm, setReservationForm] = useState({
-        firstName: '',
-        lastName: '',
-        phone: '',
-        appointedAt: '',
-    });
+    const [merchants, setMerchants] = useState([]);
+    const [selectedMerchant, setSelectedMerchant] = useState("");
+    const [showMerchantModal, setShowMerchantModal] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         async function init() {
-            if (!token) return;
-            const u = await getCurrentUser(token);
-            setUser(u);
-            if (u.merchantId) {
-                // Get services with merchant filter if available:
-                // The provided endpoints don't have merchantId param directly for GET /services
-                // But we can just fetch all and filter if needed. We'll assume we can filter by merchantId if supported.
-                const svcData = await getServices(token, {limit:50});
-                // If merchant-based filtering is required and not supported by backend,
-                // you'd filter here. For now, we just use svcData.content.
-                setServicesData(svcData.content || []);
+            const currentUser = await getCurrentUser(token);
+            setUser(currentUser);
+
+            if (!currentUser?.merchantId) {
+                const merchantsData = await getAllMerchants(token);
+                setMerchants(merchantsData);
+                setShowMerchantModal(true);
             }
         }
         init();
     }, [token]);
 
-    const handleCreateReservation = async () => {
-        if (!selectedService || !reservationForm.firstName || !reservationForm.lastName || !reservationForm.appointedAt || !user) return;
-        await createReservation(token, {
-            serviceId: selectedService,
-            employeeId: user.id,
-            appointedAt: reservationForm.appointedAt,
-            firstName: reservationForm.firstName,
-            lastName: reservationForm.lastName,
-            phone: reservationForm.phone || '+10000000000'
-        });
-        setReservationForm({ firstName: '', lastName: '', phone: '', appointedAt: '' });
+    const handleAssignMerchant = async () => {
+        if (!selectedMerchant) return;
+
+        await assignMerchantToUser(token, user.id, selectedMerchant);
+        const updatedUser = await getCurrentUser(token);
+        setUser(updatedUser);
+        setShowMerchantModal(false);
+    };
+
+    const handleLogout = () => {
+        localStorage.clear();
+        navigate("/");
     };
 
     return (
         <div className="home-container employee-content">
-            {user && (
-                <div className="user-box">
-                    <div className="user-header">
-                        <span className="user-name">{user.firstName} {user.lastName} (Employee)</span>
-                        <button className="details-button" onClick={() => setShowDetails(!showDetails)}>...</button>
-                    </div>
-                    {showDetails && (
-                        <div className="details-box">
-                            <p>Email: {user.email}</p>
-                            <p>
-                                Role: <strong>{user.role}</strong>
-                            </p>
-                            <p>
-                                Merchant: <strong>{user.merchantId || 'Unassigned'}</strong>
-                            </p>
-                        </div>
-                    )}
-                </div>
-            )}
-
-            <div className="employee-services-section">
-                <h2>Services</h2>
-                {services.length === 0 ? <p>No services found.</p> : (
-                    <select value={selectedService} onChange={(e) => setSelectedService(e.target.value)}>
-                        <option value="">Select a service</option>
-                        {services.map(svc => (
-                            <option key={svc.id} value={svc.id}>{svc.name}</option>
+            {showMerchantModal ? (
+                <div className="merchant-modal">
+                    <h2>Select a Merchant</h2>
+                    <select
+                        value={selectedMerchant}
+                        onChange={(e) => setSelectedMerchant(e.target.value)}
+                    >
+                        <option value="">Choose...</option>
+                        {merchants.map((merchant) => (
+                            <option key={merchant.id} value={merchant.id}>
+                                {merchant.name} ({merchant.city})
+                            </option>
                         ))}
                     </select>
-                )}
-
-                <h3>Create Reservation</h3>
-                <input
-                    type="text"
-                    placeholder="Customer First Name"
-                    value={reservationForm.firstName}
-                    onChange={(e) => setReservationForm({ ...reservationForm, firstName: e.target.value })}
-                />
-                <input
-                    type="text"
-                    placeholder="Customer Last Name"
-                    value={reservationForm.lastName}
-                    onChange={(e) => setReservationForm({ ...reservationForm, lastName: e.target.value })}
-                />
-                <input
-                    type="text"
-                    placeholder="Phone (+10000000000)"
-                    value={reservationForm.phone}
-                    onChange={(e) => setReservationForm({ ...reservationForm, phone: e.target.value })}
-                />
-                <input
-                    type="datetime-local"
-                    value={reservationForm.appointedAt}
-                    onChange={(e) => setReservationForm({ ...reservationForm, appointedAt: e.target.value })}
-                />
-                <button onClick={handleCreateReservation}>Create Reservation</button>
-            </div>
+                    <button
+                        className="assign-button"
+                        onClick={handleAssignMerchant}
+                        disabled={!selectedMerchant}
+                    >
+                        Assign Merchant
+                    </button>
+                </div>
+            ) : (
+                user && (
+                    <div className="user-box">
+                        <h1>Welcome, {user.firstName}!</h1>
+                        <button onClick={handleLogout} className="logout-button">Logout</button>
+                    </div>
+                )
+            )}
         </div>
     );
 };

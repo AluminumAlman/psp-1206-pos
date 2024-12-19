@@ -1,6 +1,6 @@
 const BASE = 'http://localhost:8080';
 
-export async function getMerchants(token) {
+export async function getAllMerchants(token) {
     const res = await fetch(`${BASE}/merchants`, {
         headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -12,10 +12,24 @@ export async function createMerchant(token, data) {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify({
+            name: data.name,
+            phone: data.phone,
+            email: data.email,
+            currency: data.currency,
+            address: data.address,
+            city: data.city,
+            country: data.country,
+            postcode: data.postcode,
+        }),
     });
+
+    if (!res.ok) {
+        throw new Error(`Failed to create merchant: ${res.statusText}`);
+    }
+
     return res.json();
 }
 

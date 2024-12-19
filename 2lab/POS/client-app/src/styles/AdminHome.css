@@ -1,48 +1,73 @@
-.admin-content {
-    flex-direction: column;
-    width: 100%;
-    margin-left: 20px;
+/* General container */
+.home-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    height: 100vh;
+    background-color: #f5f5f5;
+    font-family: 'Arial', sans-serif;
 }
 
-/* Tables on admin page */
-.admin-table {
-    width: 100%;
-    background: #fff;
+/* User box styling */
+.user-box {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background-color: white;
+    padding: 20px;
     border-radius: 15px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    border-collapse: collapse;
-    margin-bottom: 40px;
-    margin-top: 20px;
-}
-
-.admin-table th, .admin-table td {
-    padding: 12px;
-    border-bottom: 1px solid #ddd;
-    font-size: 16px;
-    color: #333;
-}
-
-.admin-table th {
-    background-color: #f0f0f0;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
     text-align: left;
-    font-weight: bold;
 }
 
-.admin-table tr:last-child td {
-    border-bottom: none;
+/* Details button */
+.details-button {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
 }
 
-.admin-table button {
-    background-color: #61dafb;
+.details-box {
+    margin-top: 10px;
+}
+
+/* Merchant Modal */
+.merchant-modal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 350px;
+    background-color: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.merchant-modal select {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+}
+
+.merchant-modal button {
+    padding: 10px 15px;
     border: none;
     border-radius: 5px;
-    padding: 5px 10px;
     cursor: pointer;
-    margin-right: 5px;
-    color: #fff;
-    font-size: 14px;
 }
 
-.admin-table button:hover {
-    background-color: #21a1f1;
+.assign-button, .switch-button {
+    margin: 20px;
+    background-color: #007bff;
+    color: white;
+    font-size: 16px;
+}
+
+.assign-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
 }

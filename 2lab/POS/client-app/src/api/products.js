@@ -1,5 +1,6 @@
 const BASE = 'http://localhost:8080';
 
+// Products
 export async function getAllProducts(token, {name, price, categoryId, offset=0, limit=20}={}) {
     const params = new URLSearchParams({ offset, limit });
     if (name) params.append('name', name);
@@ -36,7 +37,7 @@ export async function updateProduct(token, id, data) {
         method: 'PUT',
         headers: {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+            'Content-Type':'application/json'
         },
         body: JSON.stringify(data)
     });
@@ -55,7 +56,7 @@ export async function adjustProductQuantity(token, id, adjustment) {
         method: 'PATCH',
         headers: {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+            'Content-Type':'application/json'
         },
         body: JSON.stringify({ adjustment })
     });
@@ -94,7 +95,7 @@ export async function updateCategory(token, id, data) {
         method: 'PUT',
         headers: {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+            'Content-Type':'application/json'
         },
         body: JSON.stringify(data)
     });
@@ -140,7 +141,7 @@ export async function updateProductVariation(token, productId, variationId, data
         method: 'PUT',
         headers: {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+            'Content-Type':'application/json'
         },
         body: JSON.stringify(data)
     });
@@ -159,7 +160,7 @@ export async function adjustProductVariationQuantity(token, productId, variation
         method: 'PATCH',
         headers: {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+            'Content-Type':'application/json'
         },
         body: JSON.stringify({ adjustment })
     });
