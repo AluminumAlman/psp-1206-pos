@@ -38,8 +38,6 @@ public class OrderChargeService {
             throw new IllegalArgumentException("Offset must be greater than or equal to 0");
         }
 
-        checkIfOrderExists(orderId);
-
         Order order = orderService.getOrderEntityById(orderId);
         userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to retrieve order charges");
 
