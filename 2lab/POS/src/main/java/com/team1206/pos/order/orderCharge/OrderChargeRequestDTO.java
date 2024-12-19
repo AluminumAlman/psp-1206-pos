@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 @OneOf(fields = {"percent", "amount"})
 public class OrderChargeRequestDTO {
     @NotBlank
-    @Pattern(regexp = "(?i)^(tax|charge|tip|discount)$", message = "chargeType must be either 'tax', 'charge', 'tip' or 'discount'")
+    @Pattern(regexp = "(?i)^(charge|discount)$", message = "chargeType must be either 'tax', 'charge', 'tip' or 'discount'")
     private String type;
 
     @NotBlank
