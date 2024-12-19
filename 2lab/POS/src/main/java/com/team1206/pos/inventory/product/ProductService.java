@@ -9,12 +9,11 @@ import com.team1206.pos.inventory.productCategory.ProductCategory;
 import com.team1206.pos.inventory.productCategory.ProductCategoryService;
 import com.team1206.pos.inventory.productVariation.ProductVariation;
 import com.team1206.pos.payments.charge.Charge;
-import com.team1206.pos.payments.charge.ChargeService;
 import com.team1206.pos.user.user.UserService;
 import org.springframework.data.domain.Page;
-import org.springframework.stereotype.Service;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -27,13 +26,11 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductCategoryService productCategoryService;
     private final UserService userService;
-    private final ChargeService chargeService;
 
-    public ProductService(ProductRepository productRepository, ProductCategoryService productCategoryService, UserService userService, ChargeService chargeService) {
+    public ProductService(ProductRepository productRepository, ProductCategoryService productCategoryService, UserService userService) {
         this.productRepository = productRepository;
         this.productCategoryService = productCategoryService;
         this.userService = userService;
-        this.chargeService = chargeService;
     }
 
 
@@ -47,12 +44,6 @@ public class ProductService {
         product.setPrice(requestDTO.getPrice());
         product.setQuantity(requestDTO.getQuantity());
         product.setCategory(category);
-
-        // Check for missing ChargeIds
-        if (!requestDTO.getChargeIds().isEmpty()) {
-            List<Charge> charges = validateAndFetchCharges(requestDTO.getChargeIds());
-            product.setCharges(charges);
-        }
 
         Product savedProduct = productRepository.save(product);
 
@@ -103,11 +94,6 @@ public class ProductService {
         if (updateProductRequestDTO.getCategoryId() != null) {
             ProductCategory category = productCategoryService.getCategoryEntityById(updateProductRequestDTO.getCategoryId());
             product.setCategory(category);
-        }
-
-        if (updateProductRequestDTO.getChargeIds() != null) {
-            List<Charge> charges = validateAndFetchCharges(updateProductRequestDTO.getChargeIds());
-            product.setCharges(charges);
         }
 
         Product updatedProduct = productRepository.save(product);
@@ -189,30 +175,6 @@ public class ProductService {
 
         return finalProductPrice;
     }
-
-    // Helpers
-    private List<Charge> validateAndFetchCharges(List<UUID> chargeIds) {
-        if (chargeIds == null || chargeIds.isEmpty()) {
-            return List.of(); // Return an empty list if no charges are provided
-        }
-
-        List<Charge> charges = chargeService.getAllEntitiesById(chargeIds);
-        List<UUID> foundChargeIds = charges.stream()
-                .map(Charge::getId)
-                .toList();
-
-        // Find any missing Charge IDs
-        List<UUID> missingChargeIds = chargeIds.stream()
-                .filter(id -> !foundChargeIds.contains(id))
-                .toList();
-
-        if (!missingChargeIds.isEmpty()) {
-            throw new ResourceNotFoundException(ResourceType.CHARGE, missingChargeIds.toString()); // TODO patestuoti kai bus Charges
-        }
-
-        return charges;
-    }
-
 
     // Mappers
     private ProductResponseDTO mapToResponseDTO(Product product) {

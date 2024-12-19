@@ -1,6 +1,5 @@
 package com.team1206.pos.payments.charge;
 
-import com.team1206.pos.common.enums.ChargeScope;
 import com.team1206.pos.common.enums.ChargeType;
 import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.service.service.Service;
@@ -27,10 +26,6 @@ public class Charge {
     @Column(name = "type", nullable = false)
     @Enumerated(EnumType.ORDINAL)
     private ChargeType type;
-
-    @Column(name = "scope", nullable = false)
-    @Enumerated(EnumType.ORDINAL)
-    private ChargeScope scope;
 
     @Column(name = "name", nullable = false, length = 100)
     private String name;

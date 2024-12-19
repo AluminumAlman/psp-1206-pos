@@ -29,7 +29,9 @@ public class ChargeRequestDTO {
     @DecimalMin(value = "0.01", message = "amount must be greater than or equal to 0.01")
     private BigDecimal amount;
 
+    @NotNull(message = "products must not be null; pass an empty array instead")
     private List<UUID> products;
 
+    @NotNull(message = "services must not be null; pass an empty array instead")
     private List<UUID> services;
 }
