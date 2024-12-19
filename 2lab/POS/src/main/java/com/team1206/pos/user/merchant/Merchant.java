@@ -2,6 +2,7 @@ package com.team1206.pos.user.merchant;
 
 import com.team1206.pos.inventory.productCategory.ProductCategory;
 import com.team1206.pos.order.order.Order;
+import com.team1206.pos.order.orderCharge.OrderCharge;
 import com.team1206.pos.payments.charge.Charge;
 import com.team1206.pos.payments.discount.Discount;
 import com.team1206.pos.service.schedule.Schedule; // Import the Schedule entity
@@ -70,6 +71,9 @@ public class Merchant {
 
     @OneToMany(mappedBy = "merchant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Schedule> schedules;
+
+    @OneToMany(mappedBy = "merchant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderCharge> orderCharges;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();

@@ -3,8 +3,10 @@ package com.team1206.pos.order.orderCharge;
 import com.team1206.pos.common.enums.OrderChargeType;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
+import com.team1206.pos.exceptions.UnauthorizedActionException;
 import com.team1206.pos.order.order.Order;
 import com.team1206.pos.order.order.OrderService;
+import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.user.UserService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -43,27 +45,26 @@ public class OrderChargeService {
 
         Pageable pageable = PageRequest.of(offset / limit, limit);
 
-        Page<OrderCharge> orderCharges = orderChargeRepository.findAllWithFilters(
+        Page<OrderCharge> orderCharges = null; /*orderChargeRepository.findAllWithFilters(
                 orderId,
                 pageable
-        );
+        );*/
 
         return orderCharges.map(this::mapToResponseDTO);
     }
 
     // Create order charge
     public OrderChargeResponseDTO createOrderCharge(
-            UUID orderId,
-            @Valid OrderChargeRequestDTO requestBody
+            OrderChargeRequestDTO requestBody
     ) {
-        Order order = orderService.getOrderEntityById(orderId);
-        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to add charges to this order");
+        Merchant merchant = userService.getCurrentUser().getMerchant();
+        if (merchant == null)
+            throw new UnauthorizedActionException("Super-admin has to be logged in to create order charge");
 
         OrderCharge orderCharge = new OrderCharge();
 
         setOrderChargeFields(orderCharge, requestBody);
-        orderCharge.setOrder(orderService.getOrderEntityById(orderId));
-
+        orderCharge.setMerchant(merchant);
         OrderCharge savedOrderCharge = orderChargeRepository.save(orderCharge);
 
         return mapToResponseDTO(savedOrderCharge);
@@ -80,9 +81,9 @@ public class OrderChargeService {
                                                                chargeId.toString()
                                                        ));
 
-        if (!orderCharge.getOrder().getId().equals(orderId)) {
+        /*if (!orderCharge.getOrder().getId().equals(orderId)) {
             throw new ResourceNotFoundException(ResourceType.ORDER_CHARGE, chargeId.toString());
-        }
+        }*/
 
         orderChargeRepository.delete(orderCharge);
     }

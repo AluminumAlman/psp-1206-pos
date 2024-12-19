@@ -3,10 +3,12 @@ package com.team1206.pos.order.order;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.UUID;
 
 @Slf4j
@@ -63,6 +65,21 @@ public class OrderController {
     @Operation(summary = "Get the total amount of an order")
     public ResponseEntity<BigDecimal> getTotal(@PathVariable UUID orderId) {
         return ResponseEntity.ok(orderService.calculateTotalAmount(orderId));
+    }
+  
+    @PostMapping("{orderId}/setTip")
+    @Operation(summary = "Set order tip")
+    public ResponseEntity<OrderResponseDTO> setTip(@PathVariable UUID orderId, @RequestBody BigDecimal tipAmount) {
+        log.info("Received set order tip request: orderId={} {}", orderId, tipAmount);
+
+        if (tipAmount.compareTo(BigDecimal.ZERO) < 0)
+            throw new IllegalArgumentException("Tip amount must not be negative");
+
+        tipAmount = tipAmount.setScale(2, RoundingMode.FLOOR);
+        OrderResponseDTO response = orderService.setTip(orderId, tipAmount);
+
+        log.debug("Returning {} to set order tip request (orderId={})", response, orderId);
+        return ResponseEntity.ok(response);
     }
 
     // TODO: Create an endpoint to get the total tax amount of an order

@@ -35,18 +35,16 @@ public class OrderChargeController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("{orderId}/charges")
+    @PostMapping("charges")
     @Operation(summary = "Create order charge")
     public ResponseEntity<OrderChargeResponseDTO> createOrderCharge(
-            @PathVariable UUID orderId,
             @Valid @RequestBody OrderChargeRequestDTO requestBody
     ) {
-        log.info("Received create order charge request: orderId={} {}", orderId, requestBody);
+        log.info("Received create order charge request: {}", requestBody);
 
-        OrderChargeResponseDTO response = orderChargeService.createOrderCharge(orderId, requestBody);
+        OrderChargeResponseDTO response = orderChargeService.createOrderCharge(requestBody);
 
-        log.debug("Returning {} to create order charge request (orderId={})", response, orderId);
-        
+        log.debug("Returning {} to create order charge request", response);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

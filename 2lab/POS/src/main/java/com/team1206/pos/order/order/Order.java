@@ -29,7 +29,7 @@ public class Order {
     @Enumerated(EnumType.ORDINAL)
     private OrderStatus status;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToMany(mappedBy = "orders", cascade = CascadeType.ALL)
     private List<OrderCharge> charges;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)

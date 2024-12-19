@@ -2,6 +2,7 @@ package com.team1206.pos.order.order;
 
 import com.team1206.pos.common.enums.OrderStatus;
 import com.team1206.pos.common.enums.ResourceType;
+import com.team1206.pos.exceptions.IllegalRequestException;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.exceptions.UnauthorizedActionException;
 import com.team1206.pos.order.orderCharge.OrderCharge;
@@ -11,6 +12,7 @@ import com.team1206.pos.payments.discount.Discount;
 import com.team1206.pos.payments.transaction.Transaction;
 import com.team1206.pos.user.merchant.MerchantService;
 import com.team1206.pos.user.user.UserService;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -132,6 +134,22 @@ public class OrderService {
         order.getItems().forEach(orderItemService::deleteOrderItem);
 
         orderRepository.delete(order);
+    }
+
+    @Transactional
+    public OrderResponseDTO setTip(UUID orderId, BigDecimal tipAmount) {
+        Order order = getOrderEntityById(orderId);
+
+        userService.verifyLoggedInUserBelongsToMerchant(
+                order.getMerchant().getId(),
+                "You are not authorized to set tip");
+
+        if (order.getStatus() != OrderStatus.OPEN)
+            throw new IllegalRequestException("Order has to be open to set tip");
+
+        order.setTip(tipAmount);
+        orderRepository.save(order);
+        return mapToResponseDTO(order);
     }
 
     // *** Helper methods ***
