@@ -26,5 +26,9 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
             @Param("appointedAt") LocalDateTime appointedAt,
             Pageable pageable);
 
-    List<Reservation> findReservationsByEmployeeAndDate(UUID userId, LocalDate date);
+    @Query("SELECT r FROM Reservation r WHERE r.employee.id = :userId AND " +
+            "r.appointedAt >= :startOfDay AND r.appointedAt < :endOfDay")
+    List<Reservation> findReservationsByEmployeeAndDate(@Param("userId") UUID userId,
+                                                        @Param("startOfDay") LocalDateTime startOfDay,
+                                                        @Param("endOfDay") LocalDateTime endOfDay);
 }
