@@ -104,7 +104,7 @@ public class ServiceService {
         // Create the response DTO
         AvailableSlotsResponseDTO responseDTO = new AvailableSlotsResponseDTO();
 
-        // Get service duration (in minutes) from the service entity
+        // Get service duration (in seconds) from the service entity
         com.team1206.pos.service.service.Service service = getServiceEntityById(serviceId);
         Long serviceDurationInSeconds = service.getDuration();  // Service duration in seconds (as long)
 
@@ -123,10 +123,11 @@ public class ServiceService {
                 LocalDateTime slotEndTime = slotStartTime.plusSeconds(serviceDurationInSeconds);
 
                 // Check if the slot is already occupied by an existing reservation
+                LocalDateTime finalSlotStartTime = slotStartTime;
                 boolean isSlotOccupied = existingReservations.stream().anyMatch(reservation ->
-                        !slotStartTime.isBefore(reservation.getAppointedAt()) &&
+                        !finalSlotStartTime.isBefore(reservation.getAppointedAt()) &&
                                 slotEndTime.isAfter(reservation.getAppointedAt()) &&
-                                slotStartTime.isBefore(reservation.getAppointedAt().plusSeconds(reservation.getService().getDuration()))
+                                finalSlotStartTime.isBefore(reservation.getAppointedAt().plusSeconds(reservation.getService().getDuration()))
                 );
 
                 // If the slot is not occupied, add it to the available slots list
