@@ -2,10 +2,12 @@ package com.team1206.pos.common.validation;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import lombok.extern.slf4j.Slf4j;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 
+@Slf4j
 public class OneOfValidator implements ConstraintValidator<OneOf, Object> {
 
     private String[] fields;
@@ -17,7 +19,7 @@ public class OneOfValidator implements ConstraintValidator<OneOf, Object> {
 
     @Override
     public boolean isValid(Object obj, ConstraintValidatorContext context) {
-        System.out.println("Validating object: " + obj);
+        log.debug("Validating object: {}", obj);
         if (fields == null || fields.length < 2) {
             throw new IllegalArgumentException(
                     "At least two fields must be specified for @OneOf validation.");

@@ -4,14 +4,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
-// TODO: add authorization.
+// TODO: add authorization.git
 @Slf4j
 @RestController
 @RequestMapping("/discounts")
@@ -23,12 +23,22 @@ public class DiscountController {
 
     @GetMapping
     @Operation(summary = "Get discount list")
-    public ResponseEntity<List<DiscountResponseDTO>> getDiscounts() {
-        log.info("Received get discounts request");
+    public ResponseEntity<Page<DiscountResponseDTO>> getDiscounts(
+            @RequestParam(value = "limit", defaultValue = "20") int limit,
+            @RequestParam(value = "offset", defaultValue = "0") int offset,
+            @RequestParam(value = "validOnly", defaultValue = "true") boolean validOnly
+    ) {
+        log.info("Received get discounts request: limit={} offset={} validOnly={}", limit, offset, validOnly);
 
-        List<DiscountResponseDTO> responses = discountService.getDiscounts();
+        if (limit <= 0)
+            throw new IllegalArgumentException("Limit must be at least 1");
+        if (offset < 0)
+            throw new IllegalArgumentException("Offset must be at least 0");
 
-        log.debug("Returning {} to get discounts request", responses);
+        Page<DiscountResponseDTO> responses = discountService.getDiscounts(limit, offset, validOnly);
+
+        log.debug("Returning {} to get discounts request (limit={} offset={} validOnly={})",
+                responses.stream().toList(), limit, offset, validOnly);
         return ResponseEntity.ok(responses);
     }
 
