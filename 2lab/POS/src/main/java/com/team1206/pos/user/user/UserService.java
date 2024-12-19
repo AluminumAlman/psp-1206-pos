@@ -229,7 +229,7 @@ public class UserService {
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
         user.setRole(request.getRole());
-        user.setSchedules(scheduleService.createScheduleEntities(request.getWeeklySchedule(), user));
+        user.setSchedules(scheduleService.createScheduleEntities(request.getSchedule(), user));
     }
 
     private UserResponseDTO mapToResponseDTO(User user) {
