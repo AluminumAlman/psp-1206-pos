@@ -148,7 +148,7 @@ public class ChargeService {
                 "You are not authorized to add charges to this product");
 
         Charge charge = getChargeEntityById(chargeId);
-        if (merchantId != charge.getMerchant().getId())
+        if (!charge.getMerchant().getId().equals(merchantId))
             throw new IllegalArgumentException("Product and charge merchants differ");
 
         if (charge.getProducts().contains(product))
@@ -168,7 +168,7 @@ public class ChargeService {
                 "You are not authorized to remove charges from this product");
 
         Charge charge = getChargeEntityById(chargeId);
-        if (merchantId != charge.getMerchant().getId())
+        if (!charge.getMerchant().getId().equals(merchantId))
             throw new IllegalArgumentException("Product and charge merchants differ");
 
         if (!charge.getProducts().remove(product))
@@ -197,7 +197,7 @@ public class ChargeService {
                 "You are not authorized to add charges to this service");
 
         Charge charge = getChargeEntityById(chargeId);
-        if (merchantId != charge.getMerchant().getId())
+        if (!charge.getMerchant().getId().equals(merchantId))
             throw new IllegalArgumentException("Service and charge merchants differ");
 
         if (charge.getProducts().contains(service))
@@ -217,7 +217,7 @@ public class ChargeService {
                 "You are not authorized to remove charges from this service");
 
         Charge charge = getChargeEntityById(chargeId);
-        if (merchantId != charge.getMerchant().getId())
+        if (!charge.getMerchant().getId().equals(merchantId))
             throw new IllegalArgumentException("Service and charge merchants differ");
 
         if (!charge.getServices().remove(service))

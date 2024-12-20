@@ -180,7 +180,7 @@ public class UserService {
     // MAIN VALIDATION METHOD
     public void verifyLoggedInUserBelongsToMerchant(UUID merchantId, String messageIfInvalid) {
         // If User is assigned to a different Merchant or the super-admin didn't choose the Merchant yet (or regular user, which hasn't been assigned a merchant yet)
-        if ((getCurrentUser().getRole() == UserRoles.SUPER_ADMIN && getCurrentUser().getMerchant().getId() == null) || getMerchantIdFromLoggedInUser() != merchantId) {
+        if ((getCurrentUser().getRole() == UserRoles.SUPER_ADMIN && getCurrentUser().getMerchant() == null) || !getMerchantIdFromLoggedInUser().equals(merchantId)) {
             throw new UnauthorizedActionException(messageIfInvalid);
         }
     }
