@@ -22,7 +22,7 @@ public class OrderChargeController {
     }
 
     @GetMapping("/charges")
-    @Operation(summary = "Get all order charges from an order")
+    @Operation(summary = "Get all order charges")
     public ResponseEntity<Page<OrderChargeResponseDTO>> getOrderCharges(
             @RequestParam(value = "limit", defaultValue = "20") int limit,
             @RequestParam(value = "offset", defaultValue = "0") int offset
