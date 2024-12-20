@@ -53,8 +53,9 @@ public class ServiceService {
     public Page<ServiceResponseDTO> getServices(int limit, int offset, String name, BigDecimal price, Long duration) {
         Pageable pageable = PageRequest.of(offset / limit, limit); // Convert offset and limit into Pageable
 
+        UUID merchantId = userService.getMerchantIdFromLoggedInUser();
         // Fetch the filtered results
-        Page<com.team1206.pos.service.service.Service> servicePage = serviceRepository.findAllWithFilters(name, price, duration, pageable); // TODO add filter by user's merchant
+        Page<com.team1206.pos.service.service.Service> servicePage = serviceRepository.findAllWithFilters(name, price, duration, merchantId, pageable);
 
         return servicePage.map(this::mapToResponseDTO);
     }

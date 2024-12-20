@@ -52,6 +52,12 @@ public class UserService {
     public List<UserResponseDTO> getAllUsers(String firstname, String lastname, String email) {
         List<User> users = userRepository.findAll();
 
+        Merchant merchant = getCurrentUser().getMerchant();
+        if (merchant != null) {
+            UUID merchantId = merchant.getId();
+            users = users.stream().filter(u -> u.getMerchant() != null ? u.getMerchant().getId().equals(merchantId) : false).toList();
+        }
+
         if (StringUtils.hasText(firstname)) {
             users = users.stream().filter(u -> u.getFirstName().equalsIgnoreCase(firstname)).toList();
         }
