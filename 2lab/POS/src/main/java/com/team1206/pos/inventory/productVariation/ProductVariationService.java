@@ -55,7 +55,7 @@ public class ProductVariationService {
         ProductVariation productVariation = productVariationRepository.findById(productVariationId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_VARIATION, productVariationId.toString()));
 
-        if(productVariation.getProduct().getId() != productId)
+        if(!productVariation.getProduct().getId().equals(productId))
             throw new IllegalArgumentException("Variation doesn't match the product");
 
         userService.verifyLoggedInUserBelongsToMerchant(productVariation.getProduct().getCategory().getMerchant().getId(), "You are not authorized to retrieve this product variation");
@@ -83,7 +83,7 @@ public class ProductVariationService {
         ProductVariation productVariation = productVariationRepository.findById(productVariationId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_VARIATION, productVariationId.toString()));
 
-        if(productVariation.getProduct().getId() != productId)
+        if(!productVariation.getProduct().getId().equals(productId))
             throw new IllegalArgumentException("Variation doesn't match the product");
 
         userService.verifyLoggedInUserBelongsToMerchant(productVariation.getProduct().getCategory().getMerchant().getId(), "You are not authorized to update this product variation");
@@ -105,7 +105,7 @@ public class ProductVariationService {
         ProductVariation productVariation = productVariationRepository.findById(productVariationId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_VARIATION, productVariationId.toString()));
 
-        if(productVariation.getProduct().getId() != productId)
+        if(!productVariation.getProduct().getId().equals(productId))
             throw new IllegalArgumentException("Variation doesn't match the product");
 
         userService.verifyLoggedInUserBelongsToMerchant(productVariation.getProduct().getCategory().getMerchant().getId(), "You are not authorized to delete this product variation");
@@ -117,7 +117,7 @@ public class ProductVariationService {
         ProductVariation productVariation = productVariationRepository.findById(variationId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, variationId.toString()));
 
-        if(productVariation.getProduct().getId() != productId)
+        if(!productVariation.getProduct().getId().equals(productId))
             throw new IllegalArgumentException("Variation doesn't match the product");
 
         userService.verifyLoggedInUserBelongsToMerchant(productVariation.getProduct().getCategory().getMerchant().getId(), "You are not authorized to adjust this product variation quantity");

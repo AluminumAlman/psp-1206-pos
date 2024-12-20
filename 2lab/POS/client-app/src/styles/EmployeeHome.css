@@ -267,6 +267,13 @@
 
 .delete-button {
     background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s ease;
 }
 
 .delete-button:hover {
@@ -291,20 +298,33 @@
     background-color: white;
     padding: 25px;
     border-radius: 15px;
-    width: 90%; /* Allow more width for wider tables */
-    max-width: 800px; /* Adjust to accommodate larger tables */
+    width: 80vw; /* 80% of the viewport width */
+    max-width: 80vw; /* Ensure it doesn't exceed 80vw */
     max-height: 90vh; /* Limit modal height */
-    overflow: auto; /* Add scrolling for content overflow */
+    overflow: auto; /* Allow scrolling if content overflows */
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
     text-align: center;
     position: relative;
+    display: flex;
+    flex-direction: column;
 }
+
+.reservations-table {
+    width: 100%; /* Table is still full width within the modal */
+    border-collapse: collapse;
+}
+
 
 
 .modal-content h2 {
     font-size: 22px;
     margin-bottom: 15px;
     color: #333;
+}
+
+.reservations-table {
+    width: 100%;
+    border-collapse: collapse;
 }
 
 .reservation-form input {
@@ -391,7 +411,7 @@
     background-color: white;
     padding: 25px;
     border-radius: 15px;
-    width: 400px;
+    width: 600px;
     max-width: 90%;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
     text-align: center;
@@ -533,3 +553,5 @@
         padding: 8px;
     }
 }
+
+
