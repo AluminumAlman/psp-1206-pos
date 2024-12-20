@@ -33,7 +33,7 @@ public class InventoryLog {
     @JoinColumn(name = "product_variation_id", nullable = true)
     private ProductVariation productVariation;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "\"order\"", nullable = true)
     private Order order;
 
