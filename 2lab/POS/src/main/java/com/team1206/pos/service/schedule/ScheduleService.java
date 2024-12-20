@@ -22,14 +22,14 @@ public class ScheduleService {
     // Create schedule for user
     public List<Schedule> createScheduleEntities(Map<DayOfWeek, WorkHoursDTO> requestSchedule, User user) {
         if (user.getRole() == UserRoles.EMPLOYEE) {
-            Merchant merchant = user.getMerchant();
-            if (merchant == null || merchant.getId() == null) {
-                throw new IllegalArgumentException("User must belong to a merchant.");
-            }
+//            Merchant merchant = user.getMerchant();
+//            if (merchant == null || merchant.getId() == null) {
+//                throw new IllegalArgumentException("User must belong to a merchant.");
+//            }
 
             // Fetch and validate against merchant's schedule
-            List<Schedule> merchantSchedule = getMerchantSchedule(merchant.getId());
-            validateUserScheduleAgainstMerchantSchedule(requestSchedule, merchantSchedule);
+//            List<Schedule> merchantSchedule = getMerchantSchedule(merchant.getId());
+//            validateUserScheduleAgainstMerchantSchedule(requestSchedule, merchantSchedule);
 
             return getScheduleList(requestSchedule, user, null);
         }

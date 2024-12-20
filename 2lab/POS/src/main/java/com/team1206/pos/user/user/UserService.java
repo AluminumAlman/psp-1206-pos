@@ -251,7 +251,7 @@ public class UserService {
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
         user.setRole(request.getRole());
-        user.setMerchant(getCurrentUser().getMerchant());
+//        user.setMerchant(getCurrentUser().getMerchant());
         user.setSchedules(scheduleService.createScheduleEntities(request.getSchedule(), user));
     }
 
@@ -260,7 +260,7 @@ public class UserService {
         user.setLastName(request.getLastName());
         user.setEmail(request.getEmail());
         user.setRole(request.getRole());
-        user.setMerchant(getCurrentUser().getMerchant());
+//        user.setMerchant(getCurrentUser().getMerchant());
         user.setSchedules(scheduleService.createScheduleEntities(request.getSchedule(), user));
     }
 
