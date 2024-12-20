@@ -90,7 +90,7 @@ public class OrderChargeService {
                 "You are not authorized to add order charges to this order");
 
         Order order = orderService.getOrderEntityById(orderId);
-        if (merchantId != order.getMerchant().getId())
+        if (!order.getMerchant().getId().equals(merchantId))
             throw new IllegalArgumentException("Order and order charge merchants differ");
 
         if (order.getStatus() != OrderStatus.OPEN)
@@ -111,7 +111,7 @@ public class OrderChargeService {
                 "You are not authorized to remove order charges from this order");
 
         Order order = orderService.getOrderEntityById(orderId);
-        if (merchantId != order.getMerchant().getId())
+        if (!order.getMerchant().getId().equals(merchantId))
             throw new IllegalArgumentException("Order and order charge merchants differ");
 
         if (order.getStatus() != OrderStatus.OPEN)
