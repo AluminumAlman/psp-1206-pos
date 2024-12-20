@@ -86,7 +86,7 @@ public class UserController {
 
     @PostMapping("/{userId}/merchant")
     @Operation(summary = "Assign merchant to a user")
-    public ResponseEntity<UserResponseDTO> assignMerchantToUser(@PathVariable UUID userId, @RequestBody UserMerchantRequestDTO request) {
+    public ResponseEntity<UserResponseDTO> assignMerchantToUser(@PathVariable UUID userId, @Valid @RequestBody UserMerchantRequestDTO request) {
         log.info("Received assign merchant to user request: userId={} {}", userId, request);
 
         UserResponseDTO updatedUser = userService.assignMerchantToUser(userId, request.getMerchantId());

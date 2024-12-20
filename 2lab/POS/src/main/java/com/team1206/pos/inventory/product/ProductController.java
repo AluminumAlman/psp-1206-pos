@@ -72,7 +72,7 @@ public class ProductController {
 
     @Operation(summary = "Update product by ID")
     @PutMapping("/{id}")
-    public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable String id, @RequestBody UpdateProductRequestDTO requestDTO) {
+    public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable String id, @Valid @RequestBody UpdateProductRequestDTO requestDTO) {
         log.info("Received update product request: id={} {}", id, requestDTO);
 
         ProductResponseDTO updatedProduct = productService.updateProductById(UUID.fromString(id), requestDTO);

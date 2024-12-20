@@ -1,6 +1,7 @@
 package com.team1206.pos.payments.transaction;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -59,7 +60,7 @@ public class TransactionController {
     @Operation(summary = "Create transaction for order")
     public ResponseEntity<TransactionResponseDTO> createTransaction(
             @PathVariable UUID orderId,
-            @RequestBody TransactionRequestDTO requestBody
+            @Valid @RequestBody TransactionRequestDTO requestBody
     ) {
         return ResponseEntity.ok(transactionService.createTransaction(orderId, requestBody));
     }

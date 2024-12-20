@@ -36,7 +36,7 @@ public class InventoryLogController {
     public ResponseEntity<Page<InventoryLogResponseDTO>> getAllInventoryLogs(
         @RequestParam(value = "offset", defaultValue = "0") int offset,
         @RequestParam(value = "limit", defaultValue = "20") int limit,
-        @RequestBody(required = false) InventoryLogFilterDTO filter) {
+        @Valid @RequestBody(required = false) InventoryLogFilterDTO filter) {
 
         if (limit < 1) {
             throw new IllegalArgumentException("Limit must be at least 1");
