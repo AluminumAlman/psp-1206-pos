@@ -61,10 +61,10 @@ public class ProductController {
 
     @Operation(summary = "Get product by ID")
     @GetMapping("/{id}")
-    public ResponseEntity<ProductResponseDTO> getProduct(@PathVariable String id) {
+    public ResponseEntity<ProductResponseDTO> getProduct(@PathVariable UUID id) {
         log.info("Received get product request: id={}", id);
 
-        ProductResponseDTO product = productService.getProductById(UUID.fromString(id));
+        ProductResponseDTO product = productService.getProductById(id);
 
         log.debug("Returning {} to get product request (id={})", product, id);
         return ResponseEntity.ok(product);
@@ -72,10 +72,10 @@ public class ProductController {
 
     @Operation(summary = "Update product by ID")
     @PutMapping("/{id}")
-    public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable String id, @Valid @RequestBody UpdateProductRequestDTO requestDTO) {
+    public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable UUID id, @Valid @RequestBody UpdateProductRequestDTO requestDTO) {
         log.info("Received update product request: id={} {}", id, requestDTO);
 
-        ProductResponseDTO updatedProduct = productService.updateProductById(UUID.fromString(id), requestDTO);
+        ProductResponseDTO updatedProduct = productService.updateProductById(id, requestDTO);
 
         log.debug("Returning {} to update product request (id={})", updatedProduct, id);
         return ResponseEntity.ok(updatedProduct);
@@ -83,10 +83,10 @@ public class ProductController {
 
     @Operation(summary = "Delete product by ID")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable String id) {
+    public ResponseEntity<Void> deleteProduct(@PathVariable UUID id) {
         log.info("Received delete product request: id={}", id);
 
-        productService.deleteProductById(UUID.fromString(id));
+        productService.deleteProductById(id);
 
         log.debug("Returning nothing to delete product request (id={})", id);
         return ResponseEntity.noContent().build();

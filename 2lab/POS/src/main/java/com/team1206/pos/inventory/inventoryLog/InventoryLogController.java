@@ -26,8 +26,8 @@ public class InventoryLogController {
 
     @Operation(summary = "retrieve inventory log by ID")
     @GetMapping("/{id}")
-    public ResponseEntity<InventoryLogResponseDTO> getInventoryLog(@PathVariable String id) {
-        InventoryLogResponseDTO responseDTO = inventoryLogService.getInventoryLogById(UUID.fromString(id));
+    public ResponseEntity<InventoryLogResponseDTO> getInventoryLog(@PathVariable UUID id) {
+        InventoryLogResponseDTO responseDTO = inventoryLogService.getInventoryLogById(id);
         return ResponseEntity.ok(responseDTO);
     }
 
