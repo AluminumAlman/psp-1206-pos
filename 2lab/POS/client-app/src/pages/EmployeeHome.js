@@ -5,9 +5,9 @@ import { useNavigate } from "react-router-dom";
 import "../styles/EmployeeHome.css";
 import { getCurrentUser, assignMerchantToUser } from "../api/users";
 import { getAllMerchants, getMerchant } from "../api/merchants";
-import { getAllProducts, getProductVariations } from '../api/products';
+import { getAllProducts, getProductVariations, getProductVariation, getProduct, adjustProductVariationQuantity, adjustProductQuantity  } from '../api/products';
 import { getServices, getAvailableSlots } from "../api/services";
-import { getOrders, createOrder, addItemToOrder, getTotalOrderAmount } from "../api/orders";
+import { getOrders, createOrder, addItemToOrder, getTotalOrderAmount, getOrderItems, updateOrderItem } from "../api/orders";
 import { getReservations, createReservation, updateReservation, cancelReservation } from "../api/reservations";
 
 export const EmployeeHome = () => {
@@ -43,6 +43,13 @@ export const EmployeeHome = () => {
     const [selectedQuantity, setSelectedQuantity] = useState(1);
     const [availableVariants, setAvailableVariants] = useState(null);
     const [selectedVariant, setSelectedVariant] = useState("");
+
+    // Order details modal states
+    const [showDetailsModal, setShowDetailsModal] = useState(false);
+    const [selectedOrderDetails, setSelectedOrderDetails] = useState([]);
+    const [selectedOrderId, setSelectedOrderId] = useState(null);
+    const [orderItems, setOrderItems] = useState([]);
+
 
     // Reservation modal states
     const [showReservationModal, setShowReservationModal] = useState(false);
@@ -129,6 +136,31 @@ export const EmployeeHome = () => {
             console.error("Error creating order:", error);
         }
     };
+
+    // Function to adjust the quantity of a product in an order
+    const handleQuantityChange = async (orderId, orderItemId, newQuantity) => {
+        if (newQuantity <= 0) {
+            alert("Quantity must be greater than zero.");
+            return;
+        }
+    
+        try {
+            // Call the endpoint to update the quantity
+            await updateOrderItem(token, orderId, orderItemId, { quantity: newQuantity });
+    
+            // Update the local state with the new quantity
+            const updatedItems = orderItems.map((item) =>
+                item.id === orderItemId ? { ...item, quantity: newQuantity } : item
+            );
+            setOrderItems(updatedItems);
+        } catch (error) {
+            console.error("Error updating quantity:", error);
+            alert("Failed to update quantity.");
+        }
+    };
+    
+    
+    
 
     // Function to load products
     const loadProducts = async () => {
@@ -262,11 +294,49 @@ export const EmployeeHome = () => {
         setSelectedQuantity(1);
         setShowEditOrderModal(true);
     };
+
+    const handleOpenDetailsModal = async (orderId) => {
+        try {
+            const items = await getOrderItems(token, orderId);
+    
+            // Fetch additional product/variant data
+            const enrichedItems = await Promise.all(
+                items.map(async (item) => {
+                    if (item.productVariationId) {
+                        const variation = await getProductVariation(token, item.productId, item.productVariationId);
+                        return {
+                            ...item,
+                            name: variation.name,
+                            price: variation.price,
+                        };
+                    } else if (item.productId) {
+                        const product = await getProduct(token, item.productId);
+                        return {
+                            ...item,
+                            name: product.name,
+                            price: product.price,
+                        };
+                    }
+                    return item;
+                })
+            );
+    
+            setOrderItems(enrichedItems);
+            setSelectedOrderId(orderId);
+            setShowDetailsModal(true);
+        } catch (error) {
+            console.error("Error fetching order items:", error);
+            alert("Failed to load order details.");
+        }
+    };
+    
+    
+    
     
 
     const handleProductSelection = async (productId) => {
         setSelectedProduct(productId);
-        setSelectedVariant('');
+        setSelectedVariant('Original'); // Default to "Original" variant
         if (productId) {
             try {
                 const variants = await getProductVariations(token, productId);
@@ -279,31 +349,33 @@ export const EmployeeHome = () => {
             setAvailableVariants(null);
         }
     };
+    
 
     const handleAddItemToOrder = async () => {
         if (!selectedProduct || selectedQuantity <= 0) {
             alert("Please select a product and enter a valid quantity.");
             return;
         }
-
+    
         try {
             const payload = {
                 quantity: selectedQuantity,
-                ...(selectedVariant === 'Original'
-                    ? { productId: selectedProduct }
-                    : { productVariationId: selectedVariant }),
+                productId: selectedVariant === 'Original' ? selectedProduct : null, // Set productId for "Original"
+                productVariationId: selectedVariant !== 'Original' ? selectedVariant : null, // Set variation if not "Original"
             };
-
+    
             await addItemToOrder(token, editingOrderId, payload);
+    
             alert("Item added successfully!");
-
-            await loadOrders();
-            setShowEditOrderModal(false);
+            await loadOrders(); // Refresh orders
+            setShowEditOrderModal(false); // Close modal
         } catch (error) {
             console.error("Error adding item to order:", error);
             alert("Failed to add item to order.");
         }
     };
+    
+    
 
 
     const handleOpenReservationModal = (slot) => {
@@ -526,6 +598,12 @@ export const EmployeeHome = () => {
 
                                                             <td>{new Date(order.createdAt).toLocaleString()}</td>
                                                             <td>
+                                                            <button
+                                                                className="details-button"
+                                                                onClick={() => handleOpenDetailsModal(order.id)}
+                                                            >
+                                                                Details
+                                                            </button>
                                                                 <button
                                                                     className="edit-button"
                                                                     onClick={() => handleOpenEditOrderModal(order.id)}
@@ -686,6 +764,69 @@ export const EmployeeHome = () => {
                     </div>
                 </div>
             )}
+
+            {showDetailsModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h2>Order Details</h2>
+                        <p>Order ID: {selectedOrderId}</p>
+
+                        {orderItems.length > 0 ? (
+                            <table className="reservations-table">
+                                <thead>
+                                    <tr>
+                                        <th>Product Name</th>
+                                        <th>Price</th>
+                                        <th>Quantity</th>
+                                        <th>Created At</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {orderItems.map((item) => (
+                                        <tr key={item.id}>
+                                            <td>{item.name || "Unknown"}</td>
+                                            <td>{item.price ? `$${item.price.toFixed(2)}` : "N/A"}</td>
+                                            <td>
+                                                <input
+                                                    type="number"
+                                                    value={item.quantity}
+                                                    className="quantity-input"
+                                                    onChange={(e) =>
+                                                        handleQuantityChange(selectedOrderId, item.id, parseInt(e.target.value, 10))
+                                                    }
+                                                />
+                                            </td>
+                                            <td>{new Date(item.createdAt).toLocaleString()}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <p>No items in this order.</p>
+                        )}
+
+
+                        {orderItems.length === 0 && (
+                            <button
+                                className="add-item-button"
+                                onClick={() => {
+                                    setShowDetailsModal(false); // Close details modal
+                                    handleOpenEditOrderModal(selectedOrderId); // Open edit modal
+                                }}
+                            >
+                                Add Item
+                            </button>
+                        )}
+
+                        <div className="modal-buttons">
+                            <button onClick={() => setShowDetailsModal(false)}>Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
+
 
             {showEditOrderModal && (
                 <div className="modal-overlay">
