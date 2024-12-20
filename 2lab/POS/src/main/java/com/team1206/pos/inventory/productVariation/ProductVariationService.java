@@ -46,10 +46,13 @@ public class ProductVariationService {
         return mapToResponseDTO(productVariation);
     }
 
-    public ProductVariationResponseDTO getProductVariationById (UUID productVariationId)
+    public ProductVariationResponseDTO getProductVariationById (UUID productId, UUID productVariationId)
     {
         ProductVariation productVariation = productVariationRepository.findById(productVariationId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_VARIATION, productVariationId.toString()));
+
+        if(productVariation.getProduct().getId() != productId)
+            throw new IllegalArgumentException("Variation doesn't match the product");
 
         userService.verifyLoggedInUserBelongsToMerchant(productVariation.getProduct().getCategory().getMerchant().getId(), "You are not authorized to retrieve this product variation");
 
@@ -71,10 +74,13 @@ public class ProductVariationService {
                 .toList();
     }
 
-    public ProductVariationResponseDTO updateProductVariationById (UUID productVariationId, UpdateProductVariationBodyDTO updateProductVariationBodyDTO)
+    public ProductVariationResponseDTO updateProductVariationById (UUID productId, UUID productVariationId, UpdateProductVariationBodyDTO updateProductVariationBodyDTO)
     {
         ProductVariation productVariation = productVariationRepository.findById(productVariationId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_VARIATION, productVariationId.toString()));
+
+        if(productVariation.getProduct().getId() != productId)
+            throw new IllegalArgumentException("Variation doesn't match the product");
 
         userService.verifyLoggedInUserBelongsToMerchant(productVariation.getProduct().getCategory().getMerchant().getId(), "You are not authorized to update this product variation");
 
@@ -88,25 +94,31 @@ public class ProductVariationService {
         return mapToResponseDTO(productVariation);
     }
 
-    public void deleteProductVariationById(UUID productVariationId)
+    public void deleteProductVariationById(UUID productId, UUID productVariationId)
     {
         ProductVariation productVariation = productVariationRepository.findById(productVariationId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_VARIATION, productVariationId.toString()));
+
+        if(productVariation.getProduct().getId() != productId)
+            throw new IllegalArgumentException("Variation doesn't match the product");
 
         userService.verifyLoggedInUserBelongsToMerchant(productVariation.getProduct().getCategory().getMerchant().getId(), "You are not authorized to delete this product variation");
 
         productVariationRepository.deleteById(productVariationId);
     }
 
-    public ProductVariationResponseDTO adjustProductVariationQuantity(UUID id, AdjustProductQuantityDTO adjustDTO) {
-        ProductVariation productVariation = productVariationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, id.toString()));
+    public ProductVariationResponseDTO adjustProductVariationQuantity(UUID productId, UUID variationId, AdjustProductQuantityDTO adjustDTO) {
+        ProductVariation productVariation = productVariationRepository.findById(variationId)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, variationId.toString()));
+
+        if(productVariation.getProduct().getId() != productId)
+            throw new IllegalArgumentException("Variation doesn't match the product");
 
         userService.verifyLoggedInUserBelongsToMerchant(productVariation.getProduct().getCategory().getMerchant().getId(), "You are not authorized to adjust this product variation quantity");
 
         int newQuantity = productVariation.getQuantity() + adjustDTO.getAdjustment();
         if (newQuantity < 0) {
-            throw new IllegalStateExceptionWithId("Requested quantity cannot exceed product variation quantity", id.toString());
+            throw new IllegalStateExceptionWithId("Requested quantity cannot exceed product variation quantity", variationId.toString());
         }
 
         productVariation.setQuantity(newQuantity);
@@ -118,9 +130,11 @@ public class ProductVariationService {
 
     // Service layer
 
-    public ProductVariation getProductVariationEntityById(UUID id) {
-        return productVariationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_VARIATION, id.toString()));
+    public ProductVariation getProductVariationEntityById(UUID variationId) {
+        return productVariationRepository.findById(variationId)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_VARIATION, variationId.toString()));
+
+
     }
 
     // Adjust product variation quantity
