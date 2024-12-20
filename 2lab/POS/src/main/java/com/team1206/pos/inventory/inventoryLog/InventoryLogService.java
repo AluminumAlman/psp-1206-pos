@@ -117,9 +117,9 @@ public class InventoryLogService {
         for(OrderItem orderItem : order.getItems())
         {
             if(orderItem.getProduct() != null){
-                createInventoryLogForProduct(orderItem.getProduct().getId(), orderItem.getQuantity(), order.getId());
+                createInventoryLogForProduct(orderItem.getProduct().getId(), orderItem.getProduct().getQuantity(), order.getId());
             } else if(orderItem.getProductVariation() != null){
-                createInventoryLogForProductVariation(orderItem.getProductVariation().getId(), orderItem.getQuantity(), order.getId());
+                createInventoryLogForProductVariation(orderItem.getProductVariation().getId(), orderItem.getProductVariation().getQuantity(), order.getId());
             }
         }
     }
