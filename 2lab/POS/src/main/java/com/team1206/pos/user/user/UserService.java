@@ -33,7 +33,7 @@ public class UserService {
     }
 
     public UserResponseDTO createUser(UserRequestDTO request) {
-        if(getMerchantIdFromLoggedInUser() == null) {
+        if (getMerchantIdFromLoggedInUser() == null) {
             throw new UnauthorizedActionException("Admin must be assigned to a Merchant");
         }
 
@@ -251,8 +251,10 @@ public class UserService {
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
         user.setRole(request.getRole());
-        user.setMerchant(getCurrentUser().getMerchant());
-        user.setSchedules(scheduleService.createScheduleEntities(request.getSchedule(), user));
+        if (user.getRole() != UserRoles.SUPER_ADMIN) {
+            user.setMerchant(getCurrentUser().getMerchant());
+            user.setSchedules(scheduleService.createScheduleEntities(request.getSchedule(), user));
+        }
     }
 
     private void setUserUpdateFieldsFromRequest(User user, UserUpdateRequestDTO request) {
@@ -260,8 +262,10 @@ public class UserService {
         user.setLastName(request.getLastName());
         user.setEmail(request.getEmail());
         user.setRole(request.getRole());
-        user.setMerchant(getCurrentUser().getMerchant());
-        user.setSchedules(scheduleService.createScheduleEntities(request.getSchedule(), user));
+        if (user.getRole() != UserRoles.SUPER_ADMIN) {
+            user.setMerchant(getCurrentUser().getMerchant());
+            user.setSchedules(scheduleService.createScheduleEntities(request.getSchedule(), user));
+        }
     }
 
     private UserResponseDTO mapToResponseDTO(User user) {
