@@ -5,7 +5,9 @@ import { useNavigate } from "react-router-dom";
 import "../styles/EmployeeHome.css";
 import { getCurrentUser, assignMerchantToUser } from "../api/users";
 import { getAllMerchants, getMerchant } from "../api/merchants";
+import { getAllProducts, getProductVariations } from '../api/products';
 import { getServices, getAvailableSlots } from "../api/services";
+import { getOrders, createOrder, addItemToOrder, getTotalOrderAmount } from "../api/orders";
 import { getReservations, createReservation, updateReservation, cancelReservation } from "../api/reservations";
 
 export const EmployeeHome = () => {
@@ -28,6 +30,19 @@ export const EmployeeHome = () => {
 
     // Track if slots have been checked
     const [hasCheckedSlots, setHasCheckedSlots] = useState(false);
+
+    // Orders state
+    const [orders, setOrders] = useState([]);
+    const [loadingOrders, setLoadingOrders] = useState(false);
+
+    // State for edit order modal
+    const [showEditOrderModal, setShowEditOrderModal] = useState(false);
+    const [editingOrderId, setEditingOrderId] = useState(null);
+    const [availableProducts, setAvailableProducts] = useState([]);
+    const [selectedProduct, setSelectedProduct] = useState('');
+    const [selectedQuantity, setSelectedQuantity] = useState(1);
+    const [availableVariants, setAvailableVariants] = useState(null);
+    const [selectedVariant, setSelectedVariant] = useState("");
 
     // Reservation modal states
     const [showReservationModal, setShowReservationModal] = useState(false);
@@ -60,6 +75,7 @@ export const EmployeeHome = () => {
                 if (currentUser?.merchantId) {
                     const merchant = await getMerchant(token, currentUser.merchantId);
                     setAssignedMerchantName(merchant.name);
+                    await loadOrders();
                     await loadServices();
                     await loadReservations();
                 } else {
@@ -74,6 +90,61 @@ export const EmployeeHome = () => {
         }
         init();
     }, [token]);
+
+
+    // *** Orders Section ***
+
+    // Function to load orders
+    const loadOrders = async () => {
+        try {
+            setLoadingOrders(true);
+            const ordersData = await getOrders(token, { limit: 20, offset: 0 });
+            if (ordersData && ordersData.content) {
+                const enrichedOrders = await Promise.all(
+                    ordersData.content.map(async (order) => {
+                        const totalPrice = await getTotalOrderAmount(token, order.id);
+                        return { ...order, totalPrice }; // Add totalPrice to each order
+                    })
+                );
+                setOrders(enrichedOrders);
+            }
+            setLoadingOrders(false);
+        } catch (error) {
+            console.error("Error loading orders:", error);
+            setLoadingOrders(false);
+        }
+    };
+
+
+
+
+    // Function to create a new order
+    const handleCreateOrder = async () => {
+        try {
+            const newOrder = await createOrder(token, {}); // POST request with an empty body
+            if (newOrder && newOrder.id) {
+                setOrders(prevOrders => [newOrder, ...prevOrders]); // Add new order to the list
+            }
+        } catch (error) {
+            console.error("Error creating order:", error);
+        }
+    };
+
+    // Function to load products
+    const loadProducts = async () => {
+        try {
+            const productsData = await getAllProducts(token, { limit: 50 }); // Adjust the limit as needed
+            if (productsData && productsData.content) {
+                setAvailableProducts(productsData.content);
+            }
+        } catch (error) {
+            console.error("Error loading products:", error);
+        }
+    };
+
+
+
+    // *** Reservations Section ***
 
     const loadServices = async () => {
         try {
@@ -182,6 +253,59 @@ export const EmployeeHome = () => {
         }
     }, [selectedDate]);
 
+    const handleOpenEditOrderModal = async (orderId) => {
+        setEditingOrderId(orderId);
+        await loadProducts();
+        setSelectedProduct('');
+        setAvailableVariants(null);
+        setSelectedVariant('');
+        setSelectedQuantity(1);
+        setShowEditOrderModal(true);
+    };
+    
+
+    const handleProductSelection = async (productId) => {
+        setSelectedProduct(productId);
+        setSelectedVariant('');
+        if (productId) {
+            try {
+                const variants = await getProductVariations(token, productId);
+                setAvailableVariants(variants.length ? variants : null);
+            } catch (error) {
+                console.error("Error fetching product variations:", error);
+                setAvailableVariants(null);
+            }
+        } else {
+            setAvailableVariants(null);
+        }
+    };
+
+    const handleAddItemToOrder = async () => {
+        if (!selectedProduct || selectedQuantity <= 0) {
+            alert("Please select a product and enter a valid quantity.");
+            return;
+        }
+
+        try {
+            const payload = {
+                quantity: selectedQuantity,
+                ...(selectedVariant === 'Original'
+                    ? { productId: selectedProduct }
+                    : { productVariationId: selectedVariant }),
+            };
+
+            await addItemToOrder(token, editingOrderId, payload);
+            alert("Item added successfully!");
+
+            await loadOrders();
+            setShowEditOrderModal(false);
+        } catch (error) {
+            console.error("Error adding item to order:", error);
+            alert("Failed to add item to order.");
+        }
+    };
+
+
     const handleOpenReservationModal = (slot) => {
         setReservationSlot(slot);
         setReservationData({ firstName: "", lastName: "", phone: "" });
@@ -194,6 +318,7 @@ export const EmployeeHome = () => {
         const { name, value } = e.target;
         setReservationData(prev => ({ ...prev, [name]: value }));
     };
+
 
     const handleCreateReservation = async (e) => {
         e.preventDefault();
@@ -368,6 +493,58 @@ export const EmployeeHome = () => {
 
                         {user.merchantId && (
                             <>
+                                {/* Orders Section */}
+                                <div className="orders-section">
+                                    <h2>Your Orders</h2>
+                                    <button className="create-order-button" onClick={handleCreateOrder}>Create New Order</button>
+                                    {loadingOrders ? (
+                                        <p>Loading orders...</p>
+                                    ) : (
+                                        orders.length > 0 ? (
+                                            <table className="reservations-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Status</th>
+                                                        <th>Items</th>
+                                                        <th>Total Price</th>
+                                                        <th>Created At</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {orders.map((order) => (
+                                                        <tr key={order.id}>
+                                                            <td>{order.id.substring(0, 8)}</td>
+                                                            <td>{order.status}</td>
+                                                            <td>{order.items.length}</td>
+                                                            <td>
+                                                                {typeof order.totalPrice === "number"
+                                                                    ? `$${order.totalPrice.toFixed(2)}`
+                                                                    : "Calculating..."}
+                                                            </td>
+
+                                                            <td>{new Date(order.createdAt).toLocaleString()}</td>
+                                                            <td>
+                                                                <button
+                                                                    className="edit-button"
+                                                                    onClick={() => handleOpenEditOrderModal(order.id)}
+                                                                >
+                                                                    Edit
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        ) : (
+                                            <p>No orders found.</p>
+                                        )
+                                    )}
+                                </div>
+
+
+                                {/* Services & Reservations Section */}
                                 <div className="services-section">
                                     <h2>Services</h2>
                                     {errorMessage && <p className="error-message">{errorMessage}</p>}
@@ -509,6 +686,65 @@ export const EmployeeHome = () => {
                     </div>
                 </div>
             )}
+
+            {showEditOrderModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h2>Edit Order</h2>
+                        <p>Order ID: {editingOrderId}</p>
+                        <div className="product-selection">
+                            <label htmlFor="product">Select Product:</label>
+                            <select
+                                id="product"
+                                value={selectedProduct}
+                                onChange={(e) => handleProductSelection(e.target.value)}
+                            >
+                                <option value="">-- Choose a product --</option>
+                                {availableProducts.map((product) => (
+                                    <option key={product.id} value={product.id}>
+                                        {product.name} (${product.price})
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+        
+                        {availableVariants && (
+                            <div className="variant-selection">
+                                <label htmlFor="variant">Select Variant:</label>
+                                <select
+                                    id="variant"
+                                    value={selectedVariant}
+                                    onChange={(e) => setSelectedVariant(e.target.value)}
+                                >
+                                    <option value="Original">Original</option>
+                                    {availableVariants.map((variant) => (
+                                        <option key={variant.id} value={variant.id}>
+                                            {variant.name} (${variant.price})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+        
+                        <div className="quantity-selection">
+                            <label htmlFor="quantity">Quantity:</label>
+                            <input
+                                type="number"
+                                id="quantity"
+                                min="1"
+                                value={selectedQuantity}
+                                onChange={(e) => setSelectedQuantity(parseInt(e.target.value))}
+                            />
+                        </div>
+        
+                        <div className="modal-buttons">
+                            <button onClick={handleAddItemToOrder}>Add Item</button>
+                            <button onClick={() => setShowEditOrderModal(false)}>Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
 
             {/* Update Reservation Modal */}
             {showUpdateModal && (

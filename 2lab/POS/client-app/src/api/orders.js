@@ -91,6 +91,25 @@ export async function updateOrderItem(token, orderId, orderItemId, data) {
     return res.json();
 }
 
+export async function getTotalOrderAmount(token, orderId) {
+    try {
+        const res = await fetch(`${BASE}/orders/${orderId}/totalPrice`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!res.ok) {
+            throw new Error(`Failed to fetch total price for order ${orderId}: ${res.status}`);
+        }
+
+        const text = await res.text(); // Use text() to handle plain number responses
+        return parseFloat(text); // Convert the response to a number
+    } catch (error) {
+        console.error("Error fetching total order amount:", error);
+        return 0; // Return 0 in case of error
+    }
+}
+
+
 export async function deleteOrderItem(token, orderId, orderItemId) {
     const res = await fetch(`${BASE}/orders/${orderId}/items/${orderItemId}`, {
         method: 'DELETE',
