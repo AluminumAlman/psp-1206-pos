@@ -5,9 +5,9 @@ import { useNavigate } from "react-router-dom";
 import "../styles/EmployeeHome.css";
 import { getCurrentUser, assignMerchantToUser } from "../api/users";
 import { getAllMerchants, getMerchant } from "../api/merchants";
-import { getAllProducts, getProductVariations } from '../api/products';
+import { getAllProducts, getProductVariations, getProductVariation, getProduct, adjustProductVariationQuantity, adjustProductQuantity  } from '../api/products';
 import { getServices, getAvailableSlots } from "../api/services";
-import { getOrders, createOrder, addItemToOrder, getTotalOrderAmount } from "../api/orders";
+import { getOrders, createOrder, addItemToOrder, getTotalOrderAmount, getOrderItems, updateOrderItem, deleteOrderItem } from "../api/orders";
 import { getReservations, createReservation, updateReservation, cancelReservation } from "../api/reservations";
 
 export const EmployeeHome = () => {
@@ -44,6 +44,15 @@ export const EmployeeHome = () => {
     const [availableVariants, setAvailableVariants] = useState(null);
     const [selectedVariant, setSelectedVariant] = useState("");
 
+    // Order details modal states
+    const [showDetailsModal, setShowDetailsModal] = useState(false);
+    const [selectedOrderDetails, setSelectedOrderDetails] = useState([]);
+    const [selectedOrderId, setSelectedOrderId] = useState(null);
+    const [orderItems, setOrderItems] = useState([]);
+    const [createdReservationId, setCreatedReservationId] = useState(null);
+
+
+
     // Reservation modal states
     const [showReservationModal, setShowReservationModal] = useState(false);
     const [reservationSlot, setReservationSlot] = useState(null);
@@ -71,13 +80,13 @@ export const EmployeeHome = () => {
             try {
                 const currentUser = await getCurrentUser(token);
                 setUser(currentUser);
-
+    
                 if (currentUser?.merchantId) {
                     const merchant = await getMerchant(token, currentUser.merchantId);
                     setAssignedMerchantName(merchant.name);
                     await loadOrders();
-                    await loadServices();
-                    await loadReservations();
+                    await loadServices(); // still needed for reservations, but now used inside details modal
+                    await loadReservations(); // still needed for the reservation list, if you still want to display them somewhere, or you can remove it entirely if not needed.
                 } else {
                     const merchantsData = await getAllMerchants(token);
                     setMerchants(merchantsData);
@@ -129,6 +138,46 @@ export const EmployeeHome = () => {
             console.error("Error creating order:", error);
         }
     };
+
+    // Function to adjust the quantity of a product in an order
+    const handleQuantityChange = async (orderId, orderItemId, newQuantity) => {
+        if (newQuantity <= 0) {
+            alert("Quantity must be greater than zero.");
+            return;
+        }
+
+        try {
+            // Call the endpoint to update the quantity
+            await updateOrderItem(token, orderId, orderItemId, { quantity: newQuantity });
+    
+            // Update the local state with the new quantity
+            const updatedItems = orderItems.map((item) =>
+                item.id === orderItemId ? { ...item, quantity: newQuantity } : item
+            );
+            setOrderItems(updatedItems);
+        } catch (error) {
+            console.error("Error updating quantity:", error);
+            alert("Failed to update quantity.");
+        }
+    };
+
+    const handleDeleteItem = async (orderId, orderItemId) => {
+        const confirmDelete = window.confirm("Are you sure you want to delete this item?");
+        if (!confirmDelete) return;
+    
+        try {
+            await deleteOrderItem(token, orderId, orderItemId);
+            const updatedItems = orderItems.filter((item) => item.id !== orderItemId);
+            setOrderItems(updatedItems);
+            alert("Item deleted successfully!");
+        } catch (error) {
+            console.error("Error deleting order item:", error);
+            alert("Failed to delete item.");
+        }
+    };
+    
+    
+    
 
     // Function to load products
     const loadProducts = async () => {
@@ -262,11 +311,58 @@ export const EmployeeHome = () => {
         setSelectedQuantity(1);
         setShowEditOrderModal(true);
     };
+
+    const handleOpenDetailsModal = async (orderId) => {
+        setEditingOrderId(orderId);
+        try {
+            const items = await getOrderItems(token, orderId);
+    
+            const enrichedItems = await Promise.all(
+                items.map(async (item) => {
+                    if (item.productVariationId) {
+                        const variation = await getProductVariation(token, item.productId, item.productVariationId);
+                        return {
+                            ...item,
+                            name: variation.name,
+                            price: variation.price,
+                        };
+                    } else if (item.productId) {
+                        const product = await getProduct(token, item.productId);
+                        return {
+                            ...item,
+                            name: product.name,
+                            price: product.price,
+                        };
+                    }
+                    return item;
+                })
+            );
+    
+            setOrderItems(enrichedItems);
+            setSelectedOrderId(orderId);
+    
+            // Reset reservation-related states when opening details modal
+            setSelectedServiceId("");
+            setSelectedDate("");
+            setAvailableSlots([]);
+            setHasCheckedSlots(false);
+            setErrorMessage("");
+            setSuccessMessage("");
+    
+            setShowDetailsModal(true);
+        } catch (error) {
+            console.error("Error fetching order items:", error);
+            alert("Failed to load order details.");
+        }
+    };
+    
+    
+    
     
 
     const handleProductSelection = async (productId) => {
         setSelectedProduct(productId);
-        setSelectedVariant('');
+        setSelectedVariant('Original'); // Default to "Original" variant
         if (productId) {
             try {
                 const variants = await getProductVariations(token, productId);
@@ -279,31 +375,50 @@ export const EmployeeHome = () => {
             setAvailableVariants(null);
         }
     };
+    
 
-    const handleAddItemToOrder = async () => {
-        if (!selectedProduct || selectedQuantity <= 0) {
-            alert("Please select a product and enter a valid quantity.");
+    const handleAddItemToOrder = async (reservationId) => {
+        if (selectedQuantity <= 0) {
+            alert("Please select a product and enter a valid quantity. QTY: ", selectedQuantity);
+            return;
+        }
+
+        if (editingOrderId === null) {
+            alert("No order selected for adding item.");
             return;
         }
 
         try {
             const payload = {
                 quantity: selectedQuantity,
-                ...(selectedVariant === 'Original'
-                    ? { productId: selectedProduct }
-                    : { productVariationId: selectedVariant }),
             };
+            console.log("Selected variant:", selectedVariant);
+            console.log("Reservation ID:", reservationId);
+            if (reservationId !== null) {
+                payload.reservationId = reservationId;
+            }
+            else if (selectedVariant === 'Original') {
+                payload.productId = selectedProduct;
+            }
+            else if (selectedVariant !== 'Original') {
+                payload.productVariationId = selectedVariant;
+            }
 
+            console.log("Adding item to order:", editingOrderId, " ", payload);
+    
             await addItemToOrder(token, editingOrderId, payload);
-            alert("Item added successfully!");
 
-            await loadOrders();
-            setShowEditOrderModal(false);
+            setCreatedReservationId(null);
+
+            await loadOrders(); // Refresh the orders
+            setShowEditOrderModal(false); // Close the modal
         } catch (error) {
             console.error("Error adding item to order:", error);
             alert("Failed to add item to order.");
         }
     };
+    
+    
 
 
     const handleOpenReservationModal = (slot) => {
@@ -323,7 +438,7 @@ export const EmployeeHome = () => {
     const handleCreateReservation = async (e) => {
         e.preventDefault();
         const { firstName, lastName, phone } = reservationData;
-
+    
         if (!firstName.trim() || !lastName.trim() || !phone.trim()) {
             setErrorMessage("All fields are required.");
             return;
@@ -332,7 +447,7 @@ export const EmployeeHome = () => {
         try {
             const reservationRequest = {
                 serviceId: selectedServiceId,
-                employeeId: user.id, // The current user is the employee
+                employeeId: user.id,
                 appointedAt: reservationSlot.startTime,
                 firstName,
                 lastName,
@@ -341,12 +456,18 @@ export const EmployeeHome = () => {
 
             const response = await createReservation(token, reservationRequest);
             if (response && response.id) {
+                // Store the newly created reservationId
+                setSelectedQuantity(1);
+                handleAddItemToOrder(response.id);
+    
                 setSuccessMessage("Reservation created successfully!");
                 setErrorMessage("");
-                // Optionally, refresh available slots after booking
+    
+                // Optionally refresh slots and reservations
                 await handleCheckSlots();
                 await loadReservations();
-                // Close the modal after a short delay
+    
+                // Close modal after delay
                 setTimeout(() => {
                     setShowReservationModal(false);
                     setSuccessMessage("");
@@ -490,10 +611,9 @@ export const EmployeeHome = () => {
                                 </div>
                             )}
                         </div>
-
+    
                         {user.merchantId && (
                             <>
-                                {/* Orders Section */}
                                 <div className="orders-section">
                                     <h2>Your Orders</h2>
                                     <button className="create-order-button" onClick={handleCreateOrder}>Create New Order</button>
@@ -523,9 +643,14 @@ export const EmployeeHome = () => {
                                                                     ? `$${order.totalPrice.toFixed(2)}`
                                                                     : "Calculating..."}
                                                             </td>
-
                                                             <td>{new Date(order.createdAt).toLocaleString()}</td>
                                                             <td>
+                                                                <button
+                                                                    className="details-button"
+                                                                    onClick={() => handleOpenDetailsModal(order.id)}
+                                                                >
+                                                                    Details
+                                                                </button>
                                                                 <button
                                                                     className="edit-button"
                                                                     onClick={() => handleOpenEditOrderModal(order.id)}
@@ -542,111 +667,120 @@ export const EmployeeHome = () => {
                                         )
                                     )}
                                 </div>
-
-
-                                {/* Services & Reservations Section */}
-                                <div className="services-section">
-                                    <h2>Services</h2>
-                                    {errorMessage && <p className="error-message">{errorMessage}</p>}
-                                    {successMessage && <p className="success-message">{successMessage}</p>}
-                                    <p>Select a service and date to see available slots:</p>
-                                    <div className="controls">
-                                        <select
-                                            value={selectedServiceId}
-                                            onChange={(e) => setSelectedServiceId(e.target.value)}
-                                        >
-                                            <option value="">Select Service</option>
-                                            {services.map(s => (
-                                                <option key={s.id} value={s.id}>
-                                                    {s.name} - ${s.price} USD, {Math.floor(s.duration / 60)}m {s.duration % 60}s
-                                                </option>
-                                            ))}
-                                        </select>
-
-                                        <input
-                                            type="date"
-                                            value={selectedDate}
-                                            onChange={(e) => setSelectedDate(e.target.value)}
-                                        />
-                                        <button onClick={handleCheckSlots}>Check Slots</button>
-                                    </div>
-
-                                    {availableSlots.length > 0 && (
-                                        <div className="slots-section">
-                                            <h3>Available Slots</h3>
-                                            <ul>
-                                                {availableSlots.map((slot, index) => (
-                                                    <li key={index}>
-                                                        <span>
-                                                            {new Date(slot.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(slot.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                        </span>
-                                                        <button className="book-button" onClick={() => handleOpenReservationModal(slot)}>Book</button>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    )}
-
-                                    {/* Conditionally show "No available slots" message */}
-                                    {hasCheckedSlots && availableSlots.length === 0 && selectedServiceId && selectedDate && (
-                                        <p>No available slots for the selected service and date.</p>
-                                    )}
-                                </div>
-
-                                {/* Reservations List */}
-                                <div className="reservations-section">
-                                    <h2>Your Reservations</h2>
-                                    {loadingReservations ? (
-                                        <p>Loading reservations...</p>
-                                    ) : (
-                                        reservations.length > 0 ? (
-                                            <table className="reservations-table">
-                                                <thead>
-                                                <tr>
-                                                    <th>Customer</th>
-                                                    <th>Service</th>
-                                                    <th>Date & Time</th>
-                                                    <th>Phone</th>
-                                                    <th>Actions</th>
-                                                </tr>
-                                                </thead>
-                                                <tbody>
-                                                {reservations.map(reservation => (
-                                                    <tr key={reservation.id}>
-                                                        <td>{reservation.firstName} {reservation.lastName}</td>
-                                                        <td>{reservation.serviceName}</td>
-                                                        <td>{new Date(reservation.appointedAt).toLocaleString()}</td>
-                                                        <td>{reservation.phone}</td>
-                                                        <td>
-                                                            <button
-                                                                className="update-button"
-                                                                onClick={() => handleOpenUpdateModal(reservation)}
-                                                            >
-                                                                Update
-                                                            </button>
-                                                            <button
-                                                                className="delete-button"
-                                                                onClick={() => handleDeleteReservation(reservation.id)}
-                                                            >
-                                                                Delete
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                                </tbody>
-                                            </table>
-                                        ) : (
-                                            <p>No reservations found.</p>
-                                        )
-                                    )}
-                                </div>
                             </>
                         )}
                     </div>
                 )
             )}
+    
+            {showDetailsModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h2>Order Details</h2>
+                        <p>Order ID: {selectedOrderId}</p>
+    
+                        {orderItems.length > 0 ? (
+                            <table className="reservations-table">
+                                <thead>
+                                    <tr>
+                                        <th>Product Name</th>
+                                        <th>Price</th>
+                                        <th>Quantity</th>
+                                        <th>Created At</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {orderItems.map((item) => (
+                                        <tr key={item.id}>
+                                            <td>{item.name || "Unknown"}</td>
+                                            <td>{item.price ? `$${item.price.toFixed(2)}` : "N/A"}</td>
+                                            <td>
+                                                <input
+                                                    type="number"
+                                                    value={item.quantity}
+                                                    className="quantity-input"
+                                                    onChange={(e) =>
+                                                        handleQuantityChange(selectedOrderId, item.id, parseInt(e.target.value, 10))
+                                                    }
+                                                />
+                                            </td>
+                                            <td>{new Date(item.createdAt).toLocaleString()}</td>
+                                            <td>
+                                                <button
+                                                    className="delete-button"
+                                                    onClick={() => handleDeleteItem(selectedOrderId, item.id)}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <p>No items in this order.</p>
+                        )}
 
-            {/* Create Reservation Modal */}
+                        <button
+                            className="add-item-button"
+                            onClick={() => handleOpenEditOrderModal(selectedOrderId)}
+                        >
+                            Add New Item
+                        </button>
+    
+                        <h3>Make a Reservation for This Order</h3>
+                        {errorMessage && <p className="error-message">{errorMessage}</p>}
+                        {successMessage && <p className="success-message">{successMessage}</p>}
+    
+                        <div className="controls">
+                            <select
+                                value={selectedServiceId}
+                                onChange={(e) => setSelectedServiceId(e.target.value)}
+                            >
+                                <option value="">Select Service</option>
+                                {services.map(s => (
+                                    <option key={s.id} value={s.id}>
+                                        {s.name} - ${s.price} USD, {Math.floor(s.duration / 60)}m {s.duration % 60}s
+                                    </option>
+                                ))}
+                            </select>
+    
+                            <input
+                                type="date"
+                                value={selectedDate}
+                                onChange={(e) => setSelectedDate(e.target.value)}
+                            />
+                            <button onClick={handleCheckSlots}>Check Slots</button>
+                        </div>
+    
+                        {availableSlots.length > 0 && (
+                            <div className="slots-section">
+                                <h3>Available Slots</h3>
+                                <ul>
+                                    {availableSlots.map((slot, index) => (
+                                        <li key={index}>
+                                            <span>
+                                                {new Date(slot.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(slot.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </span>
+                                            <button className="book-button" onClick={() => handleOpenReservationModal(slot)}>Book</button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+    
+                        {hasCheckedSlots && availableSlots.length === 0 && selectedServiceId && selectedDate && (
+                            <p>No available slots for the selected service and date.</p>
+                        )}
+    
+                        <div className="modal-buttons">
+                            <button onClick={() => setShowDetailsModal(false)}>Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {showReservationModal && (
                 <div className="modal-overlay">
                     <div className="modal-content">
@@ -707,7 +841,7 @@ export const EmployeeHome = () => {
                                 ))}
                             </select>
                         </div>
-        
+    
                         {availableVariants && (
                             <div className="variant-selection">
                                 <label htmlFor="variant">Select Variant:</label>
@@ -725,7 +859,7 @@ export const EmployeeHome = () => {
                                 </select>
                             </div>
                         )}
-        
+    
                         <div className="quantity-selection">
                             <label htmlFor="quantity">Quantity:</label>
                             <input
@@ -736,56 +870,14 @@ export const EmployeeHome = () => {
                                 onChange={(e) => setSelectedQuantity(parseInt(e.target.value))}
                             />
                         </div>
-        
+
                         <div className="modal-buttons">
-                            <button onClick={handleAddItemToOrder}>Add Item</button>
+                            <button onClick={() => handleAddItemToOrder(null)}>Add Item</button>
                             <button onClick={() => setShowEditOrderModal(false)}>Cancel</button>
                         </div>
                     </div>
                 </div>
             )}
-
-
-            {/* Update Reservation Modal */}
-            {showUpdateModal && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <h2>Update Reservation</h2>
-                        {errorMessage && <p className="error-message">{errorMessage}</p>}
-                        {successMessage && <p className="success-message">{successMessage}</p>}
-                        <form onSubmit={handleUpdateReservation} className="reservation-form">
-                            <input
-                                type="text"
-                                name="firstName"
-                                placeholder="Customer First Name"
-                                value={updateData.firstName}
-                                onChange={handleUpdateInputChange}
-                                required
-                            />
-                            <input
-                                type="text"
-                                name="lastName"
-                                placeholder="Customer Last Name"
-                                value={updateData.lastName}
-                                onChange={handleUpdateInputChange}
-                                required
-                            />
-                            <input
-                                type="text"
-                                name="phone"
-                                placeholder="Customer Phone (+xxxxxxxxxxxx)"
-                                value={updateData.phone}
-                                onChange={handleUpdateInputChange}
-                                required
-                            />
-                            <div className="modal-buttons">
-                                {!successMessage && <button type="submit">Update</button>}
-                                <button type="button" onClick={() => setShowUpdateModal(false)}>Cancel</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
         </div>
-    );
+    );    
 };
