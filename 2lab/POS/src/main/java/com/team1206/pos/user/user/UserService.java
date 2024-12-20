@@ -173,10 +173,10 @@ public class UserService {
         // Get the authentication from SecurityContext
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // Check if authentication is null or unauthenticated
-        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
-            throw new UnauthorizedActionException("No user is logged in.");
-        }
+//        // Check if authentication is null or unauthenticated
+//        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
+//            throw new UnauthorizedActionException("No user is logged in.");
+//        }
 
         // Extract email from the principal
         String email = ((org.springframework.security.core.userdetails.User) authentication.getPrincipal()).getUsername();
