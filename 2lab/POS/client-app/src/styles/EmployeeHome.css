@@ -236,12 +236,18 @@
     border: 1px solid #ddd;
     text-align: left;
     color: #555;
+    white-space: nowrap; /* Prevent long numbers from wrapping */
+}
+
+.reservations-table td {
+    vertical-align: middle;
 }
 
 .reservations-table th {
     background-color: #f2f2f2;
     color: #333;
 }
+
 
 .update-button,
 .delete-button {
@@ -337,6 +343,101 @@
 .modal-buttons button[type="button"]:hover {
     background-color: #5a6268;
 }
+
+/* Modal for Editing Orders */
+.edit-order-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.edit-order-modal-content {
+    background-color: white;
+    padding: 25px;
+    border-radius: 15px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    position: relative;
+}
+
+.edit-order-modal-content h2 {
+    font-size: 22px;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.product-selection,
+.quantity-selection {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.product-selection label,
+.quantity-selection label {
+    display: block;
+    font-size: 14px;
+    font-weight: bold;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+.product-selection select,
+.quantity-selection input {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+.quantity-selection input[type="number"] {
+    appearance: textfield;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.modal-buttons button {
+    flex: 1;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.modal-buttons button:first-child {
+    background-color: #28a745;
+    color: white;
+}
+
+.modal-buttons button:first-child:hover {
+    background-color: #218838;
+}
+
+.modal-buttons button:last-child {
+    background-color: #dc3545;
+    color: white;
+}
+
+.modal-buttons button:last-child:hover {
+    background-color: #c82333;
+}
+
 
 /* Messages */
 .error-message {
