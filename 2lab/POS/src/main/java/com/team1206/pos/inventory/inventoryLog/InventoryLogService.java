@@ -5,7 +5,9 @@ import com.team1206.pos.inventory.product.Product;
 import com.team1206.pos.inventory.product.ProductService;
 import com.team1206.pos.inventory.productVariation.ProductVariation;
 import com.team1206.pos.inventory.productVariation.ProductVariationService;
+import com.team1206.pos.order.order.Order;
 import com.team1206.pos.order.order.OrderService;
+import com.team1206.pos.order.orderItem.OrderItem;
 import com.team1206.pos.user.user.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -72,7 +74,6 @@ public class InventoryLogService {
         return mapToResponse(inventoryLog);
     }
 
-    // TODO test more
     public Page<InventoryLogResponseDTO> getAllInventoryLogs(int offset, int limit, InventoryLogFilterDTO filterDTO) {
         UUID merchantId = userService.getMerchantIdFromLoggedInUser();
 
@@ -110,6 +111,18 @@ public class InventoryLogService {
     }
 
     // Service layer
+
+    public void logOrder(Order order)
+    {
+        for(OrderItem orderItem : order.getItems())
+        {
+            if(orderItem.getProduct() != null){
+                createInventoryLogForProduct(orderItem.getProduct().getId(), orderItem.getProduct().getQuantity(), order.getId());
+            } else if(orderItem.getProductVariation() != null){
+                createInventoryLogForProductVariation(orderItem.getProductVariation().getId(), orderItem.getProductVariation().getQuantity(), order.getId());
+            }
+        }
+    }
 
     public void createInventoryLogForProduct(UUID productId, int adjustment, UUID orderId ) {
         Product product = productService.getProductEntityById(productId);

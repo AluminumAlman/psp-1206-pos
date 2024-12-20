@@ -5,6 +5,7 @@ import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.IllegalRequestException;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.exceptions.UnauthorizedActionException;
+import com.team1206.pos.inventory.inventoryLog.InventoryLogService;
 import com.team1206.pos.order.orderCharge.OrderCharge;
 import com.team1206.pos.order.orderCharge.OrderChargeService;
 import com.team1206.pos.order.orderItem.OrderItem;
@@ -32,19 +33,21 @@ public class OrderService {
     private final MerchantService merchantService;
     private final OrderItemService orderItemService;
     private final OrderChargeService orderChargeService;
+    private final InventoryLogService inventoryLogService;
 
     public OrderService(
             OrderRepository orderRepository,
             UserService userService,
             MerchantService merchantService,
             OrderItemService orderItemService,
-            @Lazy OrderChargeService orderChargeService
-    ) {
+            @Lazy OrderChargeService orderChargeService,
+            @Lazy InventoryLogService inventoryLogService) {
         this.orderRepository = orderRepository;
         this.userService = userService;
         this.merchantService = merchantService;
         this.orderItemService = orderItemService;
         this.orderChargeService = orderChargeService;
+        this.inventoryLogService = inventoryLogService;
     }
 
     // Get paged orders
@@ -171,7 +174,11 @@ public class OrderService {
         }
 
         order.setStatus(OrderStatus.CLOSED);
-        return orderRepository.save(order);
+        orderRepository.save(order);
+
+        inventoryLogService.logOrder(order);
+
+        return order;
     }
 
     // *** Helper methods ***
