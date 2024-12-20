@@ -11,13 +11,64 @@ export const Login = () => {
     const [surname, setSurname] = useState('');
     const [repeatPassword, setRepeatPassword] = useState('');
     const [isJoiningBusiness, setIsJoiningBusiness] = useState(false);
+    const [isRegularSchedule, setIsRegularSchedule] = useState(true); // New state for checkbox
+    const [schedule, setSchedule] = useState({
+        MONDAY: null,
+        TUESDAY: null,
+        WEDNESDAY: null,
+        THURSDAY: null,
+        FRIDAY: null,
+        SATURDAY: null,
+        SUNDAY: null
+    }); // New state for schedule
     const [errorMessage, setErrorMessage] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
+        // Clear tokens on component mount
         localStorage.removeItem('jwt-token');
         localStorage.removeItem('user-role');
     }, []);
+
+    // Handle checkbox change
+    const handleRegularScheduleChange = (e) => {
+        const checked = e.target.checked;
+        setIsRegularSchedule(checked);
+        if (checked) {
+            // Set regular schedule: Mon-Fri 08:00-17:00, Sat-Sun null
+            setSchedule({
+                MONDAY: { startTime: "08:00:00", endTime: "17:00:00" },
+                TUESDAY: { startTime: "08:00:00", endTime: "17:00:00" },
+                WEDNESDAY: { startTime: "08:00:00", endTime: "17:00:00" },
+                THURSDAY: { startTime: "08:00:00", endTime: "17:00:00" },
+                FRIDAY: { startTime: "08:00:00", endTime: "17:00:00" },
+                SATURDAY: null,
+                SUNDAY: null
+            });
+        } else {
+            // Reset schedule to allow manual input
+            setSchedule({
+                MONDAY: null,
+                TUESDAY: null,
+                WEDNESDAY: null,
+                THURSDAY: null,
+                FRIDAY: null,
+                SATURDAY: null,
+                SUNDAY: null
+            });
+        }
+    };
+
+    // Handle schedule input changes
+    const handleScheduleChange = (day, field, value) => {
+        setSchedule(prevSchedule => ({
+            ...prevSchedule,
+            [day]: {
+                ...prevSchedule[day],
+                [field]: value
+            }
+        }));
+    };
 
     const fetchUserRoleAndNavigate = async (token) => {
         try {
@@ -93,6 +144,19 @@ export const Login = () => {
             return;
         }
 
+        // Validate schedule if not using regular schedule
+        if (!isRegularSchedule) {
+            for (const day in schedule) {
+                if (schedule[day]) {
+                    const { startTime, endTime } = schedule[day];
+                    if (!startTime || !endTime) {
+                        setErrorMessage(`Please provide both start and end times for ${day}.`);
+                        return;
+                    }
+                }
+            }
+        }
+
         try {
             const body = {
                 firstName: name,
@@ -100,6 +164,7 @@ export const Login = () => {
                 email,
                 password,
                 role: isJoiningBusiness ? 'EMPLOYEE' : 'MERCHANT_OWNER',
+                schedule: isJoiningBusiness ? schedule : undefined // Include schedule only if joining a business
             };
 
             const response = await fetch('http://localhost:8080/auth/register', {
@@ -120,6 +185,8 @@ export const Login = () => {
             const data = await response.json();
             localStorage.setItem('jwt-token', data['jwt-token']);
             setFormType('login');
+            setShowDialog(false);
+            setErrorMessage('');
         } catch (error) {
             setErrorMessage('An error occurred. Please try again.');
             console.error('Registration error:', error);
@@ -212,6 +279,43 @@ export const Login = () => {
                                         Join a business as an employee
                                     </label>
                                 </div>
+                                {/* New Checkbox for Regular Work Days */}
+                                <div className="schedule-selection">
+                                    <label>
+                                        <input
+                                            type="checkbox"
+                                            checked={isRegularSchedule}
+                                            onChange={handleRegularScheduleChange}
+                                        />
+                                        I work regular work days (Mon-Fri 08:00-17:00)
+                                    </label>
+                                </div>
+                                {/* Conditional Schedule Inputs */}
+                                {!isRegularSchedule && (
+                                    <div className="custom-schedule">
+                                        <h3>Set Your Work Schedule</h3>
+                                        {['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'].map(day => (
+                                            <div key={day} className="schedule-day">
+                                                <label>{day.charAt(0) + day.slice(1).toLowerCase()}</label>
+                                                <div className="time-inputs">
+                                                    <input
+                                                        type="time"
+                                                        placeholder="Start Time"
+                                                        value={schedule[day] && schedule[day].startTime ? schedule[day].startTime.substring(0,5) : ''}
+                                                        onChange={(e) => handleScheduleChange(day, 'startTime', e.target.value ? `${e.target.value}:00` : null)}
+                                                    />
+                                                    <span>to</span>
+                                                    <input
+                                                        type="time"
+                                                        placeholder="End Time"
+                                                        value={schedule[day] && schedule[day].endTime ? schedule[day].endTime.substring(0,5) : ''}
+                                                        onChange={(e) => handleScheduleChange(day, 'endTime', e.target.value ? `${e.target.value}:00` : null)}
+                                                    />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                                 <button className="submit-button" type="submit">Register</button>
                                 <p className="register-link">
                                     Already a user? <span onClick={() => switchForm('login')}>Login here</span>

@@ -50,10 +50,13 @@ export async function deleteService(token, serviceId) {
     });
 }
 
-export async function getAvailableSlots(token, serviceId, date) {
+export async function getAvailableSlots(token, serviceId, date, userId) {
     const params = new URLSearchParams({ date });
+    if (userId) params.append('userId', userId);
+
     const res = await fetch(`${BASE}/services/${serviceId}/availableSlots?${params}`, {
         headers: { 'Authorization': `Bearer ${token}` }
     });
     return res.json();
 }
+
