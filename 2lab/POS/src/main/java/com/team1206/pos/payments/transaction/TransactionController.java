@@ -32,9 +32,9 @@ public class TransactionController {
 
     @GetMapping("/{orderId}/totalPaid")
     @Operation(summary = "Get sum of order transactions")
-    public ResponseEntity<BigDecimal> getTotalPaid(@PathVariable String orderId)
+    public ResponseEntity<BigDecimal> getTotalPaid(@PathVariable UUID orderId)
     {
-        return ResponseEntity.ok(transactionService.getTotalPaidByOrder(UUID.fromString(orderId)));
+        return ResponseEntity.ok(transactionService.getTotalPaidByOrder(orderId));
     }
 
 

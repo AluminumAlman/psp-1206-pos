@@ -22,13 +22,13 @@ public class ProductVariationController {
     @Operation(summary = "Create new product variation")
     @PostMapping("/{productId}/variations")
     public ResponseEntity<ProductVariationResponseDTO> createProductVariation(
-            @PathVariable String productId,
+            @PathVariable UUID productId,
             @Valid @RequestBody CreateProductVariationBodyDTO requestBody
     ) {
         log.info("Received create product variation request: productId={} {}", productId, requestBody);
 
         ProductVariationResponseDTO createdVariation =
-                productVariationService.createProductVariation(UUID.fromString(productId), requestBody);
+                productVariationService.createProductVariation(productId, requestBody);
 
         log.debug("Returning {} to create product variation request (productId={})", createdVariation, productId);
         
@@ -38,12 +38,12 @@ public class ProductVariationController {
     @Operation(summary = "Get product's variation by ID")
     @GetMapping("/{productId}/variations/{variationId}")
     public ResponseEntity<ProductVariationResponseDTO> getProductVariation(
-            @PathVariable String productId,
-            @PathVariable String variationId
+            @PathVariable UUID productId,
+            @PathVariable UUID variationId
     ) {
         log.info("Received get product variation request: productId={} variationId={}", productId, variationId);
 
-        ProductVariationResponseDTO variation = productVariationService.getProductVariationById(UUID.fromString(productId), UUID.fromString(variationId));
+        ProductVariationResponseDTO variation = productVariationService.getProductVariationById(productId, variationId);
 
         log.debug("Returning {} to get product variation request (productId={} variationId={})", variation, productId, variationId);
         return ResponseEntity.ok(variation);
@@ -52,11 +52,11 @@ public class ProductVariationController {
     @Operation(summary = "Get all product's variations")
     @GetMapping("/{productId}/variations")
     public ResponseEntity<List<ProductVariationResponseDTO>> getProductVariations(
-            @PathVariable String productId
+            @PathVariable UUID productId
     ) {
         log.info("Received get all product variations request (productId={})", productId);
 
-        List<ProductVariationResponseDTO> variations = productVariationService.getAllProductVariations(UUID.fromString(productId));
+        List<ProductVariationResponseDTO> variations = productVariationService.getAllProductVariations(productId);
 
         log.debug("Returning {} to get all product variations (productId={})", variations, productId);
         return ResponseEntity.ok(variations);
@@ -65,13 +65,13 @@ public class ProductVariationController {
     @Operation(summary = "Update product's variation by ID")
     @PutMapping("/{productId}/variations/{variationId}")
     public ResponseEntity<ProductVariationResponseDTO> updateProductVariation(
-            @PathVariable String productId,
-            @PathVariable String variationId,
+            @PathVariable UUID productId,
+            @PathVariable UUID variationId,
             @Valid @RequestBody UpdateProductVariationBodyDTO requestBody
     ) {
         log.info("Received update product variation request: productId={} variationId={} {}", productId, variationId, requestBody);
 
-        ProductVariationResponseDTO productVariation = productVariationService.updateProductVariationById(UUID.fromString(productId), UUID.fromString(variationId), requestBody);
+        ProductVariationResponseDTO productVariation = productVariationService.updateProductVariationById(productId, variationId, requestBody);
 
         log.debug("Returning {} to update product variation request (productId={} variationId={})", productVariation, productId, variationId);
         return ResponseEntity.ok(productVariation);
@@ -80,12 +80,12 @@ public class ProductVariationController {
     @Operation(summary = "Delete product's variation by ID")
     @DeleteMapping("/{productId}/variations/{variationId}")
     public ResponseEntity<Void> deleteProductVariation(
-            @PathVariable String productId,
-            @PathVariable String variationId
+            @PathVariable UUID productId,
+            @PathVariable UUID variationId
     ) {
         log.info("Received delete product variation request: productId={} variationId={}", productId, variationId);
 
-        productVariationService.deleteProductVariationById(UUID.fromString(productId), UUID.fromString(variationId));
+        productVariationService.deleteProductVariationById(productId, variationId);
 
         log.debug("Returning nothing to delete product variation request (productId={} variationId={})", productId, variationId);
         return ResponseEntity.noContent().build();

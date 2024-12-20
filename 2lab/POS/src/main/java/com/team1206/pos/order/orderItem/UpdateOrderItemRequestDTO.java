@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 public class UpdateOrderItemRequestDTO {
-    @NotNull
+    @NotNull(message = "quantity must not be null")
     @Min(value = 1, message = "quantity must be greater than or equal to 1")
     private Integer quantity;
 }

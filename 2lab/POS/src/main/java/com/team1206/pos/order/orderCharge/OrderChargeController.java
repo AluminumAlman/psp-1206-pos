@@ -38,11 +38,11 @@ public class OrderChargeController {
     @GetMapping("{orderId}/charges")
     @Operation(summary = "Get all order charges from an order")
     public ResponseEntity<List<OrderChargeResponseDTO>> getOrderChargesFromOrder(
-            @PathVariable String orderId
+            @PathVariable UUID orderId
     ) {
         log.info("Received get order charges from order request: orderId={}", orderId);
 
-        List<OrderChargeResponseDTO> response = orderChargeService.getOrderChargesFromOrder(UUID.fromString(orderId));
+        List<OrderChargeResponseDTO> response = orderChargeService.getOrderChargesFromOrder(orderId);
 
         log.debug("Returning {} to get order charges request (orderId={})", response.stream().toList(), orderId);
         return ResponseEntity.ok(response);

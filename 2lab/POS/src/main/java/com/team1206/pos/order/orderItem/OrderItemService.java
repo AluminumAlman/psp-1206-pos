@@ -76,15 +76,16 @@ public class OrderItemService {
                 "You are not authorized to add items to this order"
         );
 
-        checkCreateRequestDTO(requestDTO);
-
         if (order.getStatus() != OrderStatus.OPEN) {
             throw new IllegalStateException("Order is not open");
         }
 
-
         if (requestDTO.getProductId() != null || requestDTO.getProductVariationId() != null) {
             adjustQuantityOrderItemAdd(requestDTO);
+        }
+
+        if (requestDTO.getReservationId() != null) {
+            requestDTO.setQuantity(1);
         }
 
         OrderResponseDTO responseDTO = adjustQuantityOrderItemCombine(order, requestDTO);
@@ -230,12 +231,6 @@ public class OrderItemService {
 
         return BigDecimal.ZERO;
 
-    }
-
-    private void checkCreateRequestDTO(CreateOrderItemRequestDTO requestDTO) {
-        if (requestDTO.getQuantity() <= 0) {
-            throw new IllegalRequestException("Quantity must be greater than zero");
-        }
     }
 
     private void adjustQuantityOrderItemAdd(CreateOrderItemRequestDTO orderItem) {
