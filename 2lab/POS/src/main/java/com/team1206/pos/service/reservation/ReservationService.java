@@ -89,11 +89,11 @@ public class ReservationService {
 
         Reservation savedReservation = reservationRepository.save(reservation);
 
-//        snsService.sendSms(savedReservation.getPhone(),
-//                String.format("Hey, %s, Your reservation at %s for %s with %s %s is confirmed for %tF at %tR. Thank you for choosing us!",
-//                        savedReservation.getFirstName(), service.getMerchant().getName(), service.getName(),
-//                        employee.getFirstName(), employee.getLastName(),
-//                        savedReservation.getAppointedAt(), savedReservation.getAppointedAt()));
+        snsService.sendSms(savedReservation.getPhone(),
+                String.format("Hey, %s, Your reservation at %s for %s with %s %s is confirmed for %tF at %tR. Thank you for choosing us!",
+                        savedReservation.getFirstName(), service.getMerchant().getName(), service.getName(),
+                        employee.getFirstName(), employee.getLastName(),
+                        savedReservation.getAppointedAt(), savedReservation.getAppointedAt()));
 
         return mapToResponseDTO(savedReservation);
     }
