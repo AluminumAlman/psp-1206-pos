@@ -131,7 +131,8 @@ public class InventoryLogService {
         inventoryLog.setProductVariation(null);
         inventoryLog.setType(InventoryLog.LogType.PRODUCT);
         inventoryLog.setUser(userService.getCurrentUser());
-        inventoryLog.setOrder(orderService.getOrderEntityById(orderId));
+        if(orderId != null)
+            inventoryLog.setOrder(orderService.getOrderEntityById(orderId));
         inventoryLog.setAdjustment(adjustment);
         inventoryLogRepository.save(inventoryLog);
     }
@@ -143,7 +144,8 @@ public class InventoryLogService {
         inventoryLog.setProduct(null);
         inventoryLog.setType(InventoryLog.LogType.PRODUCT_VARIATION);
         inventoryLog.setUser(userService.getCurrentUser());
-        inventoryLog.setOrder(orderService.getOrderEntityById(orderId));
+        if(orderId != null)
+            inventoryLog.setOrder(orderService.getOrderEntityById(orderId));
         inventoryLog.setAdjustment(adjustment);
         inventoryLogRepository.save(inventoryLog);
     }
