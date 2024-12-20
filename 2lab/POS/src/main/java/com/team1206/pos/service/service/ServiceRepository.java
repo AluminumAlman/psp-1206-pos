@@ -12,7 +12,7 @@ import java.util.UUID;
 public interface ServiceRepository extends JpaRepository<Service, UUID> {
 
     @Query("SELECT s FROM Service s " +
-            "WHERE (s.merchant = :merchantId) " +
+            "WHERE (s.merchant.id = :merchantId) " +
             "AND (:name IS NULL OR s.name LIKE %:name%) " +
             "AND (:price IS NULL OR s.price = :price) " +
             "AND (:duration IS NULL OR s.duration = :duration)")

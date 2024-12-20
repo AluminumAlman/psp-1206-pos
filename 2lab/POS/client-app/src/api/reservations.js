@@ -1,6 +1,7 @@
 const BASE = 'http://localhost:8080';
 
-export async function getReservations(token, {limit=20, offset=0, "service-name": serviceName, "customer-name": customerName, "customer-email": customerEmail, "customer-phone": customerPhone, appointedAt}={}) {
+// Fetch Reservations with Filters and Pagination
+export async function getReservations(token, { limit = 20, offset = 0, serviceName, customerName, customerEmail, customerPhone, appointedAt } = {}) {
     const params = new URLSearchParams({ limit, offset });
     if (serviceName) params.append('service-name', serviceName);
     if (customerName) params.append('customer-name', customerName);
@@ -11,9 +12,16 @@ export async function getReservations(token, {limit=20, offset=0, "service-name"
     const res = await fetch(`${BASE}/reservations?${params}`, {
         headers: { 'Authorization': `Bearer ${token}` }
     });
+
+    if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to fetch reservations.');
+    }
+
     return res.json();
 }
 
+// Create a New Reservation
 export async function createReservation(token, data) {
     const res = await fetch(`${BASE}/reservations`, {
         method: 'POST',
@@ -23,23 +31,45 @@ export async function createReservation(token, data) {
         },
         body: JSON.stringify(data)
     });
+
+    if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to create reservation.');
+    }
+
     return res.json();
 }
 
+// Get Reservation by ID
 export async function getReservationById(token, reservationId) {
     const res = await fetch(`${BASE}/reservations/${reservationId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
     });
+
+    if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to fetch reservation.');
+    }
+
     return res.json();
 }
 
+// Cancel Reservation by ID
 export async function cancelReservation(token, reservationId) {
-    await fetch(`${BASE}/reservations/${reservationId}`, {
+    const res = await fetch(`${BASE}/reservations/${reservationId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
     });
+
+    if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to cancel reservation.');
+    }
+
+    return;
 }
 
+// Update Reservation by ID
 export async function updateReservation(token, reservationId, data) {
     const res = await fetch(`${BASE}/reservations/${reservationId}`, {
         method: 'PATCH',
@@ -49,5 +79,11 @@ export async function updateReservation(token, reservationId, data) {
         },
         body: JSON.stringify(data)
     });
+
+    if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to update reservation.');
+    }
+
     return res.json();
 }

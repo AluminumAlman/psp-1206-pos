@@ -1,29 +1,370 @@
-.success-message {
-    color: green;
+/* EmployeeHome.css */
+
+.home-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px;
+    min-height: 100vh;
+    background-color: #f5f5f5;
+    font-family: 'Arial', sans-serif;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.user-box {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background-color: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.user-box:hover {
+    transform: scale(1.02);
+}
+
+.user-header .user-name {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+.details-box {
+    margin-top: 10px;
     font-size: 14px;
+    text-align: center;
+    color: #555;
+}
+
+.switch-button {
+    margin-top: 15px;
+    background-color: #dc3545;
+    color: white;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.switch-button:hover {
+    background-color: #c82333;
+}
+
+.merchant-modal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 400px;
+    background-color: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.merchant-modal h2 {
+    font-size: 22px;
     margin-bottom: 10px;
+    color: #333;
+}
+
+.merchant-modal select {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.assign-button {
+    background-color: #007bff;
+    color: white;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-top: 10px;
+}
+
+.assign-button:hover {
+    background-color: #0056b3;
+}
+
+.assign-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.employee-dashboard {
+    margin-top: 100px;
+    width: 100%;
+    max-width: 800px;
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+}
+
+.employee-dashboard h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.services-section {
+    margin-top: 30px;
+}
+
+.services-section h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.services-section p {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 15px;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.controls select,
+.controls input[type=date] {
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    flex: 1 1 200px;
+}
+
+.services-section button {
+    background-color: #28a745;
+    color: white;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.services-section button:hover {
+    background-color: #218838;
+}
+
+.slots-section {
+    margin-top: 20px;
+}
+
+.slots-section h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.slots-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.slots-section li {
+    margin: 8px 0;
+    padding: 12px;
+    background: #f9f9f9;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.3s ease;
+}
+
+.slots-section li:hover {
+    background: #e9ecef;
+}
+
+.book-button {
+    background-color: #17a2b8;
+    color: white;
+    font-size: 14px;
+    border: none;
+    border-radius: 3px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.book-button:hover {
+    background-color: #138496;
+}
+
+.reservations-section {
+    margin-top: 40px;
+}
+
+.reservations-section h2 {
+    font-size: 20px;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.reservations-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.reservations-table th,
+.reservations-table td {
+    padding: 12px;
+    border: 1px solid #ddd;
+    text-align: left;
+    color: #555;
+}
+
+.reservations-table th {
+    background-color: #f2f2f2;
+    color: #333;
+}
+
+.update-button,
+.delete-button {
+    background-color: #ffc107;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    padding: 6px 10px;
+    cursor: pointer;
+    margin-right: 5px;
+    transition: background 0.3s ease;
+}
+
+.update-button:hover {
+    background-color: #e0a800;
+}
+
+.delete-button {
+    background-color: #dc3545;
+}
+
+.delete-button:hover {
+    background-color: #c82333;
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 25px;
+    border-radius: 15px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    text-align: center;
+    position: relative;
+}
+
+.modal-content h2 {
+    font-size: 22px;
+    margin-bottom: 15px;
+    color: #333;
 }
 
 .reservation-form input {
     width: 100%;
-    padding: 8px;
-    font-size: 14px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
+    padding: 10px;
+    font-size: 16px;
+    margin-bottom: 15px;
     border-radius: 5px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
 }
 
-.book-button {
-    background-color: #28a745;
+.modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.modal-buttons button {
+    flex: 1;
+    background-color: #007bff;
     color: white;
-    font-size: 12px;
+    font-size: 16px;
     border: none;
     border-radius: 5px;
-    padding: 5px 10px;
-    margin-left: 10px;
+    padding: 10px;
     cursor: pointer;
+    transition: background 0.3s ease;
 }
 
-.book-button:hover {
-    background-color: #218838;
+.modal-buttons button:hover {
+    background-color: #0056b3;
+}
+
+.modal-buttons button[type="button"] {
+    background-color: #6c757d;
+}
+
+.modal-buttons button[type="button"]:hover {
+    background-color: #5a6268;
+}
+
+/* Messages */
+.error-message {
+    color: #dc3545;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.success-message {
+    color: #28a745;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .controls {
+        flex-direction: column;
+    }
+
+    .controls select,
+    .controls input[type=date],
+    .services-section button {
+        flex: 1 1 100%;
+    }
+
+    .reservations-table th,
+    .reservations-table td {
+        padding: 8px;
+    }
 }
