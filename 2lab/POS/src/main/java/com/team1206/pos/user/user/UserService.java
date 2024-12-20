@@ -33,10 +33,6 @@ public class UserService {
     }
 
     public UserResponseDTO createUser(UserRequestDTO request) {
-        if(getMerchantIdFromLoggedInUser() == null) {
-            throw new UnauthorizedActionException("Admin must be assigned to a Merchant");
-        }
-
         User user = new User();
         setUserFieldsFromRequest(user, request);
         User savedUser = userRepository.save(user);
