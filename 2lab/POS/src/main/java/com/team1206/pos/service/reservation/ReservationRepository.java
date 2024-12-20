@@ -12,7 +12,7 @@ import java.util.UUID;
 
 public interface ReservationRepository extends JpaRepository<Reservation, UUID> {
     @Query("SELECT r FROM Reservation r " +
-            "WHERE (r.service.merchant = :merchantId) " +
+            "WHERE (r.service.merchant.id = :merchantId) " +
             "AND (:serviceName IS NULL OR r.service.name LIKE %:serviceName%) " +
             "AND (:customerName IS NULL OR CONCAT(r.firstName, ' ', r.lastName) LIKE %:customerName%) " +
             "AND (:customerEmail IS NULL OR r.employee.email LIKE %:customerEmail%) " +
@@ -28,7 +28,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
             Pageable pageable);
 
     @Query("SELECT r FROM Reservation r " +
-            "WHERE (r.service.merchant = :merchantId) " +
+            "WHERE (r.service.merchant.id = :merchantId) " +
             "AND r.employee.id = :userId " +
             "AND r.appointedAt >= :startOfDay " +
             "AND r.appointedAt < :endOfDay")
