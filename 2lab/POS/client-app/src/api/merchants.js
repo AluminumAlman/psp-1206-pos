@@ -7,8 +7,9 @@ export async function getAllMerchants(token) {
     return res.json();
 }
 
+// createMerchant function updated with schedule support:
 export async function createMerchant(token, data) {
-    const res = await fetch(`${BASE}/merchants`, {
+    const res = await fetch(`http://localhost:8080/merchants`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -23,6 +24,7 @@ export async function createMerchant(token, data) {
             city: data.city,
             country: data.country,
             postcode: data.postcode,
+            schedule: data.schedule // Add the schedule to the request body
         }),
     });
 
