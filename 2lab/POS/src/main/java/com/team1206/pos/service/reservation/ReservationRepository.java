@@ -12,7 +12,8 @@ import java.util.UUID;
 
 public interface ReservationRepository extends JpaRepository<Reservation, UUID> {
     @Query("SELECT r FROM Reservation r " +
-            "WHERE (:serviceName IS NULL OR r.service.name LIKE %:serviceName%) " +
+            "WHERE (r.service.merchant = :merchantId) " +
+            "AND (:serviceName IS NULL OR r.service.name LIKE %:serviceName%) " +
             "AND (:customerName IS NULL OR CONCAT(r.firstName, ' ', r.lastName) LIKE %:customerName%) " +
             "AND (:customerEmail IS NULL OR r.employee.email LIKE %:customerEmail%) " +
             "AND (:customerPhone IS NULL OR r.phone LIKE %:customerPhone%) " +
@@ -23,11 +24,16 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
             @Param("customerEmail") String customerEmail,
             @Param("customerPhone") String customerPhone,
             @Param("appointedAt") LocalDateTime appointedAt,
+            @Param("merchantId") UUID merchantId,
             Pageable pageable);
 
-    @Query("SELECT r FROM Reservation r WHERE r.employee.id = :userId AND " +
-            "r.appointedAt >= :startOfDay AND r.appointedAt < :endOfDay")
+    @Query("SELECT r FROM Reservation r " +
+            "WHERE (r.service.merchant = :merchantId) " +
+            "AND r.employee.id = :userId " +
+            "AND r.appointedAt >= :startOfDay " +
+            "AND r.appointedAt < :endOfDay")
     List<Reservation> findReservationsByEmployeeAndDate(@Param("userId") UUID userId,
                                                         @Param("startOfDay") LocalDateTime startOfDay,
-                                                        @Param("endOfDay") LocalDateTime endOfDay);
+                                                        @Param("endOfDay") LocalDateTime endOfDay,
+                                                        @Param("merchantId") UUID merchantId);
 }

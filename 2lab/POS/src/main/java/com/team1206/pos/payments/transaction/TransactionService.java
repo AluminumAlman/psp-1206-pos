@@ -127,12 +127,6 @@ public class TransactionService {
 
         Transaction savedTransaction = transactionRepository.save(transaction);
 
-        BigDecimal totalPaid = getTotalPaidByOrder(orderId);
-
-        // Uzdaro Order jei uzmoketa suma >= reikiamos
-        if(totalPaid.compareTo(orderService.calculateFinalCheckoutAmount(orderId)) >= 0)
-            orderService.closeOrder(orderId);
-
         return mapToResponseDTO(savedTransaction);
     }
 
@@ -154,7 +148,7 @@ public class TransactionService {
         return mapToResponseDTO(transaction);
     }
 
-    // Mark cash transaction as completed
+    // Mark transaction as completed
     public TransactionResponseDTO completeTransaction(UUID orderId, UUID transactionId) {
         Transaction transaction = transactionRepository.findById(transactionId)
                                                        .orElseThrow(() -> new ResourceNotFoundException(
@@ -173,7 +167,13 @@ public class TransactionService {
 
         transaction.setStatus(TransactionStatus.COMPLETED);
 
+
         Transaction updatedTransaction = transactionRepository.save(transaction);
+
+        BigDecimal totalPaid = getTotalPaidByOrder(orderId);
+        // Uzdaro Order jei uzmoketa suma >= reikiamos
+        if(totalPaid.compareTo(orderService.calculateFinalCheckoutAmount(orderId)) >= 0)
+            orderService.closeOrder(orderId);
 
         return mapToResponseDTO(updatedTransaction);
     }

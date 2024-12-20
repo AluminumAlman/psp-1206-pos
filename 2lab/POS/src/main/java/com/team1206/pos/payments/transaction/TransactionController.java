@@ -74,7 +74,7 @@ public class TransactionController {
     }
 
     @PatchMapping("/{orderId}/transactions/{transactionId}/complete")
-    @Operation(summary = "Mark cash transaction as completed")
+    @Operation(summary = "Mark transaction as completed")
     public ResponseEntity<TransactionResponseDTO> completeTransaction(
             @PathVariable UUID orderId,
             @PathVariable UUID transactionId

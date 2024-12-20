@@ -12,11 +12,13 @@ import java.util.UUID;
 public interface ServiceRepository extends JpaRepository<Service, UUID> {
 
     @Query("SELECT s FROM Service s " +
-            "WHERE (:name IS NULL OR s.name LIKE %:name%) " +
+            "WHERE (s.merchant = :merchantId) " +
+            "AND (:name IS NULL OR s.name LIKE %:name%) " +
             "AND (:price IS NULL OR s.price = :price) " +
             "AND (:duration IS NULL OR s.duration = :duration)")
     Page<Service> findAllWithFilters(@Param("name") String name,
                                      @Param("price") BigDecimal price,
                                      @Param("duration") Long duration,
+                                     @Param("merchantId") UUID merchantId,
                                      Pageable pageable);
 }

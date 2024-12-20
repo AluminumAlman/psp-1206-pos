@@ -49,7 +49,7 @@ public class ReservationService {
         Pageable pageable = PageRequest.of(offset / limit, limit);
 
         Page<Reservation> reservationsPage = reservationRepository.findAllWithFilters(
-                serviceName, customerName, customerEmail, customerPhone, appointedAt, pageable);
+                serviceName, customerName, customerEmail, customerPhone, appointedAt, userService.getMerchantIdFromLoggedInUser(), pageable);
 
         return reservationsPage.map(this::mapToResponseDTO);
     }
@@ -182,7 +182,7 @@ public class ReservationService {
         LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();  // 00:00:00 of the next day
 
         // Call the repository method to fetch reservations for the given date
-        return reservationRepository.findReservationsByEmployeeAndDate(userId, startOfDay, endOfDay);
+        return reservationRepository.findReservationsByEmployeeAndDate(userId, startOfDay, endOfDay, userService.getMerchantIdFromLoggedInUser());
     }
 
 

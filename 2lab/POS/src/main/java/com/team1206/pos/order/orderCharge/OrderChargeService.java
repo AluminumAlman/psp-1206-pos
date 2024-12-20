@@ -48,7 +48,7 @@ public class OrderChargeService {
 
         Pageable pageable = PageRequest.of(offset / limit, limit);
 
-        Page<OrderCharge> orderCharges = null; orderChargeRepository.findAllByMerchantId(
+        Page<OrderCharge> orderCharges = orderChargeRepository.findAllByMerchantId(
                 merchantId,
                 pageable
         );
