@@ -114,4 +114,8 @@ public class ScheduleService {
     public List<Schedule> getUserScheduleForAllDays(UUID userId) {
         return scheduleRepository.findByUserId(userId);
     }
+
+    public void deleteSchedules(List<Schedule> schedules) {
+        scheduleRepository.deleteAll(schedules);
+    }
 }

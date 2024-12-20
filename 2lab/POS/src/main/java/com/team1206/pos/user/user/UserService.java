@@ -249,6 +249,7 @@ public class UserService {
         user.setLastName(request.getLastName());
         user.setEmail(request.getEmail());
         user.setRole(request.getRole());
+        scheduleService.deleteSchedules(user.getSchedules());
         user.getSchedules().clear();
         user.getSchedules().addAll(scheduleService.createScheduleEntities(request.getSchedule(), user));
     }
