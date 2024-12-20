@@ -15,7 +15,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.DayOfWeek;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -246,7 +249,8 @@ public class UserService {
         user.setLastName(request.getLastName());
         user.setEmail(request.getEmail());
         user.setRole(request.getRole());
-        user.setSchedules(scheduleService.createScheduleEntities(request.getSchedule(), user));
+        user.getSchedules().clear();
+        user.getSchedules().addAll(scheduleService.createScheduleEntities(request.getSchedule(), user));
     }
 
     private UserResponseDTO mapToResponseDTO(User user) {
