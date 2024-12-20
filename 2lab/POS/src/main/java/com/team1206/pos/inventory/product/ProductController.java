@@ -70,7 +70,6 @@ public class ProductController {
         return ResponseEntity.ok(product);
     }
 
-    // TODO testing with charge assignment
     @Operation(summary = "Update product by ID")
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable String id, @RequestBody UpdateProductRequestDTO requestDTO) {

@@ -23,10 +23,6 @@ public class Product {
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
-    // TODO: nuspresti ar verta sita laikyti; galbut naudinga cache-avimui, taciau tuomet reikia papildomos logikos.
-    // @Column(name = "variation", nullable = false)
-    // private boolean variation;
-
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 

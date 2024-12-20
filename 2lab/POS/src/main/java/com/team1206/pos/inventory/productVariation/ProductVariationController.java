@@ -43,8 +43,7 @@ public class ProductVariationController {
     ) {
         log.info("Received get product variation request: productId={} variationId={}", productId, variationId);
 
-        // TODO Ar verta tikrinti, ar variacija atitinka productId is url ir ar tas produktas egzistuoja
-        ProductVariationResponseDTO variation = productVariationService.getProductVariationById(UUID.fromString(variationId));
+        ProductVariationResponseDTO variation = productVariationService.getProductVariationById(UUID.fromString(productId), UUID.fromString(variationId));
 
         log.debug("Returning {} to get product variation request (productId={} variationId={})", variation, productId, variationId);
         return ResponseEntity.ok(variation);
@@ -72,7 +71,7 @@ public class ProductVariationController {
     ) {
         log.info("Received update product variation request: productId={} variationId={} {}", productId, variationId, requestBody);
 
-        ProductVariationResponseDTO productVariation = productVariationService.updateProductVariationById(UUID.fromString(variationId), requestBody);
+        ProductVariationResponseDTO productVariation = productVariationService.updateProductVariationById(UUID.fromString(productId), UUID.fromString(variationId), requestBody);
 
         log.debug("Returning {} to update product variation request (productId={} variationId={})", productVariation, productId, variationId);
         return ResponseEntity.ok(productVariation);
@@ -86,7 +85,7 @@ public class ProductVariationController {
     ) {
         log.info("Received delete product variation request: productId={} variationId={}", productId, variationId);
 
-        productVariationService.deleteProductVariationById(UUID.fromString(variationId));
+        productVariationService.deleteProductVariationById(UUID.fromString(productId), UUID.fromString(variationId));
 
         log.debug("Returning nothing to delete product variation request (productId={} variationId={})", productId, variationId);
         return ResponseEntity.noContent().build();
@@ -98,7 +97,7 @@ public class ProductVariationController {
             @PathVariable UUID productId,
             @PathVariable UUID variationId,
             @Valid @RequestBody AdjustProductQuantityDTO adjustDTO) {
-        ProductVariationResponseDTO updatedProductVariation = productVariationService.adjustProductVariationQuantity(variationId, adjustDTO);
+        ProductVariationResponseDTO updatedProductVariation = productVariationService.adjustProductVariationQuantity(productId, variationId, adjustDTO);
         return ResponseEntity.ok(updatedProductVariation);
     }
 }

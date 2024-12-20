@@ -138,20 +138,26 @@ public class ScheduleService {
 
             Schedule merchantSchedule = merchantScheduleMap.get(dayOfWeek);
 
-            // If the merchant does not work on this day, the user cannot either
+            // If the merchant does not operate on this day (no working hours), allow the user to have null hours
             if (merchantSchedule == null || merchantSchedule.getStartTime() == null || merchantSchedule.getEndTime() == null) {
-                throw new IllegalArgumentException("User's schedule cannot include day: " + dayOfWeek +
-                        " because the merchant does not operate on this day.");
-            }
-
-            // Validate start and end times
-            if (userWorkHours.getStartTime().isBefore(merchantSchedule.getStartTime()) ||
-                    userWorkHours.getEndTime().isAfter(merchantSchedule.getEndTime())) {
-                throw new IllegalArgumentException("User's schedule on " + dayOfWeek +
-                        " exceeds the merchant's operating hours.");
+                // If the user doesn't have work hours defined for this day, it's okay
+                if (userWorkHours != null && (userWorkHours.getStartTime() != null || userWorkHours.getEndTime() != null)) {
+                    throw new IllegalArgumentException("User's schedule cannot include day: " + dayOfWeek +
+                            " because the merchant does not operate on this day.");
+                }
+            } else {
+                // Validate user work hours against merchant hours if the merchant operates on this day
+                if (userWorkHours != null && userWorkHours.getStartTime() != null && userWorkHours.getEndTime() != null) {
+                    if (userWorkHours.getStartTime().isBefore(merchantSchedule.getStartTime()) ||
+                            userWorkHours.getEndTime().isAfter(merchantSchedule.getEndTime())) {
+                        throw new IllegalArgumentException("User's schedule on " + dayOfWeek +
+                                " exceeds the merchant's operating hours.");
+                    }
+                }
             }
         }
     }
+
 
     // TODO like metodai tikriausiai nereikalingi bus, kol kas palieku
     // Get work hours (schedule) for all days for a user

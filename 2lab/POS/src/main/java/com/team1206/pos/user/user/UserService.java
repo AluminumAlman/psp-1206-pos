@@ -11,6 +11,7 @@ import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.merchant.MerchantRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -50,6 +51,12 @@ public class UserService {
 
     public List<UserResponseDTO> getAllUsers(String firstname, String lastname, String email) {
         List<User> users = userRepository.findAll();
+
+        Merchant merchant = getCurrentUser().getMerchant();
+        if (merchant != null) {
+            UUID merchantId = merchant.getId();
+            users = users.stream().filter(u -> u.getMerchant() != null ? u.getMerchant().getId().equals(merchantId) : false).toList();
+        }
 
         if (StringUtils.hasText(firstname)) {
             users = users.stream().filter(u -> u.getFirstName().equalsIgnoreCase(firstname)).toList();
@@ -163,16 +170,24 @@ public class UserService {
     }
 
     public UUID getMerchantIdFromLoggedInUser() {
-        String email =
-                ((org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext()
-                        .getAuthentication()
-                        .getPrincipal()).getUsername();
+        // Get the authentication from SecurityContext
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
+        // Check if authentication is null or unauthenticated
+        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
+            throw new UnauthorizedActionException("No user is logged in.");
+        }
+
+        // Extract email from the principal
+        String email = ((org.springframework.security.core.userdetails.User) authentication.getPrincipal()).getUsername();
+
+        // Retrieve the merchant ID from the user's email
         return userRepository.findByEmail(email)
                 .map(User::getMerchant)
                 .map(Merchant::getId)
-                .orElseThrow(() -> new UnauthorizedActionException("User has to have a Merchant assigned"));
+                .orElseThrow(() -> new UnauthorizedActionException("User must have a Merchant assigned"));
     }
+
 
     // MAIN VALIDATION METHOD
     public void verifyLoggedInUserBelongsToMerchant(UUID merchantId, String messageIfInvalid) {
