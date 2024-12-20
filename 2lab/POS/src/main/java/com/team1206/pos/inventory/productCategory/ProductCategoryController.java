@@ -42,10 +42,10 @@ public class ProductCategoryController {
 
     @Operation(summary = "Get product category by ID")
     @GetMapping("/{id}")
-    public ResponseEntity<ProductCategoryResponseDTO> getProductCategoryById(@PathVariable String id) {
+    public ResponseEntity<ProductCategoryResponseDTO> getProductCategoryById(@PathVariable UUID id) {
         log.info("Received get product category request: id={}", id);
 
-        ProductCategoryResponseDTO category = productCategoryService.getProductCategoryById(UUID.fromString(id));
+        ProductCategoryResponseDTO category = productCategoryService.getProductCategoryById(id);
 
         log.debug("Returning {} to get product category request (id={})", category, id);
         return ResponseEntity.ok(category);
@@ -54,11 +54,11 @@ public class ProductCategoryController {
     @Operation(summary = "Update product category by ID")
     @PutMapping("/{id}")
     public ResponseEntity<ProductCategoryResponseDTO> updateCategory(
-            @PathVariable String id,
+            @PathVariable UUID id,
             @Valid @RequestBody UpdateProductCategoryRequestDTO requestDTO) {
         log.info("Received update product category request: id={}", id);
 
-        ProductCategoryResponseDTO updatedCategory = productCategoryService.updateCategoryById(UUID.fromString(id), requestDTO);
+        ProductCategoryResponseDTO updatedCategory = productCategoryService.updateCategoryById(id, requestDTO);
 
         log.debug("Returning {} to update product category request (id={})", updatedCategory, id);
         return ResponseEntity.ok(updatedCategory);
@@ -66,10 +66,10 @@ public class ProductCategoryController {
 
     @Operation(summary = "Delete product category by ID")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable String id) {
+    public ResponseEntity<Void> deleteCategory(@PathVariable UUID id) {
         log.info("Received delete product category request: id={}", id);
 
-        productCategoryService.deleteCategoryById(UUID.fromString(id));
+        productCategoryService.deleteCategoryById(id);
 
         log.debug("Returning nothing to delete product category request (id={})", id);
         return ResponseEntity.noContent().build(); // Return 204 No Content on successful deletion

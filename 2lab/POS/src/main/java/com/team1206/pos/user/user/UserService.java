@@ -11,7 +11,6 @@ import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.merchant.MerchantRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -33,10 +32,6 @@ public class UserService {
     }
 
     public UserResponseDTO createUser(UserRequestDTO request) {
-        if(getMerchantIdFromLoggedInUser() == null) {
-            throw new UnauthorizedActionException("Admin must be assigned to a Merchant");
-        }
-
         User user = new User();
         setUserFieldsFromRequest(user, request);
         User savedUser = userRepository.save(user);
@@ -170,29 +165,21 @@ public class UserService {
     }
 
     public UUID getMerchantIdFromLoggedInUser() {
-        // Get the authentication from SecurityContext
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email =
+                ((org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext()
+                        .getAuthentication()
+                        .getPrincipal()).getUsername();
 
-        // Check if authentication is null or unauthenticated
-        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
-            throw new UnauthorizedActionException("No user is logged in.");
-        }
-
-        // Extract email from the principal
-        String email = ((org.springframework.security.core.userdetails.User) authentication.getPrincipal()).getUsername();
-
-        // Retrieve the merchant ID from the user's email
         return userRepository.findByEmail(email)
                 .map(User::getMerchant)
                 .map(Merchant::getId)
-                .orElseThrow(() -> new UnauthorizedActionException("User must have a Merchant assigned"));
+                .orElseThrow(() -> new UnauthorizedActionException("User has to have a Merchant assigned"));
     }
-
 
     // MAIN VALIDATION METHOD
     public void verifyLoggedInUserBelongsToMerchant(UUID merchantId, String messageIfInvalid) {
         // If User is assigned to a different Merchant or the super-admin didn't choose the Merchant yet (or regular user, which hasn't been assigned a merchant yet)
-        if ((getCurrentUser().getRole() == UserRoles.SUPER_ADMIN && getCurrentUser().getMerchant().getId() == null) || getMerchantIdFromLoggedInUser() != merchantId) {
+        if ((getCurrentUser().getRole() == UserRoles.SUPER_ADMIN && getCurrentUser().getMerchant() == null) || !getMerchantIdFromLoggedInUser().equals(merchantId)) {
             throw new UnauthorizedActionException(messageIfInvalid);
         }
     }
@@ -251,7 +238,6 @@ public class UserService {
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
         user.setRole(request.getRole());
-        user.setMerchant(getCurrentUser().getMerchant());
         user.setSchedules(scheduleService.createScheduleEntities(request.getSchedule(), user));
     }
 
@@ -260,7 +246,6 @@ public class UserService {
         user.setLastName(request.getLastName());
         user.setEmail(request.getEmail());
         user.setRole(request.getRole());
-        user.setMerchant(getCurrentUser().getMerchant());
         user.setSchedules(scheduleService.createScheduleEntities(request.getSchedule(), user));
     }
 
@@ -273,15 +258,12 @@ public class UserService {
         dto.setMerchantId(user.getMerchant() != null ? user.getMerchant().getId() : null);
         dto.setRole(user.getRole());
 
-        // Only map schedule if the user is an EMPLOYEE
-        if (user.getRole() == UserRoles.EMPLOYEE) {
-            Map<DayOfWeek, WorkHoursDTO> scheduleMap = user.getSchedules().stream()
-                    .collect(Collectors.toMap(
-                            Schedule::getDayOfWeek,
-                            schedule -> new WorkHoursDTO(schedule.getStartTime(), schedule.getEndTime())
-                    ));
-            dto.setSchedule(scheduleMap);
-        }
+        Map<DayOfWeek, WorkHoursDTO> scheduleMap = user.getSchedules().stream()
+                .collect(Collectors.toMap(
+                        Schedule::getDayOfWeek,
+                        schedule -> new WorkHoursDTO(schedule.getStartTime(), schedule.getEndTime())
+                ));
+        dto.setSchedule(scheduleMap);
 
         dto.setCreatedAt(user.getCreatedAt());
         dto.setUpdatedAt(user.getUpdatedAt());

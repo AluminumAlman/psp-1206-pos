@@ -21,7 +21,7 @@ public class DiscountController {
         this.discountService = discountService;
     }
 
-    @GetMapping
+    // @GetMapping
     @Operation(summary = "Get discount list")
     public ResponseEntity<List<DiscountResponseDTO>> getDiscounts() {
         log.info("Received get discounts request");
@@ -32,7 +32,7 @@ public class DiscountController {
         return ResponseEntity.ok(responses);
     }
 
-    @PostMapping
+    // @PostMapping
     @Operation(summary = "Create new discount")
     public ResponseEntity<DiscountResponseDTO> createDiscount(
             HttpServletRequest request,
@@ -46,7 +46,7 @@ public class DiscountController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping("{discountId}")
+    // @GetMapping("{discountId}")
     @Operation(summary = "Retrieve discount")
     public ResponseEntity<DiscountResponseDTO> getDiscount(@PathVariable("discountId") UUID discountId) {
         log.info("Received get discount request: discountId={}", discountId);
@@ -57,7 +57,7 @@ public class DiscountController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("{discountId}")
+    // @PutMapping("{discountId}")
     @Operation(summary = "Update discount")
     public ResponseEntity<DiscountResponseDTO> updateDiscount(
             @PathVariable("discountId") UUID discountId,
@@ -70,7 +70,7 @@ public class DiscountController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("{discountId}")
+    // @DeleteMapping("{discountId}")
     @Operation(summary = "Delete a specific discount")
     public ResponseEntity<Void> deleteDiscount(@PathVariable("discountId") UUID discountId) {
         log.info("Received delete discount request: discountId={}", discountId);

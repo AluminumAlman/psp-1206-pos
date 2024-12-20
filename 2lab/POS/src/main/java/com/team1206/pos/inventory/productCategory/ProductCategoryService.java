@@ -41,11 +41,10 @@ public class ProductCategoryService {
     }
 
     public ProductCategoryResponseDTO getProductCategoryById(UUID id) {
-        userService.verifyLoggedInUserBelongsToMerchant(id, "You are not authorized to retrieve this category");
-
-
         ProductCategory category = productCategoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT_CATEGORY, id.toString()));
+
+        userService.verifyLoggedInUserBelongsToMerchant(category.getMerchant().getId(), "You are not authorized to retrieve this category");
         return mapToResponseDTO(category);
     }
 
