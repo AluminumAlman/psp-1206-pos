@@ -408,10 +408,8 @@ export const EmployeeHome = () => {
     
             await addItemToOrder(token, editingOrderId, payload);
 
-            alert("Adding reservation to order", createdReservationId);
             setCreatedReservationId(null);
-    
-            alert("Item added successfully!");
+
             await loadOrders(); // Refresh the orders
             setShowEditOrderModal(false); // Close the modal
         } catch (error) {
@@ -723,7 +721,7 @@ export const EmployeeHome = () => {
                         ) : (
                             <p>No items in this order.</p>
                         )}
-    
+
                         <button
                             className="add-item-button"
                             onClick={() => handleOpenEditOrderModal(selectedOrderId)}
