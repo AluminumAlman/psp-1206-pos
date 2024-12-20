@@ -164,7 +164,7 @@ export const Login = () => {
                 email,
                 password,
                 role: isJoiningBusiness ? 'EMPLOYEE' : 'MERCHANT_OWNER',
-                schedule: isJoiningBusiness ? schedule : undefined // Include schedule only if joining a business
+                schedule: isJoiningBusiness ? schedule : schedule // Include schedule only if joining a business
             };
 
             const response = await fetch('http://localhost:8080/auth/register', {
