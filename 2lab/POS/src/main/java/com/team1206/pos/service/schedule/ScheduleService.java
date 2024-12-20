@@ -2,7 +2,6 @@ package com.team1206.pos.service.schedule;
 
 import com.team1206.pos.common.dto.WorkHoursDTO;
 import com.team1206.pos.common.enums.ResourceType;
-import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.user.merchant.Merchant;
 import com.team1206.pos.user.user.User;
@@ -109,42 +108,6 @@ public class ScheduleService {
         }
         return merchantSchedules;
     }
-
-    private void validateUserScheduleAgainstMerchantSchedule(
-            Map<DayOfWeek, WorkHoursDTO> userSchedule,
-            List<Schedule> merchantSchedules) {
-
-        Map<DayOfWeek, Schedule> merchantScheduleMap = new HashMap<>();
-        for (Schedule schedule : merchantSchedules) {
-            merchantScheduleMap.put(schedule.getDayOfWeek(), schedule);
-        }
-
-        for (Map.Entry<DayOfWeek, WorkHoursDTO> entry : userSchedule.entrySet()) {
-            DayOfWeek dayOfWeek = entry.getKey();
-            WorkHoursDTO userWorkHours = entry.getValue();
-
-            Schedule merchantSchedule = merchantScheduleMap.get(dayOfWeek);
-
-            // If the merchant does not operate on this day (no working hours), allow the user to have null hours
-            if (merchantSchedule == null || merchantSchedule.getStartTime() == null || merchantSchedule.getEndTime() == null) {
-                // If the user doesn't have work hours defined for this day, it's okay
-                if (userWorkHours != null && (userWorkHours.getStartTime() != null || userWorkHours.getEndTime() != null)) {
-                    throw new IllegalArgumentException("User's schedule cannot include day: " + dayOfWeek +
-                            " because the merchant does not operate on this day.");
-                }
-            } else {
-                // Validate user work hours against merchant hours if the merchant operates on this day
-                if (userWorkHours != null && userWorkHours.getStartTime() != null && userWorkHours.getEndTime() != null) {
-                    if (userWorkHours.getStartTime().isBefore(merchantSchedule.getStartTime()) ||
-                            userWorkHours.getEndTime().isAfter(merchantSchedule.getEndTime())) {
-                        throw new IllegalArgumentException("User's schedule on " + dayOfWeek +
-                                " exceeds the merchant's operating hours.");
-                    }
-                }
-            }
-        }
-    }
-
 
     // TODO like metodai tikriausiai nereikalingi bus, kol kas palieku
     // Get work hours (schedule) for all days for a user
