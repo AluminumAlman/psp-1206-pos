@@ -14,6 +14,7 @@ import com.team1206.pos.order.order.OrderResponseDTO;
 import com.team1206.pos.order.order.OrderService;
 import com.team1206.pos.service.reservation.Reservation;
 import com.team1206.pos.service.reservation.ReservationService;
+import com.team1206.pos.service.service.ServiceService;
 import com.team1206.pos.user.user.UserService;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ public class OrderItemService {
     private final ReservationService reservationService;
     private final UserService userService;
     private final ProductVariationService productVariationService;
+    private final ServiceService serviceService;
 
     public OrderItemService(
             OrderItemRepository orderItemRepository,
@@ -40,8 +42,8 @@ public class OrderItemService {
             @Lazy OrderService orderService,
             ReservationService reservationService,
             UserService userService,
-            ProductVariationService productVariationService
-    ) {
+            ProductVariationService productVariationService,
+            ServiceService serviceService) {
         this.orderItemRepository = orderItemRepository;
         this.productVariationRepository = productVariationRepository;
         this.productService = productService;
@@ -49,6 +51,7 @@ public class OrderItemService {
         this.reservationService = reservationService;
         this.userService = userService;
         this.productVariationService = productVariationService;
+        this.serviceService = serviceService;
     }
 
     // Get order items by order id
@@ -80,8 +83,13 @@ public class OrderItemService {
         }
 
 
-        if (requestDTO.getProductId() != null) {
+        if (requestDTO.getProductId() != null || requestDTO.getProductVariationId() != null) {
             adjustQuantityOrderItemAdd(requestDTO);
+        }
+
+        OrderResponseDTO responseDTO = adjustQuantityOrderItemCombine(order, requestDTO);
+        if (responseDTO != null) {
+            return responseDTO;
         }
 
         OrderItem orderItem = new OrderItem();
@@ -184,23 +192,40 @@ public class OrderItemService {
 
     // *** Helper methods ***
 
+    private OrderResponseDTO adjustQuantityOrderItemCombine(Order order, CreateOrderItemRequestDTO requestDTO) {
+        for (OrderItem orderItem : order.getItems()) {
+            if (orderItem.getProduct() != null && orderItem.getProduct().getId().equals(requestDTO.getProductId())) {
+                orderItem.setQuantity(orderItem.getQuantity() + requestDTO.getQuantity());
+                orderItemRepository.save(orderItem);
+                Order updatedOrder = orderService.replaceOrderItemInOrder(order, orderItem);
+                return orderService.mapToResponseDTO(updatedOrder);
+            }
+            else if (orderItem.getProductVariation() != null && orderItem.getProductVariation().getId().equals(requestDTO.getProductVariationId())) {
+                orderItem.setQuantity(orderItem.getQuantity() + requestDTO.getQuantity());
+                orderItemRepository.save(orderItem);
+                Order updatedOrder = orderService.replaceOrderItemInOrder(order, orderItem);
+                return orderService.mapToResponseDTO(updatedOrder);
+            }
+        }
+
+        return null;
+    }
+
     public void deleteOrderItem(OrderItem orderItem) {
         orderItemRepository.delete(orderItem);
     }
 
     public BigDecimal getTotalPrice(OrderItem orderItem) {
         if (orderItem.getProductVariation() != null) {
-            return orderItem.getProductVariation()
-                            .getPrice()
-                            .multiply(BigDecimal.valueOf(orderItem.getQuantity()));
+            return productVariationService.getFinalPrice(orderItem.getProductVariation().getId())
+                    .multiply(BigDecimal.valueOf(orderItem.getQuantity()));
         }
         else if (orderItem.getProduct() != null) {
-            return orderItem.getProduct()
-                            .getPrice()
+            return productService.getFinalPrice(orderItem.getProduct().getId())
                             .multiply(BigDecimal.valueOf(orderItem.getQuantity()));
         }
         else if (orderItem.getReservation() != null) {
-            return orderItem.getReservation().getService().getPrice();
+            return serviceService.getFinalPrice(orderItem.getReservation().getService().getId());
         }
 
         return BigDecimal.ZERO;
@@ -210,13 +235,6 @@ public class OrderItemService {
     private void checkCreateRequestDTO(CreateOrderItemRequestDTO requestDTO) {
         if (requestDTO.getQuantity() <= 0) {
             throw new IllegalRequestException("Quantity must be greater than zero");
-        }
-        if (requestDTO.getProductId() == null && requestDTO.getReservationId() == null) {
-            throw new IllegalRequestException("Either productId or reservationId must be provided");
-        }
-        if (requestDTO.getReservationId() != null && requestDTO.getProductVariationId() != null) {
-            throw new IllegalRequestException(
-                    "Order reservation item cannot be paired with product variation");
         }
     }
 
@@ -257,6 +275,9 @@ public class OrderItemService {
         else if (orderItem.getProduct() != null) {
             productService.adjustProductQuantity(orderItem.getProduct().getId(), orderItem.getQuantity());
         }
+        else if (orderItem.getReservation() != null) {
+            reservationService.cancelReservation(orderItem.getReservation().getId(), false);
+        }
     }
 
     // Get order item by id
@@ -269,6 +290,13 @@ public class OrderItemService {
     private void setOrderItemFields(OrderItem orderItem, CreateOrderItemRequestDTO requestDTO) {
         if (requestDTO.getProductId() != null) {
             orderItem.setProduct(productService.getProductEntityById(requestDTO.getProductId()));
+            orderItem.setQuantity(requestDTO.getQuantity());
+        }
+        else if (requestDTO.getProductVariationId() != null) {
+            orderItem.setProductVariation(productVariationService.getProductVariationEntityById(
+                    requestDTO.getProductVariationId()
+            ));
+            orderItem.setProduct(orderItem.getProductVariation().getProduct());
             orderItem.setQuantity(requestDTO.getQuantity());
         }
         else {

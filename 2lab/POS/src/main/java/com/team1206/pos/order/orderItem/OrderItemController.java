@@ -40,7 +40,7 @@ public class OrderItemController {
     public ResponseEntity<OrderResponseDTO> updateOrderItem(
             @PathVariable UUID orderId,
             @PathVariable UUID orderItemId,
-            @RequestBody UpdateOrderItemRequestDTO requestDTO
+            @Valid @RequestBody UpdateOrderItemRequestDTO requestDTO
     ) {
         return ResponseEntity.ok(orderItemService.updateOrderItem(
                 orderId,

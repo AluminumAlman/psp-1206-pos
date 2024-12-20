@@ -1,23 +1,24 @@
 package com.team1206.pos.inventory.product;
 
+import com.team1206.pos.common.enums.ChargeType;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.IllegalStateExceptionWithId;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.exceptions.UnauthorizedActionException;
+import com.team1206.pos.inventory.inventoryLog.InventoryLogService;
 import com.team1206.pos.inventory.productCategory.ProductCategory;
 import com.team1206.pos.inventory.productCategory.ProductCategoryService;
 import com.team1206.pos.inventory.productVariation.ProductVariation;
-import com.team1206.pos.payments.charge.ChargeRepository;
 import com.team1206.pos.payments.charge.Charge;
-import com.team1206.pos.payments.charge.ChargeService;
 import com.team1206.pos.user.user.UserService;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
-import org.springframework.stereotype.Service;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,13 +28,13 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductCategoryService productCategoryService;
     private final UserService userService;
-    private final ChargeService chargeService;
+    private final InventoryLogService inventoryLogService;
 
-    public ProductService(ProductRepository productRepository, ProductCategoryService productCategoryService, UserService userService, ChargeService chargeService) {
+    public ProductService(ProductRepository productRepository, ProductCategoryService productCategoryService, UserService userService, @Lazy InventoryLogService inventoryLogService) {
         this.productRepository = productRepository;
         this.productCategoryService = productCategoryService;
         this.userService = userService;
-        this.chargeService = chargeService;
+        this.inventoryLogService = inventoryLogService;
     }
 
 
@@ -47,12 +48,6 @@ public class ProductService {
         product.setPrice(requestDTO.getPrice());
         product.setQuantity(requestDTO.getQuantity());
         product.setCategory(category);
-
-        // Check for missing ChargeIds
-        if (!requestDTO.getChargeIds().isEmpty()) {
-            List<Charge> charges = validateAndFetchCharges(requestDTO.getChargeIds());
-            product.setCharges(charges);
-        }
 
         Product savedProduct = productRepository.save(product);
 
@@ -96,18 +91,14 @@ public class ProductService {
             product.setPrice(updateProductRequestDTO.getPrice());
         }
 
-        if (updateProductRequestDTO.getQuantity() != null) {
+        if (updateProductRequestDTO.getQuantity() != null && !updateProductRequestDTO.getQuantity().equals(product.getQuantity())) {
             product.setQuantity(updateProductRequestDTO.getQuantity());
+            inventoryLogService.createInventoryLogForProduct(id, updateProductRequestDTO.getQuantity(), null);
         }
 
         if (updateProductRequestDTO.getCategoryId() != null) {
             ProductCategory category = productCategoryService.getCategoryEntityById(updateProductRequestDTO.getCategoryId());
             product.setCategory(category);
-        }
-
-        if (updateProductRequestDTO.getChargeIds() != null) {
-            List<Charge> charges = validateAndFetchCharges(updateProductRequestDTO.getChargeIds());
-            product.setCharges(charges);
         }
 
         Product updatedProduct = productRepository.save(product);
@@ -139,6 +130,8 @@ public class ProductService {
 
         Product updatedProduct = productRepository.save(product);
 
+        inventoryLogService.createInventoryLogForProduct(id, product.getQuantity(), null);
+
         return mapToResponseDTO(updatedProduct);
     }
 
@@ -163,29 +156,32 @@ public class ProductService {
         productRepository.save(product);
     }
 
-    // Helpers
-    private List<Charge> validateAndFetchCharges(List<UUID> chargeIds) {
-        if (chargeIds == null || chargeIds.isEmpty()) {
-            return List.of(); // Return an empty list if no charges are provided
+    public BigDecimal getFinalPrice(UUID productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.PRODUCT, productId.toString()));
+
+        BigDecimal finalProductPrice = product.getPrice();
+
+        if (product.getCharges() != null) {
+            List<Charge> sortedCharges = product.getCharges().stream()
+                    .sorted((c1, c2) -> c1.getType() == ChargeType.TAX ? -1 : 1)
+                    .toList();
+
+            for (Charge charge : sortedCharges) {
+                if (charge.getType() == ChargeType.TAX && charge.getPercent() != null) {
+                    BigDecimal multiplier = BigDecimal.valueOf(100 + charge.getPercent())
+                            .divide(BigDecimal.valueOf(100));
+                    finalProductPrice = finalProductPrice.multiply(multiplier);
+                } else if(charge.getType() == ChargeType.SERVICE && charge.getAmount() != null)
+                    finalProductPrice = finalProductPrice.add(charge.getAmount());
+            }
         }
 
-        List<Charge> charges = chargeService.getAllEntitiesById(chargeIds);
-        List<UUID> foundChargeIds = charges.stream()
-                .map(Charge::getId)
-                .toList();
+        finalProductPrice = finalProductPrice.setScale(2, RoundingMode.HALF_UP);
 
-        // Find any missing Charge IDs
-        List<UUID> missingChargeIds = chargeIds.stream()
-                .filter(id -> !foundChargeIds.contains(id))
-                .toList();
 
-        if (!missingChargeIds.isEmpty()) {
-            throw new ResourceNotFoundException(ResourceType.CHARGE, missingChargeIds.toString()); // TODO patestuoti kai bus Charges
-        }
-
-        return charges;
+        return finalProductPrice;
     }
-
 
     // Mappers
     private ProductResponseDTO mapToResponseDTO(Product product) {

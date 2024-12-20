@@ -55,7 +55,7 @@ public class ProductCategoryController {
     @PutMapping("/{id}")
     public ResponseEntity<ProductCategoryResponseDTO> updateCategory(
             @PathVariable String id,
-            @RequestBody @Valid UpdateProductCategoryRequestDTO requestDTO) {
+            @Valid @RequestBody UpdateProductCategoryRequestDTO requestDTO) {
         log.info("Received update product category request: id={}", id);
 
         ProductCategoryResponseDTO updatedCategory = productCategoryService.updateCategoryById(UUID.fromString(id), requestDTO);

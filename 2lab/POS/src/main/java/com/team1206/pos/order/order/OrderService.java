@@ -5,7 +5,9 @@ import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.exceptions.IllegalRequestException;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.exceptions.UnauthorizedActionException;
+import com.team1206.pos.inventory.inventoryLog.InventoryLogService;
 import com.team1206.pos.order.orderCharge.OrderCharge;
+import com.team1206.pos.order.orderCharge.OrderChargeService;
 import com.team1206.pos.order.orderItem.OrderItem;
 import com.team1206.pos.order.orderItem.OrderItemService;
 import com.team1206.pos.payments.discount.Discount;
@@ -13,6 +15,7 @@ import com.team1206.pos.payments.transaction.Transaction;
 import com.team1206.pos.user.merchant.MerchantService;
 import com.team1206.pos.user.user.UserService;
 import jakarta.transaction.Transactional;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,17 +32,22 @@ public class OrderService {
     private final UserService userService;
     private final MerchantService merchantService;
     private final OrderItemService orderItemService;
+    private final OrderChargeService orderChargeService;
+    private final InventoryLogService inventoryLogService;
 
     public OrderService(
             OrderRepository orderRepository,
             UserService userService,
             MerchantService merchantService,
-            OrderItemService orderItemService
-    ) {
+            OrderItemService orderItemService,
+            @Lazy OrderChargeService orderChargeService,
+            @Lazy InventoryLogService inventoryLogService) {
         this.orderRepository = orderRepository;
         this.userService = userService;
         this.merchantService = merchantService;
         this.orderItemService = orderItemService;
+        this.orderChargeService = orderChargeService;
+        this.inventoryLogService = inventoryLogService;
     }
 
     // Get paged orders
@@ -90,13 +98,13 @@ public class OrderService {
     }
 
     // Create order
-    public OrderResponseDTO createOrder(OrderRequestDTO requestBody) {
+    public OrderResponseDTO createOrder() {
         UUID userMerchantId = userService.getMerchantIdFromLoggedInUser();
 
         Order order = new Order();
 
         order.setMerchant(merchantService.getMerchantEntityById(userMerchantId));
-        setOrderFields(order, requestBody);
+        setOrderFields(order);
 
         Order savedOrder = orderRepository.save(order);
 
@@ -152,6 +160,27 @@ public class OrderService {
         return mapToResponseDTO(order);
     }
 
+    // Service layer
+
+    public Order closeOrder(UUID orderId) {
+        Order order = getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(
+                order.getMerchant().getId(),
+                "You are not authorized to close order"
+        );
+
+        if (order.getStatus() != OrderStatus.OPEN) {
+            throw new IllegalStateException("Order has to be open to be closed");
+        }
+
+        order.setStatus(OrderStatus.CLOSED);
+        orderRepository.save(order);
+
+        inventoryLogService.logOrder(order);
+
+        return order;
+    }
+
     // *** Helper methods ***
 
     public Order addOrderItemToOrder(Order order, OrderItem orderItem) {
@@ -173,11 +202,12 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    public BigDecimal calculateTotalAmount(UUID orderId) {
+    public BigDecimal calculateTotalProductAndServicePrice(UUID orderId) {
         Order order = getOrderEntityById(orderId);
         userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(), "You are not authorized to get total amount of this order");
 
         BigDecimal totalAmount = BigDecimal.ZERO;
+
         for (OrderItem item : order.getItems()) {
             totalAmount = totalAmount.add(orderItemService.getTotalPrice(item));
         }
@@ -185,21 +215,17 @@ public class OrderService {
         return totalAmount;
     }
 
-    private void setOrderFields(Order order, OrderRequestDTO requestBody) {
+    public BigDecimal calculateFinalCheckoutAmount(UUID orderId) {
+        BigDecimal totalOrderItemsPrice = calculateTotalProductAndServicePrice(orderId);
+
+        return orderChargeService.applyOrderCharges(orderId, totalOrderItemsPrice);
+    }
+
+    private void setOrderFields(Order order) {
         order.setStatus(OrderStatus.OPEN);
 
         // if orderItems is empty, set items to empty list
-        if (requestBody.getOrderItems() == null) {
-            order.setItems(List.of());
-        }
-        else {
-
-            List<OrderItem> orderItems = requestBody.getOrderItems()
-                                                    .stream()
-                                                    .map(orderItemService::getOrderItemEntityById)
-                                                    .toList();
-            order.setItems(orderItems);
-        }
+        order.setItems(List.of());
     }
 
     public OrderResponseDTO mapToResponseDTO(Order order) {

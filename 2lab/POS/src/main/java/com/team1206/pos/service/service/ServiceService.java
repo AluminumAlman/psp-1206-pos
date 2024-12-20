@@ -1,8 +1,10 @@
 package com.team1206.pos.service.service;
 
+import com.team1206.pos.common.enums.ChargeType;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.common.enums.UserRoles;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
+import com.team1206.pos.payments.charge.Charge;
 import com.team1206.pos.service.reservation.Reservation;
 import com.team1206.pos.service.reservation.ReservationService;
 import com.team1206.pos.service.schedule.Schedule;
@@ -18,9 +20,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -49,8 +53,9 @@ public class ServiceService {
     public Page<ServiceResponseDTO> getServices(int limit, int offset, String name, BigDecimal price, Long duration) {
         Pageable pageable = PageRequest.of(offset / limit, limit); // Convert offset and limit into Pageable
 
+        UUID merchantId = userService.getMerchantIdFromLoggedInUser();
         // Fetch the filtered results
-        Page<com.team1206.pos.service.service.Service> servicePage = serviceRepository.findAllWithFilters(name, price, duration, pageable); // TODO add filter by user's merchant
+        Page<com.team1206.pos.service.service.Service> servicePage = serviceRepository.findAllWithFilters(name, price, duration, merchantId, pageable);
 
         return servicePage.map(this::mapToResponseDTO);
     }
@@ -101,6 +106,9 @@ public class ServiceService {
 
     // Get available slots for a service on a given date
     public AvailableSlotsResponseDTO getAvailableSlots(UUID serviceId, LocalDate date, UUID userId) {
+        if (!date.isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("The date must not be in the past");
+        }
         // Get the day of the week for the given date
         DayOfWeek dayOfWeek = date.getDayOfWeek();
 
@@ -112,15 +120,27 @@ public class ServiceService {
 
         // Get service duration (in seconds) from the service entity
         com.team1206.pos.service.service.Service service = getServiceEntityById(serviceId);
-        Long serviceDurationInSeconds = service.getDuration();  // Service duration in seconds (as long)
+        Long serviceDurationInSeconds = service.getDuration();  // Service duration in seconds
 
         // Fetch existing reservations for the given date and employee
         List<Reservation> existingReservations = reservationService.findReservationsByEmployeeAndDate(userId, date);
 
+        // If there are no reservations, consider all slots within the schedule as available
+        existingReservations = (existingReservations == null) ? List.of() : existingReservations;
+
         // Iterate through each schedule (employee's work time)
         for (Schedule schedule : schedules) {
+            if (schedule.getStartTime() == null || schedule.getEndTime() == null) {
+                throw new IllegalArgumentException("This employee is not working today!");
+            }
             // Convert LocalTime to LocalDateTime based on the given date
-            LocalDateTime scheduleStartTime = LocalDateTime.of(date, schedule.getStartTime());
+            LocalDateTime scheduleStartTime;
+            if (date.isEqual(LocalDate.now())) {
+                scheduleStartTime = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
+            } else {
+                scheduleStartTime = LocalDateTime.of(date, schedule.getStartTime());
+            }
+
             LocalDateTime scheduleEndTime = LocalDateTime.of(date, schedule.getEndTime());
 
             // Calculate the available slots based on the service duration
@@ -158,6 +178,33 @@ public class ServiceService {
     public com.team1206.pos.service.service.Service getServiceEntityById(UUID serviceId) {
         return serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.SERVICE, serviceId.toString()));
+    }
+
+    public BigDecimal getFinalPrice(UUID serviceId) {
+        com.team1206.pos.service.service.Service service = serviceRepository.findById(serviceId)
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceType.SERVICE, serviceId.toString()));
+
+        BigDecimal finalServicePrice = service.getPrice();
+
+        if (service.getCharges() != null) {
+            // Sort charges so that TAX types come first
+            List<Charge> sortedCharges = service.getCharges().stream()
+                    .sorted((c1, c2) -> c1.getType() == ChargeType.TAX ? -1 : 1)
+                    .toList();
+
+            for (Charge charge : sortedCharges) {
+                if (charge.getType() == ChargeType.TAX && charge.getPercent() != null) {
+                    BigDecimal multiplier = BigDecimal.valueOf(100 + charge.getPercent())
+                            .divide(BigDecimal.valueOf(100));
+                    finalServicePrice = finalServicePrice.multiply(multiplier);
+                } else if(charge.getType() == ChargeType.SERVICE && charge.getAmount() != null)
+                    finalServicePrice = finalServicePrice.add(charge.getAmount());
+            }
+        }
+
+        finalServicePrice = finalServicePrice.setScale(2, RoundingMode.HALF_UP);
+
+        return finalServicePrice;
     }
 
     // Mappers

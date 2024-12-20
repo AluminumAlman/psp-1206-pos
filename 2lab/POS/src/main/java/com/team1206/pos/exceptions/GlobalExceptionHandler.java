@@ -37,6 +37,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorObject, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorObject> handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
+        ErrorObject errorObject = new ErrorObject();
+        errorObject.setStatusCode(HttpStatus.BAD_REQUEST.value()); // 400 Bad Request
+        errorObject.setMessage(ex.getMessage()); // The exception's message will be the response message
+        errorObject.setPath(request.getDescription(false).replace("uri=", ""));
+        errorObject.setTimestamp(LocalDateTime.now());
+
+        // Add stack trace in development mode for debugging purposes
+        if ("dev".equalsIgnoreCase(activeProfile)) {
+            errorObject.setDetails(Collections.singletonMap("stackTrace", getStackTrace(ex)));
+        }
+
+        return new ResponseEntity<>(errorObject, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(IllegalRequestException.class)
     public ResponseEntity<ErrorObject> handleIllegalRequestException(IllegalRequestException ex, WebRequest request) {
         ErrorObject errorObject = new ErrorObject();

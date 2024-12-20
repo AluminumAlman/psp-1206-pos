@@ -1,5 +1,6 @@
 package com.team1206.pos.service.reservation;
 
+import com.team1206.pos.service.service.AvailableSlotsResponseDTO;
 import com.team1206.pos.sns.SNSService;
 import com.team1206.pos.common.enums.ResourceType;
 import com.team1206.pos.common.enums.UserRoles;
@@ -48,18 +49,39 @@ public class ReservationService {
         Pageable pageable = PageRequest.of(offset / limit, limit);
 
         Page<Reservation> reservationsPage = reservationRepository.findAllWithFilters(
-                serviceName, customerName, customerEmail, customerPhone, appointedAt, pageable);
+                serviceName, customerName, customerEmail, customerPhone, appointedAt, userService.getMerchantIdFromLoggedInUser(), pageable);
 
         return reservationsPage.map(this::mapToResponseDTO);
     }
 
-    // Create a reservation
     public ReservationResponseDTO createReservation(ReservationRequestDTO requestDTO) {
+        validateReservationServiceId(requestDTO.getServiceId());
         Service service = serviceService.getServiceEntityById(requestDTO.getServiceId());
 
         User employee = userService.getUserEntityById(requestDTO.getEmployeeId());
         userService.verifyUserRole(employee, UserRoles.EMPLOYEE);
 
+        // Fetch available slots for the employee and service
+        validateReservationDateTime(requestDTO.getAppointedAt());
+        LocalDate appointmentDate = requestDTO.getAppointedAt().toLocalDate();
+        AvailableSlotsResponseDTO availableSlots = serviceService.getAvailableSlots(
+                requestDTO.getServiceId(),
+                appointmentDate,
+                requestDTO.getEmployeeId()
+        );
+
+        // Validate that the requested time fits into one of the available slots
+        LocalDateTime requestedStartTime = requestDTO.getAppointedAt();
+        LocalDateTime requestedEndTime = requestedStartTime.plusSeconds(service.getDuration());
+        boolean fitsIntoSlot = availableSlots.getItems().stream().anyMatch(slot ->
+                !requestedStartTime.isBefore(slot.getStartTime()) && !requestedEndTime.isAfter(slot.getEndTime())
+        );
+
+        if (!fitsIntoSlot) {
+            throw new IllegalArgumentException("The requested time slot is not available.");
+        }
+
+        // Proceed with reservation creation if the time slot is valid
         Reservation reservation = new Reservation();
         mapRequestToReservation(requestDTO, reservation);
         reservation.setService(service);
@@ -78,28 +100,56 @@ public class ReservationService {
 
     // Update a reservation
     public ReservationResponseDTO updateReservation(UUID reservationId, ReservationRequestDTO requestDTO) {
+        validateReservationServiceId(requestDTO.getServiceId());
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.RESERVATION, reservationId.toString()));
 
+        // Retrieve the service and employee for the updated reservation
         Service service = serviceService.getServiceEntityById(requestDTO.getServiceId());
-
         User employee = userService.getUserEntityById(requestDTO.getEmployeeId());
         userService.verifyUserRole(employee, UserRoles.EMPLOYEE);
 
+        // Validate the updated appointment date and time
+        validateReservationDateTime(requestDTO.getAppointedAt());
+        LocalDate appointmentDate = requestDTO.getAppointedAt().toLocalDate();
+
+        // Fetch available slots for the employee and service
+        AvailableSlotsResponseDTO availableSlots = serviceService.getAvailableSlots(
+                requestDTO.getServiceId(),
+                appointmentDate,
+                requestDTO.getEmployeeId()
+        );
+
+        // Validate that the requested time fits into one of the available slots
+        LocalDateTime requestedStartTime = requestDTO.getAppointedAt();
+        LocalDateTime requestedEndTime = requestedStartTime.plusSeconds(service.getDuration());
+        boolean fitsIntoSlot = availableSlots.getItems().stream().anyMatch(slot ->
+                !requestedStartTime.isBefore(slot.getStartTime()) && !requestedEndTime.isAfter(slot.getEndTime())
+        );
+
+        if (!fitsIntoSlot) {
+            throw new IllegalArgumentException("The requested time slot is not available.");
+        }
+
+        // Map the updated data from requestDTO to the existing reservation
         mapRequestToReservation(requestDTO, reservation);
         reservation.setService(service);
         reservation.setEmployee(employee);
 
+        // Save the updated reservation
         Reservation updatedReservation = reservationRepository.save(reservation);
 
+        // Send confirmation SMS to the customer
         snsService.sendSms(updatedReservation.getPhone(),
                 String.format("Hey, %s, Your reservation at %s for %s with %s %s is confirmed for %tF at %tR. Thank you for choosing us!",
                         updatedReservation.getFirstName(), service.getMerchant().getName(), service.getName(),
                         employee.getFirstName(), employee.getLastName(),
                         updatedReservation.getAppointedAt(), updatedReservation.getAppointedAt()));
 
+        // Return the updated reservation as a response
         return mapToResponseDTO(updatedReservation);
     }
+
 
     // Get a reservation by ID
     public ReservationResponseDTO getReservationById(UUID reservationId) {
@@ -109,18 +159,20 @@ public class ReservationService {
     }
 
     // Cancel (delete) a reservation
-    public void cancelReservation(UUID reservationId) {
+    public void cancelReservation(UUID reservationId, boolean sendSms) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException(ResourceType.RESERVATION, reservationId.toString()));
 
-        try {
-            String phoneNumber = reservation.getPhone();
-            reservationRepository.deleteById(reservationId);
-            snsService.sendSms(phoneNumber,
-                    "Hey, Your reservation was successfully cancelled. Thank you for choosing us!");
+        if (sendSms) {
+            try {
+                String phoneNumber = reservation.getPhone();
+                reservationRepository.deleteById(reservationId);
+                snsService.sendSms(phoneNumber,
+                        "Hey, Your reservation was successfully cancelled. Thank you for choosing us!");
 
-        } catch (Exception e) {
-            throw new RuntimeException("An error occurred while cancelling the reservation with ID: " + reservationId, e);
+            } catch (Exception e) {
+                throw new RuntimeException("An error occurred while cancelling the reservation with ID: " + reservationId, e);
+            }
         }
     }
 
@@ -130,13 +182,7 @@ public class ReservationService {
         LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();  // 00:00:00 of the next day
 
         // Call the repository method to fetch reservations for the given date
-        List<Reservation> reservations = reservationRepository.findReservationsByEmployeeAndDate(userId, startOfDay, endOfDay);
-
-        if (reservations == null || reservations.isEmpty()) {
-            throw new ResourceNotFoundException(ResourceType.RESERVATION, "userId: " + userId + " on " + date);
-        }
-
-        return reservations;
+        return reservationRepository.findReservationsByEmployeeAndDate(userId, startOfDay, endOfDay, userService.getMerchantIdFromLoggedInUser());
     }
 
 
@@ -147,6 +193,23 @@ public class ReservationService {
                                             reservationId.toString()
                                     ));
     }
+
+    // Helpers
+    private void validateReservationDateTime (LocalDateTime time) {
+        if (!time.isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException("The reservation start time must not be in the past.");
+        }
+    }
+
+    private void validateReservationServiceId(UUID serviceId) {
+        boolean isServiceBelongingToMerchant = serviceService.getServiceEntityById(serviceId).getMerchant().getId()
+                .equals(userService.getMerchantIdFromLoggedInUser());
+        // Throw an exception if the service does not belong to the current user's merchant
+        if (!isServiceBelongingToMerchant) {
+            throw new IllegalArgumentException("The provided service does not belong to your merchant.");
+        }
+    }
+
 
     // Mappers
     private ReservationResponseDTO mapToResponseDTO(Reservation reservation) {

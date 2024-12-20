@@ -8,7 +8,7 @@ import lombok.Data;
 import java.util.UUID;
 
 @Data
-@OneOf(fields = {"productId", "reservationId"})
+@OneOf(fields = {"productId", "reservationId", "productVariationId"})
 public class CreateOrderItemRequestDTO {
     private UUID productId;
     private UUID reservationId;

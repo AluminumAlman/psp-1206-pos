@@ -96,7 +96,7 @@ public class ReservationController {
     public ResponseEntity<Void> cancelReservation(@PathVariable UUID reservationId) {
         log.info("Received cancel reservation request: reservationId={}", reservationId);
 
-        reservationService.cancelReservation(reservationId);
+        reservationService.cancelReservation(reservationId, true);
 
         log.debug("Returning nothing to cancel reservation request (reservationId={})", reservationId);
         return ResponseEntity.noContent().build();

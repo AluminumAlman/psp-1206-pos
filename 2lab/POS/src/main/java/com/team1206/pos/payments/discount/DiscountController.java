@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,7 +36,7 @@ public class DiscountController {
     @Operation(summary = "Create new discount")
     public ResponseEntity<DiscountResponseDTO> createDiscount(
             HttpServletRequest request,
-            @Valid @RequestBody CreateDiscountRequestDTO discountRequestDTO) throws Exception {
+            @Valid @RequestBody DiscountRequestDTO discountRequestDTO) {
         log.info("Received create discount request: {}", discountRequestDTO);
 
         DiscountResponseDTO response = discountService.createDiscount(discountRequestDTO);
@@ -62,7 +61,7 @@ public class DiscountController {
     @Operation(summary = "Update discount")
     public ResponseEntity<DiscountResponseDTO> updateDiscount(
             @PathVariable("discountId") UUID discountId,
-            @Valid @RequestBody UpdateDiscountRequestDTO discountRequestDTO) {
+            @Valid @RequestBody DiscountRequestDTO discountRequestDTO) {
         log.info("Received update discount request: discountId={} {}", discountId, discountRequestDTO);
 
         DiscountResponseDTO response = discountService.updateDiscount(discountId, discountRequestDTO);

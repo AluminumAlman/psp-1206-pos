@@ -3,7 +3,6 @@ package com.team1206.pos.order.orderCharge;
 import com.team1206.pos.common.enums.OrderChargeType;
 import com.team1206.pos.common.enums.OrderStatus;
 import com.team1206.pos.common.enums.ResourceType;
-import com.team1206.pos.exceptions.IllegalRequestException;
 import com.team1206.pos.exceptions.ResourceNotFoundException;
 import com.team1206.pos.exceptions.UnauthorizedActionException;
 import com.team1206.pos.order.order.Order;
@@ -16,6 +15,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
 
@@ -47,7 +48,7 @@ public class OrderChargeService {
 
         Pageable pageable = PageRequest.of(offset / limit, limit);
 
-        Page<OrderCharge> orderCharges = null; orderChargeRepository.findAllByMerchantId(
+        Page<OrderCharge> orderCharges = orderChargeRepository.findAllByMerchantId(
                 merchantId,
                 pageable
         );
@@ -84,18 +85,19 @@ public class OrderChargeService {
     @Transactional
     public void addOrderChargeToOrder(UUID chargeId, UUID orderId) {
         OrderCharge orderCharge = getOrderChargeEntityById(chargeId);
-        userService.verifyLoggedInUserBelongsToMerchant(orderCharge.getMerchant().getId(),
-                "You are not authorized to add order charge to this order");
+        UUID merchantId = orderCharge.getMerchant().getId();
+        userService.verifyLoggedInUserBelongsToMerchant(merchantId,
+                "You are not authorized to add order charges to this order");
 
         Order order = orderService.getOrderEntityById(orderId);
-        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(),
-                "You are not authorized to add order charge to this order");
+        if (merchantId != order.getMerchant().getId())
+            throw new IllegalArgumentException("Order and order charge merchants differ");
 
         if (order.getStatus() != OrderStatus.OPEN)
-            throw new IllegalRequestException("Order has to be open to add order charge");
+            throw new IllegalArgumentException("Order has to be open to add order charges");
 
         if (orderCharge.getOrders().contains(order))
-            throw new IllegalRequestException("Order charge has already been added to this order");
+            throw new IllegalArgumentException("Order charge is already applied to this order");
 
         orderCharge.getOrders().add(order);
         orderChargeRepository.save(orderCharge);
@@ -104,30 +106,71 @@ public class OrderChargeService {
     @Transactional
     public void removeOrderChargeFromOrder(UUID chargeId, UUID orderId) {
         OrderCharge orderCharge = getOrderChargeEntityById(chargeId);
-        userService.verifyLoggedInUserBelongsToMerchant(orderCharge.getMerchant().getId(),
-                "You are not authorized to add order charge to this order");
+        UUID merchantId = orderCharge.getMerchant().getId();
+        userService.verifyLoggedInUserBelongsToMerchant(merchantId,
+                "You are not authorized to remove order charges from this order");
 
         Order order = orderService.getOrderEntityById(orderId);
-        userService.verifyLoggedInUserBelongsToMerchant(order.getMerchant().getId(),
-                "You are not authorized to add order charge to this order");
+        if (merchantId != order.getMerchant().getId())
+            throw new IllegalArgumentException("Order and order charge merchants differ");
 
         if (order.getStatus() != OrderStatus.OPEN)
-            throw new IllegalRequestException("Order has to be open to add order charge");
+            throw new IllegalArgumentException("Order has to be open to remove order charges");
 
         if (!orderCharge.getOrders().remove(order))
-            throw new IllegalRequestException("Order charge has already been added to this order");
+            throw new IllegalArgumentException("Order charge is not applied to order");
 
         orderChargeRepository.save(orderCharge);
     }
 
     // *** Helper methods ***
+
     public OrderCharge getOrderChargeEntityById(UUID orderChargeId) {
-        OrderCharge orderCharge = orderChargeRepository.findById(orderChargeId)
+        return orderChargeRepository.findById(orderChargeId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         ResourceType.ORDER_CHARGE,
                         orderChargeId.toString()));
+    }
 
-        return orderCharge;
+    public BigDecimal applyOrderCharges(UUID orderId, BigDecimal totalOrderItemsPrice) {
+        Order order = orderService.getOrderEntityById(orderId);
+        userService.verifyLoggedInUserBelongsToMerchant(
+                order.getMerchant().getId(),
+                "You are not authorized to calculate total order charge"
+        );
+
+        List<OrderCharge> chargeCharges = orderChargeRepository.findAllByOrderIdAndType(
+                orderId,
+                OrderChargeType.CHARGE
+        );
+        List<OrderCharge> discountCharges = orderChargeRepository.findAllByOrderIdAndType(
+                orderId,
+                OrderChargeType.DISCOUNT
+        );
+
+        for (OrderCharge charge : chargeCharges) {
+            if (charge.getPercent() != null) {
+                totalOrderItemsPrice =
+                        totalOrderItemsPrice.add(totalOrderItemsPrice.multiply(new BigDecimal(charge.getPercent()).divide(
+                                new BigDecimal(100))));
+            }
+            else {
+                totalOrderItemsPrice = totalOrderItemsPrice.add(charge.getAmount());
+            }
+        }
+
+        for (OrderCharge discount : discountCharges) {
+            if (discount.getPercent() != null) {
+                totalOrderItemsPrice =
+                        totalOrderItemsPrice.subtract(totalOrderItemsPrice.multiply(new BigDecimal(discount.getPercent()).divide(
+                                new BigDecimal(100))));
+            }
+            else {
+                totalOrderItemsPrice = totalOrderItemsPrice.subtract(discount.getAmount());
+            }
+        }
+
+        return totalOrderItemsPrice.setScale(2, RoundingMode.HALF_UP);
     }
 
     private void setOrderChargeFields(OrderCharge orderCharge, OrderChargeRequestDTO requestBody) {

@@ -1,6 +1,7 @@
 package com.team1206.pos.payments.transaction;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +30,14 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.getTransactions(limit, offset, orderId));
     }
 
+    @GetMapping("/{orderId}/totalPaid")
+    @Operation(summary = "Get sum of order transactions")
+    public ResponseEntity<BigDecimal> getTotalPaid(@PathVariable String orderId)
+    {
+        return ResponseEntity.ok(transactionService.getTotalPaidByOrder(UUID.fromString(orderId)));
+    }
+
+
     @GetMapping("/transactions")
     @Operation(summary = "Get paged transactions")
     public ResponseEntity<Page<TransactionResponseDTO>> getTransactions(
@@ -51,7 +60,7 @@ public class TransactionController {
     @Operation(summary = "Create transaction for order")
     public ResponseEntity<TransactionResponseDTO> createTransaction(
             @PathVariable UUID orderId,
-            @RequestBody TransactionRequestDTO requestBody
+            @Valid @RequestBody TransactionRequestDTO requestBody
     ) {
         return ResponseEntity.ok(transactionService.createTransaction(orderId, requestBody));
     }
@@ -66,12 +75,12 @@ public class TransactionController {
     }
 
     @PatchMapping("/{orderId}/transactions/{transactionId}/complete")
-    @Operation(summary = "Mark cash transaction as completed")
+    @Operation(summary = "Mark transaction as completed")
     public ResponseEntity<TransactionResponseDTO> completeTransaction(
             @PathVariable UUID orderId,
             @PathVariable UUID transactionId
     ) {
-        return ResponseEntity.ok(transactionService.completeCashTransaction(
+        return ResponseEntity.ok(transactionService.completeTransaction(
                 orderId,
                 transactionId
         ));
